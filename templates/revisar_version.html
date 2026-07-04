@@ -1,0 +1,774 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .revision-wrapper,
+    .revision-wrapper *:not(iframe):not(iframe *) {
+        color: var(--text-main) !important;
+    }
+    .revision-wrapper .text-muted,
+    .revision-wrapper .text-muted *:not(iframe):not(iframe *) {
+        color: var(--text-muted) !important;
+    }
+    .revision-wrapper .text-primary,
+    .revision-wrapper .text-primary *:not(iframe):not(iframe *) {
+        color: var(--primary) !important;
+    }
+    /* Excepciones para colores semánticos fijos */
+    .revision-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .revision-wrapper .text-warning {
+        color: #f59e0b !important;
+    }
+    .revision-wrapper .text-danger {
+        color: #ef4444 !important;
+    }
+
+    /* ===== BOTONES DE ESTADO ===== */
+    .btn-estado {
+        transition: all 0.3s ease !important;
+        font-size: 0.85rem !important;
+        padding: 0.75rem 0.5rem !important;
+        border-radius: 12px !important;
+    }
+    .btn-estado:not(.active) {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text-main) !important;
+    }
+    .btn-estado:not(.active):hover {
+        background: var(--nav-active-bg) !important;
+        border-color: var(--primary) !important;
+    }
+    .btn-estado.active-aprobar {
+        background: #10b981 !important;
+        color: #fff !important;
+        border-color: #10b981 !important;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    .btn-estado.active-observar {
+        background: #f59e0b !important;
+        color: #fff !important;
+        border-color: #f59e0b !important;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+
+    /* ===== BOTÓN PRINCIPAL ===== */
+    .btn-enviar-revision {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+    }
+    .btn-enviar-revision:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        color: #fff !important;
+    }
+    .btn-enviar-revision:disabled {
+        opacity: 0.7;
+        transform: none;
+    }
+
+    /* ===== BOTÓN DE GUARDAR BORRADOR ===== */
+    .btn-guardar-borrador {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-guardar-borrador:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== INPUTS Y TEXTAREAS ===== */
+    .form-control-custom {
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.75rem 1rem !important;
+    }
+    .form-control-custom:focus {
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+    }
+    .form-control-custom::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7 !important;
+    }
+
+    /* ===== CHECKBOX DE VERIFICACIÓN ===== */
+    .form-check-input-custom {
+        width: 1.25rem !important;
+        height: 1.25rem !important;
+        cursor: pointer !important;
+        border-color: var(--border) !important;
+    }
+    .form-check-input-custom:checked {
+        background-color: var(--primary) !important;
+        border-color: var(--primary) !important;
+    }
+
+    /* ===== AUDIT ITEMS ===== */
+    .audit-item {
+        transition: all 0.2s ease !important;
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        padding: 1rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    .audit-item:hover {
+        border-color: var(--primary) !important;
+        transform: translateX(5px);
+    }
+
+    /* ===== CHECKLIST ===== */
+    .checklist-item {
+        color: var(--text-muted) !important;
+        font-size: 0.75rem !important;
+        cursor: pointer !important;
+    }
+    .checklist-item .form-check-input {
+        cursor: pointer !important;
+        border-color: var(--border) !important;
+    }
+    .checklist-item .form-check-input:checked {
+        background-color: var(--primary) !important;
+        border-color: var(--primary) !important;
+    }
+
+    /* ===== MODALES ===== */
+    .modal-content-custom {
+        background: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 24px !important;
+    }
+    .modal-content-custom .modal-body {
+        color: var(--text-main) !important;
+    }
+    .modal-content-custom .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    .btn-modal-confirm {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-modal-confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        color: #fff !important;
+    }
+    .btn-modal-cancel {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        font-weight: 500 !important;
+    }
+    .btn-modal-cancel:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== ALERTA INFORMATIVA ===== */
+    .alert-info-custom {
+        background: rgba(99, 102, 241, 0.08) !important;
+        color: var(--primary) !important;
+        border: none !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+    }
+
+    /* ===== FINALIZAR INVESTIGACIÓN ===== */
+    .finalizar-box {
+        background: rgba(16, 185, 129, 0.05) !important;
+        border: 1px solid rgba(16, 185, 129, 0.25) !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+    }
+    .finalizar-box .form-check-input {
+        width: 2.5em !important;
+        height: 1.2em !important;
+        cursor: pointer !important;
+    }
+    .finalizar-box .form-check-input:checked {
+        background-color: #10b981 !important;
+        border-color: #10b981 !important;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 991px) {
+        .card[style*="height"] {
+            height: auto !important;
+            min-height: 400px;
+        }
+    }
+    @media (max-width: 575px) {
+        .card {
+            border-radius: 12px !important;
+        }
+        .modal-body {
+            padding: 1.5rem !important;
+        }
+    }
+</style>
+
+<div class="revision-wrapper">
+    <div class="container-fluid px-0 px-md-2">
+        <div class="row g-0 g-lg-4">
+            <!-- LADO IZQUIERDO: Visor de PDF -->
+            <div class="col-12 col-lg-8 mb-4 mb-lg-0">
+                <!-- Header del visor -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{% url 'dashboard_profesor' %}" class="btn btn-action-icon flex-shrink-0" title="Volver">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        <div>
+                            <h4 class="fw-bold mb-0 d-flex align-items-center gap-2" style="color: var(--text-main); font-size: 1.1rem;">
+                                <i class="fas fa-file-pdf text-danger"></i> 
+                                Documento de Entrega
+                                <span class="badge rounded-pill ms-1" style="background: var(--primary-light); color: var(--primary); font-size: 0.7rem;">
+                                    v{{ version.numero_version }}
+                                </span>
+                            </h4>
+                            <small style="color: var(--text-muted); font-size: 0.75rem;">
+                                <i class="fas fa-user-graduate me-1"></i>
+                                {% for e in version.proyecto.estudiantes.all %}
+                                    {{ e.get_full_name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group shadow-sm rounded-3 flex-shrink-0">
+                        <a href="{{ version.archivo.url }}" target="_blank" 
+                           class="btn btn-sm px-3 d-flex align-items-center gap-1"
+                           style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border);">
+                            <i class="fas fa-external-link-alt"></i> <span class="d-none d-sm-inline">Abrir</span>
+                        </a>
+                        <a href="{{ version.archivo.url }}" download 
+                           class="btn btn-sm px-3 d-flex align-items-center gap-1"
+                           style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border);">
+                            <i class="fas fa-download"></i> <span class="d-none d-sm-inline">Descargar</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Contenedor del Visor -->
+                <div class="card border-0 shadow-sm overflow-hidden" 
+                     style="background: var(--bg-card); border-radius: 16px; height: calc(100vh - 250px); min-height: 500px;">
+                    <iframe src="{{ version.archivo.url }}#toolbar=0&navpanes=0" 
+                            width="100%" height="100%" 
+                            style="border: none; background: #ffffff;"
+                            title="Visor de documento"></iframe>
+                </div>
+            </div>
+
+            <!-- LADO DERECHO: Panel de Revisión -->
+            <div class="col-12 col-lg-4">
+                <div class="card border-0 shadow-sm h-100" 
+                     style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 20px; max-height: calc(100vh - 200px);">
+                    
+                    <div class="card-header border-0 d-flex align-items-center gap-2 py-3 px-4"
+                         style="background: transparent; border-bottom: 1px solid var(--border) !important;">
+                        <div class="rounded-3 p-2" style="background: var(--primary-light); color: var(--primary);">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <h5 class="fw-bold mb-0" style="color: var(--text-main); font-size: 0.95rem;">
+                            Dictamen Académico
+                        </h5>
+                    </div>
+                    
+                    <div class="card-body overflow-auto p-3 p-md-4">
+                        <form method="post" id="formRevision">
+                            {% csrf_token %}
+                        {% if comentarios_anteriores %}
+                        <div class="mb-5">
+                            <label class="form-label small fw-bold text-uppercase mb-3" style="color: var(--primary); font-size: 0.7rem; letter-spacing: 1px;">
+                                <i class="fas fa-tasks me-2"></i> Verificar Correcciones Anteriores
+                            </label>
+                            
+                            <div class="bg-dark bg-opacity-25 rounded-4 p-3 border border-secondary border-opacity-10">
+                                {% for ca in comentarios_anteriores %}
+                                <div class="audit-item">
+                                    <div class="d-flex align-items-start">
+                                        <input class="form-check-input form-check-input-custom flex-shrink-0 mt-1" type="checkbox" 
+                                            name="verificar_comentarios" value="{{ ca.id }}" 
+                                            id="check{{ ca.id }}" {% if ca.verificado_docente %}checked{% endif %}>
+                                        
+                                        <label class="form-check-label ms-3 flex-grow-1" for="check{{ ca.id }}" style="cursor: pointer;">
+                                            <div class="mb-2">
+                                                <small class="text-muted fw-bold d-block text-uppercase mb-1" style="font-size: 0.6rem;">Observación en v{{ version.numero_version|add:"-1" }}:</small>
+                                                <p class="mb-2 small" style="color: var(--text-main); line-height: 1.5;">{{ ca.texto|linebreaksbr }}</p>
+                                            </div>
+                                            
+                                            <div class="p-2 rounded-3 border-start border-2 {% if ca.verificado_docente %}bg-success bg-opacity-10 border-success{% else %}bg-warning bg-opacity-10 border-warning{% endif %}">
+                                                <div class="d-flex justify-content-between">
+                                                    <small class="fw-bold" style="font-size: 0.6rem; 
+                                                        {% if ca.verificado_docente %}color: #10b981;{% else %}color: #f59e0b;{% endif %}">
+                                                        ESTADO: 
+                                                    </small>
+                                                    {% if ca.verificado_docente %}
+                                                        <span class="badge bg-success bg-opacity-10 text-success" style="font-size: 0.55rem;">HECHO</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning bg-opacity-10 text-warning" style="font-size: 0.55rem;">PENDIENTE</span>
+                                                    {% endif %}
+                                                </div>
+                                                <small class="text-muted fst-italic d-block mt-1">{{ ca.correccion.descripcion|default:"(Sin descripción de cambios)" }}</small>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                
+                                <div class="p-2 mt-2">
+                                    <p class="text-muted italic small mb-0" style="font-size: 0.65rem;">
+                                        <i class="fas fa-info-circle me-1"></i> Marque las casillas para validar que los cambios fueron aplicados correctamente en este nuevo archivo PDF.
+                                    </p>
+                                </div>
+                            </div>
+                            <hr class="my-4" style="border-color: var(--border); opacity: 0.1;">
+                        </div>
+                        {% endif %}
+                            
+                            <!-- Selector de Estado -->
+                            <label class="form-label small fw-bold text-uppercase mb-2" 
+                                   style="color: var(--text-muted); letter-spacing: 0.5px; font-size: 0.65rem;">
+                                <i class="fas fa-flag me-1"></i> Estado de la Revisión
+                            </label>
+                            <div class="d-flex gap-2 mb-4">
+                                <input type="radio" class="btn-check" name="estado" id="aprob" value="Aprobado" 
+                                       {% if version.revisiones.last.estado == 'Aprobado' %}checked{% endif %}>
+                                <label class="btn btn-estado flex-grow-1 py-3 rounded-3 {% if version.revisiones.last.estado == 'Aprobado' %}active-aprobar{% endif %}" for="aprob"
+                                       id="label-aprob">
+                                    <i class="fas fa-check-circle d-block mb-1 fa-lg"></i> 
+                                    <strong>Aprobar</strong>
+                                </label>
+
+                                <input type="radio" class="btn-check" name="estado" id="obs" value="Observado"
+                                       {% if version.revisiones.last.estado == 'Observado' %}checked{% endif %}>
+                                <label class="btn btn-estado flex-grow-1 py-3 rounded-3 {% if version.revisiones.last.estado == 'Observado' %}active-observar{% endif %}" for="obs"
+                                       id="label-obs">
+                                    <i class="fas fa-exclamation-circle d-block mb-1 fa-lg"></i> 
+                                    <strong>Observar</strong>
+                                </label>
+                            </div>
+
+                            <!-- Comentario Específico -->
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-uppercase mb-2" style="color: var(--text-muted); font-size: 0.65rem;">
+                                    <i class="fas fa-list-ul me-1"></i> Observaciones Específicas del Ciclo
+                                </label>
+                                <div id="bulk-observations-container">
+                                    <div class="input-group mb-2 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                                        <input type="text" name="comentarios_especificos_bulk" class="form-control form-control-custom" 
+                                               placeholder="Escribe un punto a corregir...">
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill mt-1 fw-bold" onclick="addObservationRow()" style="font-size: 0.7rem;">
+                                    <i class="fas fa-plus-circle me-1"></i> AGREGAR OTRA OBSERVACIÓN
+                                </button>
+                            </div>
+
+                            <!-- Observaciones Generales -->
+                            <div class="mb-4">
+                                <label for="observaciones" class="form-label small fw-bold text-uppercase mb-2" 
+                                       style="color: var(--text-muted); letter-spacing: 0.5px; font-size: 0.65rem;">
+                                    <i class="fas fa-pen me-1"></i> Observaciones Generales
+                                </label>
+                                <textarea name="observaciones" id="observaciones"
+                                          class="form-control form-control-custom" 
+                                          style="resize: vertical; min-height: 120px;" 
+                                          rows="6" 
+                                          placeholder="Escribe tu feedback detallado aquí...">{{ version.revisiones.last.observaciones_generales|default:'' }}</textarea>
+                                <small id="contadorObs" class="text-muted d-block mt-1" style="font-size: 0.65rem;">
+                                    0 caracteres
+                                </small>
+                            </div>
+
+                            <!-- Checklist rápida -->
+                            <div class="p-3 rounded-3 mb-4" style="background: var(--nav-active-bg);">
+                                <small class="fw-bold text-uppercase d-block mb-2" 
+                                       style="color: var(--text-muted); font-size: 0.6rem; letter-spacing: 0.5px;">
+                                    <i class="fas fa-tasks me-1"></i> Checklist de Revisión
+                                </small>
+                                <div class="form-check mb-1 checklist-item">
+                                    <input class="form-check-input" type="checkbox" id="check1">
+                                    <label class="form-check-label" for="check1">
+                                        Formato y estructura correctos
+                                    </label>
+                                </div>
+                                <div class="form-check mb-1 checklist-item">
+                                    <input class="form-check-input" type="checkbox" id="check2">
+                                    <label class="form-check-label" for="check2">
+                                        Contenido académico revisado
+                                    </label>
+                                </div>
+                                <div class="form-check checklist-item">
+                                    <input class="form-check-input" type="checkbox" id="check3">
+                                    <label class="form-check-label" for="check3">
+                                        Citas y referencias verificadas
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Alerta informativa -->
+                            <div class="alert alert-info-custom d-flex align-items-start gap-2 mb-4">
+                                <i class="fas fa-info-circle mt-1 flex-shrink-0"></i>
+                                <p class="small mb-0" style="font-size: 0.75rem;">
+                                    Al enviar, el sistema notificará automáticamente al estudiante y actualizará el registro de avance.
+                                </p>
+                            </div>
+
+                            <!-- Botones -->
+                            <div class="d-flex flex-column gap-2">
+                                <button type="submit" class="btn btn-enviar-revision w-100 py-3 rounded-4 shadow fw-bold" id="btnEnviar">
+                                    <i class="fas fa-paper-plane me-2"></i> FINALIZAR REVISIÓN
+                                </button>
+                                <button type="button" class="btn btn-guardar-borrador w-100 py-2 rounded-4"
+                                        onclick="guardarBorrador()">
+                                    <i class="fas fa-save me-2"></i> Guardar Borrador
+                                </button>
+                            </div>
+
+                            <div class="finalizar-box mb-4 mt-3">
+                                <div class="form-check form-switch d-flex align-items-center gap-2">
+                                    <input class="form-check-input" type="checkbox" name="finalizar_investigacion" id="finalizarCheck">
+                                    <label class="form-check-label small fw-bold text-success" for="finalizarCheck" style="cursor: pointer;">
+                                        ✓ FINALIZAR INVESTIGACIÓN COMPLETAMENTE
+                                    </label>
+                                </div>
+                                <small class="text-muted d-block mt-2" style="font-size: 0.6rem; line-height: 1.2;">
+                                    <i class="fas fa-info-circle me-1"></i> Use esta opción solo si el proyecto no requiere más entregas.
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de alerta -->
+<div id="alertModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4"
+                         id="alertIcon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-exclamation-triangle fa-2x text-white"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-2" id="alertTitle" style="color: var(--text-main);">Atención</h5>
+                <p class="mb-4" id="alertMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Mensaje de alerta
+                </p>
+                <button type="button" class="btn btn-modal-confirm w-100 py-2 rounded-3 fw-bold" data-bs-dismiss="modal">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="confirmModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 p-md-5 text-center">
+                <!-- Icono animado -->
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg"
+                         id="confirmIcon" style="background: linear-gradient(135deg, #f59e0b, #f97316);">
+                        <i class="fas fa-paper-plane fa-2x text-white"></i>
+                    </div>
+                </div>
+                
+                <!-- Título dinámico -->
+                <h4 class="fw-bold mb-2" id="confirmTitle" style="color: var(--text-main);">¿Confirmar revisión?</h4>
+                <p class="mb-4" id="confirmMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Mensaje de confirmación
+                </p>
+                
+                <!-- Resumen de la revisión -->
+                <div class="rounded-3 p-3 mb-4 text-start" style="background: var(--nav-active-bg); border-left: 3px solid var(--primary);">
+                    <div class="d-flex align-items-start gap-2 mb-2">
+                        <i class="fas fa-flag mt-1" style="color: var(--primary); font-size: 0.9rem;"></i>
+                        <div>
+                            <small class="d-block fw-bold" style="color: var(--text-main); font-size: 0.75rem;">ESTADO SELECCIONADO</small>
+                            <small id="confirmEstadoPreview" style="color: var(--text-muted); font-size: 0.7rem;">-</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-2 mb-2">
+                        <i class="fas fa-chart-line mt-1" style="color: #10b981; font-size: 0.9rem;"></i>
+                        <div>
+                            <small class="d-block fw-bold" style="color: var(--text-main); font-size: 0.75rem;">NUEVO AVANCE</small>
+                            <small id="confirmAvancePreview" style="color: var(--text-muted); font-size: 0.7rem;">-</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-2">
+                        <i class="fas fa-comment mt-1" style="color: #f59e0b; font-size: 0.9rem;"></i>
+                        <div>
+                            <small class="d-block fw-bold" style="color: var(--text-main); font-size: 0.75rem;">OBSERVACIONES</small>
+                            <small id="confirmObsPreview" style="color: var(--text-muted); font-size: 0.7rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">-</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-modal-cancel flex-grow-1 py-2 rounded-3" 
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-modal-confirm flex-grow-1 py-2 rounded-3 fw-bold" 
+                            id="confirmarRevisionBtn">
+                        <i class="fas fa-paper-plane me-2"></i> CONFIRMAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables globales
+    let confirmModal = null;
+    let alertModal = null;
+    let estadoSeleccionado = '{{ version.revisiones.last.estado|default:"Observado" }}';
+    
+    // Función unificada para mostrar alertas estilizadas
+    function mostrarAlerta(titulo, mensaje, tipo = 'error') {
+        const alertModalEl = document.getElementById('alertModal');
+        const alertIcon = document.getElementById('alertIcon');
+        const alertTitle = document.getElementById('alertTitle');
+        const alertMessage = document.getElementById('alertMessage');
+        
+        if (tipo === 'error') {
+            alertIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle fa-2x text-white"></i>';
+        } else if (tipo === 'warning') {
+            alertIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-circle fa-2x text-white"></i>';
+        } else if (tipo === 'success') {
+            alertIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            alertIcon.innerHTML = '<i class="fas fa-check-circle fa-2x text-white"></i>';
+        }
+        
+        alertTitle.textContent = titulo;
+        alertMessage.textContent = mensaje;
+        
+        if (alertModal) {
+            alertModal.show();
+        }
+    }
+    
+    // Contador de caracteres para observaciones
+    const textarea = document.getElementById('observaciones');
+    const contador = document.getElementById('contadorObs');
+    
+    if (textarea && contador) {
+        textarea.addEventListener('input', function() {
+            const count = this.value.length;
+            contador.textContent = `${count} caracteres`;
+            contador.style.color = count < 10 && count > 0 ? '#f59e0b' : '';
+        });
+        contador.textContent = `${textarea.value.length} caracteres`;
+    }
+    
+    // Cambiar estilo de botones de estado según selección
+    const radios = document.querySelectorAll('input[name="estado"]');
+    const labelAprob = document.getElementById('label-aprob');
+    const labelObs = document.getElementById('label-obs');
+    const btnEnviar = document.getElementById('btnEnviar');
+    
+    if (radios.length) {
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                estadoSeleccionado = this.value;
+                
+                // Quitar clases activas
+                labelAprob.classList.remove('active-aprobar');
+                labelObs.classList.remove('active-observar');
+                
+                if (this.value === 'Aprobado') {
+                    labelAprob.classList.add('active-aprobar');
+                    btnEnviar.style.background = '#10b981';
+                } else {
+                    labelObs.classList.add('active-observar');
+                    btnEnviar.style.background = '#f59e0b';
+                }
+            });
+        });
+    }
+    
+    // Guardar borrador
+    function guardarBorrador() {
+        const observaciones = document.getElementById('observaciones').value;
+        const borradorData = { observaciones: observaciones };
+        localStorage.setItem('borrador_revision', JSON.stringify(borradorData));
+        mostrarAlerta('Borrador guardado', 'Tus observaciones generales han sido guardadas.', 'success');
+    }
+    
+    // Cargar borrador al iniciar
+    document.addEventListener('DOMContentLoaded', function() {
+        const borrador = localStorage.getItem('borrador_revision');
+        if (borrador && textarea) {
+            const data = JSON.parse(borrador);
+            if (data.observaciones && !textarea.value) {
+                textarea.value = data.observaciones;
+                contador.textContent = `${data.observaciones.length} caracteres`;
+            }
+        }
+        
+        // Inicializar color del botón
+        const checkedRadio = document.querySelector('input[name="estado"]:checked');
+        if (checkedRadio) {
+            if (checkedRadio.value === 'Aprobado' && btnEnviar) {
+                btnEnviar.style.background = '#10b981';
+                labelAprob.classList.add('active-aprobar');
+                estadoSeleccionado = 'Aprobado';
+            } else if (checkedRadio.value === 'Observado' && btnEnviar) {
+                btnEnviar.style.background = '#f59e0b';
+                labelObs.classList.add('active-observar');
+                estadoSeleccionado = 'Observado';
+            }
+        }
+        
+        // Inicializar modales
+        const confirmModalEl = document.getElementById('confirmModal');
+        if (confirmModalEl) confirmModal = new bootstrap.Modal(confirmModalEl);
+        
+        const alertModalEl = document.getElementById('alertModal');
+        if (alertModalEl) alertModal = new bootstrap.Modal(alertModalEl);
+
+        const confirmBtn = document.getElementById('confirmarRevisionBtn');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function() {
+                enviarFormulario();
+            });
+        }
+    });
+    
+    // MOSTRAR MODAL DE CONFIRMACIÓN
+    function mostrarModalConfirmacion() {
+        const radioChecked = document.querySelector('input[name="estado"]:checked');
+        
+        if (!radioChecked) {
+            mostrarAlerta('Atención', 'Debe seleccionar un estado (Aprobar u Observar).', 'warning');
+            return false;
+        }
+
+        const estado = radioChecked.value;
+        const observaciones = document.getElementById('observaciones').value.trim();
+        
+        const bulkInputs = document.querySelectorAll('input[name="comentarios_especificos_bulk"]');
+        let tieneObservacionesBulk = false;
+        bulkInputs.forEach(input => {
+            if (input.value.trim() !== '') tieneObservacionesBulk = true;
+        });
+
+        if (estado === 'Observado' && observaciones.length < 5 && !tieneObservacionesBulk) {
+            mostrarAlerta(
+                'Feedback necesario',
+                'Para marcar como "Observado", debe escribir una observación general o al menos un punto específico.',
+                'warning'
+            );
+            return false;
+        }
+        
+        // Actualizar UI del Modal de Confirmación
+        const confirmIcon = document.getElementById('confirmIcon');
+        const confirmTitle = document.getElementById('confirmTitle');
+        const confirmEstadoPreview = document.getElementById('confirmEstadoPreview');
+        const confirmAvancePreview = document.getElementById('confirmAvancePreview');
+        const confirmObsPreview = document.getElementById('confirmObsPreview');
+        const finalConfirmBtn = document.getElementById('confirmarRevisionBtn');
+        
+        if (estado === 'Aprobado') {
+            confirmIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            confirmTitle.textContent = '¿Aprobar esta versión?';
+            confirmEstadoPreview.innerHTML = '<span class="badge bg-success">✓ APROBADO</span>';
+            finalConfirmBtn.style.background = '#10b981';
+        } else {
+            confirmIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            confirmTitle.textContent = '¿Enviar observaciones?';
+            confirmEstadoPreview.innerHTML = '<span class="badge bg-warning">⚠ OBSERVADO</span>';
+            finalConfirmBtn.style.background = '#f59e0b';
+        }
+        
+        const totalTareas = document.querySelectorAll('input[name="verificar_comentarios"]').length;
+        const marcadas = document.querySelectorAll('input[name="verificar_comentarios"]:checked').length;
+        
+        if (totalTareas > 0) {
+            const perc = Math.round((marcadas / totalTareas) * 100);
+            confirmAvancePreview.textContent = `Se verificaron ${marcadas} de ${totalTareas} tareas (${perc}% de progreso).`;
+        } else {
+            confirmAvancePreview.textContent = estado === 'Aprobado' ? 'Avance: 100%' : 'Primer ciclo de revisión';
+        }
+        
+        confirmObsPreview.textContent = observaciones || (tieneObservacionesBulk ? 'Puntos específicos agregados.' : 'Sin comentarios adicionales.');
+        
+        if (confirmModal) confirmModal.show();
+        return true;
+    }
+    
+    // Enviar formulario definitivamente
+    function enviarFormulario() {
+        const form = document.getElementById('formRevision');
+        const btn = document.getElementById('btnEnviar');
+        const finalBtn = document.getElementById('confirmarRevisionBtn');
+        
+        if (finalBtn) {
+            finalBtn.disabled = true;
+            finalBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> ENVIANDO...';
+        }
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> PROCESANDO...';
+        }
+        
+        localStorage.removeItem('borrador_revision');
+        form.submit();
+    }
+    
+    // Interceptar el submit del formulario
+    const formRevision = document.getElementById('formRevision');
+    if (formRevision) {
+        formRevision.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            mostrarModalConfirmacion(); 
+        });
+    }
+
+    function addObservationRow() {
+        const container = document.getElementById('bulk-observations-container');
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2 animate__animated animate__fadeIn';
+        div.style.borderRadius = '12px';
+        div.style.overflow = 'hidden';
+        div.innerHTML = `
+            <input type="text" name="comentarios_especificos_bulk" class="form-control form-control-custom" 
+                   placeholder="Siguiente punto a corregir...">
+            <button type="button" class="btn btn-link text-danger bg-light border-0" onclick="this.parentElement.remove()" style="background: var(--bg-card) !important;">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(div);
+        div.querySelector('input').focus();
+    }
+</script>
+{% endblock %}

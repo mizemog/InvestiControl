@@ -1,0 +1,734 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .subir-wrapper,
+    .subir-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .subir-wrapper .text-muted,
+    .subir-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .subir-wrapper .text-primary,
+    .subir-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepciones para colores semánticos fijos */
+    .subir-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .subir-wrapper .text-warning {
+        color: #f59e0b !important;
+    }
+    .subir-wrapper .text-danger {
+        color: #ef4444 !important;
+    }
+    .subir-wrapper .text-info {
+        color: #3b82f6 !important;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-primary-custom {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-primary-custom:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+        color: #fff !important;
+    }
+    .btn-primary-custom:disabled {
+        opacity: 0.7 !important;
+        transform: none !important;
+    }
+
+    .btn-secondary-custom {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-secondary-custom:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== DROPZONE ===== */
+    #dropzone {
+        transition: all 0.3s ease;
+        border: 2px dashed var(--border) !important;
+        background: var(--nav-active-bg) !important;
+        cursor: pointer;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px !important;
+    }
+    #dropzone:hover {
+        border-color: var(--primary) !important;
+        background: var(--primary-light) !important;
+    }
+    #dropzone.dragover {
+        border-color: var(--primary) !important;
+        background: var(--primary-light) !important;
+    }
+    #dropzone.has-file {
+        border-color: #10b981 !important;
+        background: rgba(16, 185, 129, 0.05) !important;
+    }
+    #dropzone.has-error {
+        border-color: #ef4444 !important;
+        background: rgba(239, 68, 68, 0.05) !important;
+    }
+
+    /* Elementos internos del dropzone (no interfieren con eventos) */
+    #dropzone-empty,
+    #dropzone-filled,
+    #dropzone-error {
+        pointer-events: none;
+    }
+    #dropzone-filled button,
+    #dropzone-error button {
+        pointer-events: all;
+    }
+
+    /* ===== FORMULARIO ===== */
+    .form-control-custom {
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.75rem 1rem !important;
+    }
+    .form-control-custom:focus {
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+    }
+    .form-control-custom::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7 !important;
+    }
+
+    textarea.form-control-custom {
+        resize: vertical;
+        min-height: 100px;
+        max-height: 300px;
+    }
+
+    /* ===== CHECKBOX ===== */
+    .form-check-input-custom {
+        background-color: var(--nav-active-bg) !important;
+        border-color: var(--border) !important;
+        cursor: pointer !important;
+    }
+    .form-check-input-custom:checked {
+        background-color: var(--primary) !important;
+        border-color: var(--primary) !important;
+    }
+
+    /* ===== TAREAS PENDIENTES ===== */
+    .task-item {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+    }
+    .task-item:hover {
+        border-color: var(--primary) !important;
+        transform: translateX(5px);
+    }
+    .task-item input:checked ~ .task-content span {
+        text-decoration: line-through;
+        opacity: 0.6;
+    }
+
+    /* ===== MODALES ===== */
+    .modal-content-custom {
+        background: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 24px !important;
+    }
+    .modal-content-custom .modal-body {
+        color: var(--text-main) !important;
+    }
+    .modal-content-custom .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    .btn-modal-confirm {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-modal-confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        color: #fff !important;
+    }
+    .btn-modal-cancel {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        font-weight: 500 !important;
+    }
+    .btn-modal-cancel:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .card-animated {
+        animation: fadeIn 0.3s ease forwards;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 767px) {
+        .card { border-radius: 16px !important; }
+        .p-3.p-md-5 { padding: 1.5rem !important; }
+        #dropzone { min-height: 160px; padding: 1.5rem !important; }
+    }
+    @media (max-width: 575px) {
+        #dropzone { min-height: 140px; padding: 1.25rem !important; }
+        .fa-3x { font-size: 2em; }
+    }
+</style>
+
+<div class="subir-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-11 col-sm-9 col-md-7 col-lg-6">
+            <!-- Header -->
+            <div class="text-center mb-4 mb-md-5">
+                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg mb-4"
+                     style="background: var(--primary);">
+                    <i class="fas fa-cloud-upload-alt fa-2x text-white"></i>
+                </div>
+                <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Nueva Entrega</h2>
+                <p class="mb-0" style="color: var(--text-muted);">
+                    <i class="fas fa-book me-1"></i> 
+                    Proyecto: <strong style="color: var(--text-main);">{{ proyecto.titulo }}</strong>
+                </p>
+            </div>
+
+            <!-- Información del proyecto -->
+            <div class="card border-0 shadow-sm p-3 p-md-4 mb-4 card-animated" 
+                 style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 16px;">
+                <div class="row g-3 text-center text-md-start">
+                    <div class="col-6 col-md-3">
+                        <small class="text-muted d-block" style="font-size: 0.65rem;">Versión Actual</small>
+                        <strong style="color: var(--primary);">
+                            v{{ proyecto.versiones.count|add:"1" }}
+                        </strong>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <small class="text-muted d-block" style="font-size: 0.65rem;">Progreso</small>
+                        <strong style="color: #10b981;">{{ proyecto.porcentaje_avance }}%</strong>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <small class="text-muted d-block" style="font-size: 0.65rem;">Estado</small>
+                        <strong style="color: {% if proyecto.estado == 'Aprobado' %}#10b981{% elif proyecto.estado == 'Observado' %}#f59e0b{% else %}#3b82f6{% endif %};">
+                            {{ proyecto.estado }}
+                        </strong>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <small class="text-muted d-block" style="font-size: 0.65rem;">Entregas</small>
+                        <strong style="color: var(--text-main);">{{ proyecto.versiones.count }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de entrega -->
+            <div class="card border-0 shadow-lg p-3 p-md-5 card-animated" 
+                 style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
+                
+                <form method="post" enctype="multipart/form-data" id="formEntrega">
+                    {% csrf_token %}
+                    {% if tareas_pendientes %}
+                    <div class="mb-5 p-4 rounded-4" style="background: rgba(99, 102, 241, 0.05); border: 1px solid var(--border);">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary text-white p-2 rounded-3 me-3" style="font-size: 0.8rem;">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <h6 class="fw-bold small text-uppercase mb-0" style="color: var(--text-main); letter-spacing: 1px;">
+                                Validar correcciones del ciclo anterior
+                            </h6>
+                        </div>
+                        
+                        <p class="text-muted small mb-4">Selecciona las observaciones que has solventado en este nuevo archivo PDF:</p>
+
+                        <div class="list-group gap-2">
+                            {% for t in tareas_pendientes %}
+                            <label class="list-group-item task-item d-flex align-items-start gap-3">
+                                <input class="form-check-input form-check-input-custom flex-shrink-0 mt-1" type="checkbox" 
+                                       name="tareas_completadas" value="{{ t.id }}" 
+                                       style="width: 1.2rem; height: 1.2rem;">
+                                <div class="task-content flex-grow-1">
+                                    <span class="d-block small fw-bold" style="color: var(--text-main);">{{ t.texto|linebreaksbr }}</span>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <span class="badge bg-warning bg-opacity-10 text-warning" style="font-size: 0.55rem;">PENDIENTE</span>
+                                        <span class="text-muted" style="color: var(--text-muted) !important; font-size: 0.6rem;">Prioridad: {{ t.prioridad }}</span>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <hr class="my-5" style="border-color: var(--border); opacity: 0.1;">
+                    {% endif %}
+                    
+                    <!-- Zona de subida de archivo -->
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase mb-2" 
+                               style="color: var(--text-muted); letter-spacing: 0.5px;">
+                            <i class="fas fa-file-pdf me-1"></i> Archivo de Entrega
+                        </label>
+                        
+                        <!-- Dropzone -->
+                        <div id="dropzone" onclick="document.getElementById('archivoInput').click()"
+                             ondragover="handleDragOver(event)"
+                             ondragleave="handleDragLeave(event)"
+                             ondrop="handleDrop(event)">
+                            
+                            <!-- Estado: Sin archivo -->
+                            <div id="dropzone-empty" style="display: flex; flex-direction: column; align-items: center;">
+                                <div class="mb-3">
+                                    <i class="fas fa-cloud-upload-alt fa-3x" style="color: var(--primary); opacity: 0.6;"></i>
+                                </div>
+                                <h5 class="fw-bold mb-1" style="color: var(--text-main); font-size: 1rem;">
+                                    Arrastra tu archivo aquí
+                                </h5>
+                                <p class="mb-3" style="color: var(--text-muted); font-size: 0.85rem;">
+                                    o haz clic para seleccionar
+                                </p>
+                                <span class="badge rounded-pill px-3 py-2" style="background: var(--primary-light); color: var(--primary); font-size: 0.7rem;">
+                                    <i class="fas fa-check-circle me-1"></i> Solo archivos PDF
+                                </span>
+                            </div>
+                            
+                            <!-- Estado: Archivo seleccionado -->
+                            <div id="dropzone-filled" style="display: none; flex-direction: column; align-items: center;">
+                                <div class="mb-3">
+                                    <i class="fas fa-file-pdf fa-3x" style="color: #ef4444;"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1" style="color: var(--text-main);" id="nombreArchivo"></h6>
+                                <p class="mb-2" style="color: var(--text-muted); font-size: 0.8rem;" id="tamanoArchivo"></p>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" 
+                                        onclick="event.stopPropagation(); eliminarArchivo()">
+                                    <i class="fas fa-times me-1"></i> Eliminar
+                                </button>
+                            </div>
+                            
+                            <!-- Estado: Error -->
+                            <div id="dropzone-error" style="display: none; flex-direction: column; align-items: center;">
+                                <div class="mb-3">
+                                    <i class="fas fa-exclamation-circle fa-3x" style="color: #ef4444;"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1" style="color: #ef4444;">Formato no válido</h6>
+                                <p class="mb-0" style="color: var(--text-muted); font-size: 0.8rem;">
+                                    Solo se permiten archivos PDF
+                                </p>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 mt-2"
+                                        onclick="event.stopPropagation(); eliminarArchivo(); document.getElementById('archivoInput').click();">
+                                    <i class="fas fa-redo me-1"></i> Intentar de nuevo
+                                </button>
+                            </div>
+                            
+                            <input type="file" name="archivo" id="archivoInput" class="d-none" 
+                                   accept=".pdf,application/pdf" required
+                                   onchange="manejarArchivo(this.files)">
+                        </div>
+                        
+                        <small class="text-muted d-block mt-2" style="font-size: 0.7rem;">
+                            <i class="fas fa-info-circle me-1"></i> 
+                            Solo se permiten archivos en formato PDF. Asegúrate de que el documento sea legible.
+                        </small>
+                    </div>
+
+                    <!-- Resumen de cambios -->
+                    <div class="mb-4">
+                        <label for="resumen" class="form-label small fw-bold text-uppercase mb-2" 
+                               style="color: var(--text-muted); letter-spacing: 0.5px;">
+                            <i class="fas fa-clipboard-list me-1"></i> Resumen de Cambios
+                        </label>
+                        <textarea name="resumen" id="resumen"
+                                  class="form-control form-control-custom" 
+                                  rows="4" 
+                                  placeholder="Describe los cambios, avances o correcciones incluidos en esta versión..."
+                                  required
+                                  oninput="contarPalabrasResumen()"></textarea>
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <small class="text-muted" style="font-size: 0.7rem;">
+                                <i class="fas fa-lightbulb me-1"></i> 
+                                Sé específico: menciona capítulos, secciones o páginas modificadas
+                            </small>
+                            <small id="contadorResumen" class="text-muted" style="font-size: 0.7rem;">0 palabras</small>
+                        </div>
+                    </div>
+
+                    <!-- Aviso de revisión pendiente -->
+                    {% if proyecto.versiones.last and proyecto.versiones.last.revisiones.last.estado == 'Observado' %}
+                    <div class="alert border-0 rounded-4 p-3 mb-4 d-flex align-items-start gap-2" 
+                         style="background: rgba(245, 158, 11, 0.1); border-left: 3px solid #f59e0b !important;">
+                        <i class="fas fa-exclamation-triangle mt-1 flex-shrink-0" style="color: #f59e0b;"></i>
+                        <div>
+                            <small class="fw-bold d-block mb-1" style="color: #f59e0b;">Versión anterior observada</small>
+                            <small style="color: var(--text-muted); font-size: 0.75rem;">
+                                Asegúrate de haber corregido las observaciones antes de subir una nueva versión.
+                            </small>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Checklist previa -->
+                    <div class="p-3 rounded-3 mb-4" style="background: var(--nav-active-bg);">
+                        <small class="fw-bold text-uppercase d-block mb-2" 
+                               style="color: var(--text-muted); font-size: 0.6rem; letter-spacing: 0.5px;">
+                            <i class="fas fa-tasks me-1"></i> Antes de enviar, verifica:
+                        </small>
+                        <div class="form-check mb-1">
+                            <input class="form-check-input form-check-input-custom" type="checkbox" id="check1">
+                            <label class="form-check-label small" for="check1" style="color: var(--text-muted); cursor: pointer; font-size: 0.75rem;">
+                                El documento está en formato PDF
+                            </label>
+                        </div>
+                        <div class="form-check mb-1">
+                            <input class="form-check-input form-check-input-custom" type="checkbox" id="check2">
+                            <label class="form-check-label small" for="check2" style="color: var(--text-muted); cursor: pointer; font-size: 0.75rem;">
+                                He revisado la ortografía y formato
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input form-check-input-custom" type="checkbox" id="check3">
+                            <label class="form-check-label small" for="check3" style="color: var(--text-muted); cursor: pointer; font-size: 0.75rem;">
+                                El resumen describe claramente los cambios
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+                        <a href="{% url 'dashboard_estudiante' %}" class="btn btn-secondary-custom flex-grow-1 py-3 rounded-4">
+                            <i class="fas fa-times me-2"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom flex-grow-1 py-3 rounded-4 shadow fw-bold" 
+                                id="btnEnviar">
+                            <i class="fas fa-paper-plane me-2"></i> ENVIAR VERSIÓN
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Historial rápido -->
+            {% if proyecto.versiones.count > 0 %}
+            <div class="text-center mt-4">
+                <a href="{% url 'ver_historial' proyecto.id %}" class="text-decoration-none small fw-bold" 
+                   style="color: var(--primary);">
+                    <i class="fas fa-history me-1"></i> Ver historial de entregas ({{ proyecto.versiones.count }})
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de alerta -->
+<div id="alertModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4"
+                         id="alertIcon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-exclamation-triangle fa-2x text-white"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-2" id="alertTitle" style="color: var(--text-main);">Atención</h5>
+                <p class="mb-4" id="alertMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Mensaje de alerta
+                </p>
+                <button type="button" class="btn btn-modal-confirm w-100 py-2 rounded-3 fw-bold" data-bs-dismiss="modal">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="confirmModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 p-md-5 text-center">
+                <!-- Icono animado -->
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg"
+                         style="background: linear-gradient(135deg, #f59e0b, #f97316);">
+                        <i class="fas fa-paper-plane fa-2x text-white"></i>
+                    </div>
+                </div>
+                
+                <h4 class="fw-bold mb-2" style="color: var(--text-main);">¿Estás seguro de enviar esta versión?</h4>
+                <p class="mb-4" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Una vez enviada, será revisada por tu tutor.
+                </p>
+                
+                <div class="rounded-3 p-3 mb-4 text-start" style="background: var(--nav-active-bg); border-left: 3px solid #f59e0b;">
+                    <div class="d-flex align-items-start gap-2 mb-2">
+                        <i class="fas fa-file-pdf mt-1" style="color: #ef4444; font-size: 0.9rem;"></i>
+                        <div>
+                            <small class="d-block fw-bold" style="color: var(--text-main); font-size: 0.75rem;">DOCUMENTO</small>
+                            <small id="modalNombreArchivo" style="color: var(--text-muted); font-size: 0.7rem;">-</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-2">
+                        <i class="fas fa-clipboard-list mt-1" style="color: var(--primary); font-size: 0.9rem;"></i>
+                        <div>
+                            <small class="d-block fw-bold" style="color: var(--text-main); font-size: 0.75rem;">RESUMEN DE CAMBIOS</small>
+                            <small id="modalResumenPreview" style="color: var(--text-muted); font-size: 0.7rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">-</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-start mb-4 p-2">
+                    <small class="fw-bold d-block mb-2" style="color: var(--text-main); font-size: 0.7rem;">
+                        <i class="fas fa-check-circle me-1" style="color: #10b981;"></i> Verifica antes de continuar:
+                    </small>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="fas fa-check-circle" style="color: #10b981; font-size: 0.7rem;"></i>
+                        <small style="color: var(--text-muted); font-size: 0.7rem;">El documento está en formato PDF</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="fas fa-check-circle" style="color: #10b981; font-size: 0.7rem;"></i>
+                        <small style="color: var(--text-muted); font-size: 0.7rem;">He revisado la ortografía y formato</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-check-circle" style="color: #10b981; font-size: 0.7rem;"></i>
+                        <small style="color: var(--text-muted); font-size: 0.7rem;">El resumen describe claramente los cambios</small>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-modal-cancel flex-grow-1 py-2 rounded-3" 
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-modal-confirm flex-grow-1 py-2 rounded-3 fw-bold" 
+                            id="confirmarEnvioBtn">
+                        <i class="fas fa-paper-plane me-2"></i> ENVIAR VERSIÓN
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables globales
+    let archivoSeleccionado = null;
+    let confirmModal = null;
+    let alertModal = null;
+    
+    // Función para mostrar alertas estilizadas
+    function mostrarAlerta(titulo, mensaje, tipo = 'error') {
+        const alertIcon = document.getElementById('alertIcon');
+        const alertTitle = document.getElementById('alertTitle');
+        const alertMessage = document.getElementById('alertMessage');
+        
+        if (tipo === 'error') {
+            alertIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle fa-2x text-white"></i>';
+        } else if (tipo === 'warning') {
+            alertIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-circle fa-2x text-white"></i>';
+        } else if (tipo === 'success') {
+            alertIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            alertIcon.innerHTML = '<i class="fas fa-check-circle fa-2x text-white"></i>';
+        }
+        
+        alertTitle.textContent = titulo;
+        alertMessage.textContent = mensaje;
+        
+        if (alertModal) {
+            alertModal.show();
+        }
+    }
+    
+    // Manejar archivo seleccionado
+    function manejarArchivo(files) {
+        if (!files || files.length === 0) return;
+        
+        const file = files[0];
+        const dropzone = document.getElementById('dropzone');
+        const dropzoneEmpty = document.getElementById('dropzone-empty');
+        const dropzoneFilled = document.getElementById('dropzone-filled');
+        const dropzoneError = document.getElementById('dropzone-error');
+        const nombreArchivo = document.getElementById('nombreArchivo');
+        const tamanoArchivo = document.getElementById('tamanoArchivo');
+        
+        // Resetear clases
+        dropzone.classList.remove('has-file', 'has-error');
+        
+        // Validar tipo PDF
+        if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+            dropzoneEmpty.style.display = 'none';
+            dropzoneFilled.style.display = 'none';
+            dropzoneError.style.display = 'flex';
+            dropzone.classList.add('has-error');
+            archivoSeleccionado = null;
+            mostrarAlerta('Formato no válido', 'Solo se permiten archivos en formato PDF.', 'error');
+            return;
+        }
+        
+        // Archivo válido
+        archivoSeleccionado = file;
+        dropzoneEmpty.style.display = 'none';
+        dropzoneError.style.display = 'none';
+        dropzoneFilled.style.display = 'flex';
+        dropzone.classList.add('has-file');
+        
+        nombreArchivo.textContent = file.name;
+        tamanoArchivo.textContent = formatearTamano(file.size);
+    }
+    
+    // Eliminar archivo
+    function eliminarArchivo() {
+        archivoSeleccionado = null;
+        document.getElementById('archivoInput').value = '';
+        
+        const dropzone = document.getElementById('dropzone');
+        const dropzoneEmpty = document.getElementById('dropzone-empty');
+        const dropzoneFilled = document.getElementById('dropzone-filled');
+        const dropzoneError = document.getElementById('dropzone-error');
+        
+        dropzone.classList.remove('has-file', 'has-error');
+        dropzoneEmpty.style.display = 'flex';
+        dropzoneFilled.style.display = 'none';
+        dropzoneError.style.display = 'none';
+    }
+    
+    // Formatear tamaño de archivo
+    function formatearTamano(bytes) {
+        if (bytes === 0) return '0 B';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        if (bytes < 1073741824) return (bytes / 1048576).toFixed(2) + ' MB';
+        return (bytes / 1073741824).toFixed(2) + ' GB';
+    }
+    
+    // Drag and drop handlers
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('dropzone').classList.add('dragover');
+    }
+    
+    function handleDragLeave(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('dropzone').classList.remove('dragover');
+    }
+    
+    function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('dropzone').classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        document.getElementById('archivoInput').files = files;
+        manejarArchivo(files);
+    }
+    
+    // Contador de palabras del resumen
+    function contarPalabrasResumen() {
+        const resumen = document.getElementById('resumen');
+        const contador = document.getElementById('contadorResumen');
+        const texto = resumen.value.trim();
+        const palabras = texto ? texto.split(/\s+/).length : 0;
+        
+        contador.textContent = palabras + ' palabras';
+        contador.style.color = (palabras < 10 && texto.length > 0) ? '#f59e0b' : (palabras >= 10 ? '#10b981' : '');
+    }
+    
+    // Mostrar modal de confirmación
+    function mostrarModalConfirmacion() {
+        const archivo = archivoSeleccionado;
+        const resumen = document.getElementById('resumen').value.trim();
+        const check1 = document.getElementById('check1').checked;
+        const check2 = document.getElementById('check2').checked;
+        const check3 = document.getElementById('check3').checked;
+        
+        if (!archivo) {
+            mostrarAlerta('Archivo requerido', 'Por favor selecciona un archivo PDF para subir.', 'warning');
+            return false;
+        }
+        
+        if (resumen.length < 10) {
+            mostrarAlerta('Resumen muy corto', 'El resumen de cambios debe tener al menos 10 caracteres.', 'warning');
+            document.getElementById('resumen').focus();
+            return false;
+        }
+        
+        if (!check1 || !check2 || !check3) {
+            mostrarAlerta('Checklist incompleta', 'Por favor verifica todos los puntos de la checklist antes de enviar.', 'warning');
+            return false;
+        }
+        
+        document.getElementById('modalNombreArchivo').textContent = archivo.name;
+        const previewResumen = resumen.length > 80 ? resumen.substring(0, 80) + '...' : resumen;
+        document.getElementById('modalResumenPreview').textContent = previewResumen;
+        
+        if (confirmModal) {
+            confirmModal.show();
+        }
+        return true;
+    }
+    
+    // Enviar formulario
+    function enviarFormulario() {
+        const btn = document.getElementById('btnEnviar');
+        const form = document.getElementById('formEntrega');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> SUBIENDO DOCUMENTO...';
+        form.submit();
+    }
+    
+    // Interceptar submit del formulario
+    document.getElementById('formEntrega').addEventListener('submit', function(e) {
+        e.preventDefault();
+        mostrarModalConfirmacion();
+    });
+    
+    // Inicializar modales y contador
+    document.addEventListener('DOMContentLoaded', function() {
+        contarPalabrasResumen();
+        
+        const confirmModalEl = document.getElementById('confirmModal');
+        if (confirmModalEl) {
+            confirmModal = new bootstrap.Modal(confirmModalEl);
+            document.getElementById('confirmarEnvioBtn').addEventListener('click', function() {
+                confirmModal.hide();
+                enviarFormulario();
+            });
+        }
+        
+        const alertModalEl = document.getElementById('alertModal');
+        if (alertModalEl) {
+            alertModal = new bootstrap.Modal(alertModalEl);
+        }
+    });
+</script>
+{% endblock %}

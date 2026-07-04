@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .carrera-form-wrapper,
+    .carrera-form-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .carrera-form-wrapper .text-muted,
+    .carrera-form-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .carrera-form-wrapper .text-primary,
+    .carrera-form-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-primary-custom {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+        font-weight: 700 !important;
+        width: 100% !important;
+    }
+    .btn-primary-custom:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+        color: #fff !important;
+    }
+    .btn-primary-custom:disabled {
+        opacity: 0.7 !important;
+        transform: none !important;
+    }
+
+    /* ===== FORMULARIO ===== */
+    .form-control-custom,
+    .form-select-custom {
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.75rem 1.25rem !important;
+        width: 100% !important;
+    }
+    .form-control-custom:focus,
+    .form-select-custom:focus {
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+    }
+    .form-control-custom::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7 !important;
+    }
+
+    .form-select-custom option {
+        background-color: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        padding: 0.5rem !important;
+    }
+    .form-select-custom option:hover {
+        background-color: var(--primary-light) !important;
+    }
+
+    /* ===== LABELS ===== */
+    .form-label-custom {
+        color: var(--text-muted) !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        margin-bottom: 0.5rem !important;
+        display: block !important;
+    }
+
+    /* ===== ENLACE ===== */
+    .link-back {
+        color: var(--text-muted) !important;
+        text-decoration: none !important;
+        font-size: 0.85rem !important;
+        transition: color 0.2s ease !important;
+    }
+    .link-back:hover {
+        color: var(--primary) !important;
+    }
+
+    /* ===== CARD ===== */
+    .card-animated {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 24px !important;
+        padding: 1.5rem !important;
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .card-animated {
+        animation: slideUp 0.5s ease;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 575px) {
+        .card-animated { border-radius: 16px !important; padding: 1.25rem !important; }
+    }
+</style>
+
+<div class="carrera-form-wrapper">
+    <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+        <div class="col-12 col-md-6 col-lg-5">
+            <div class="text-center mb-4 mb-md-5">
+                {% if c %}
+                    <h2 class="fw-bold h4 h3-md" style="color: var(--text-main);">Editar Carrera</h2>
+                    <p style="color: var(--text-muted);">Actualiza los datos del programa académico.</p>
+                {% else %}
+                    <h2 class="fw-bold h4 h3-md" style="color: var(--text-main);">Configurar Carrera</h2>
+                    <p style="color: var(--text-muted);">Define los datos del programa académico.</p>
+                {% endif %}
+            </div>
+
+            <div class="card border-0 shadow-lg card-animated">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label-custom">Nombre de la Carrera</label>
+                        <input type="text" name="nombre" class="form-control form-control-custom" 
+                               value="{% if c %}{{ c.nombre }}{% endif %}" 
+                               placeholder="Ej: Ingeniería de Software" required>
+                    </div>
+                    
+                    <!-- Facultad como menú desplegable -->
+                    <div class="mb-4 mb-md-5">
+                        <label class="form-label-custom">Facultad</label>
+                        <select name="facultad" class="form-select form-select-custom" required>
+                            <option value="" disabled {% if not c %}selected{% endif %}>Selecciona una facultad...</option>
+                            <option value="Salud" {% if c.facultad == 'Salud' %}selected{% endif %}>Ciencias de la Salud</option>
+                            <option value="Ingenieria" {% if c.facultad == 'Ingenieria' %}selected{% endif %}>Ingeniería</option>
+                            <option value="Juridicas" {% if c.facultad == 'Juridicas' %}selected{% endif %}>Ciencias Jurídicas y Políticas</option>
+                            <option value="Economicas" {% if c.facultad == 'Economicas' %}selected{% endif %}>Ciencias Económicas y Sociales</option>
+                            <option value="Educacion" {% if c.facultad == 'Educacion' %}selected{% endif %}>Ciencias de la Educación</option>
+                            <option value="Odontologia" {% if c.facultad == 'Odontologia' %}selected{% endif %}>Odontología</option>
+                            <option value="Tecnologia" {% if c.facultad == 'Tecnologia' %}selected{% endif %}>Ciencias y Tecnología</option>
+                            <option value="Otra" {% if c.facultad == 'Otra' %}selected{% endif %}>Otra</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-custom">
+                        {% if c %}ACTUALIZAR CARRERA{% else %}GUARDAR CARRERA{% endif %}
+                    </button>
+                </form>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{% url 'carrera_lista' %}" class="link-back">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al listado
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

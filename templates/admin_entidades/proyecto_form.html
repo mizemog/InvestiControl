@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .proyecto-form-wrapper,
+    .proyecto-form-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .proyecto-form-wrapper .text-muted,
+    .proyecto-form-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .proyecto-form-wrapper .text-primary,
+    .proyecto-form-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepciones para colores semánticos fijos */
+    .proyecto-form-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .proyecto-form-wrapper .text-warning {
+        color: #f59e0b !important;
+    }
+    .proyecto-form-wrapper .text-danger {
+        color: #ef4444 !important;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-primary-custom {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+        font-weight: 700 !important;
+    }
+    .btn-primary-custom:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+        color: #fff !important;
+    }
+    .btn-primary-custom:disabled {
+        opacity: 0.7 !important;
+        transform: none !important;
+    }
+
+    .btn-secondary-custom {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+        font-weight: 700 !important;
+    }
+    .btn-secondary-custom:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== FORMULARIO ===== */
+    .form-control-custom,
+    .form-select-custom {
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.75rem 1.25rem !important;
+    }
+    .form-control-custom:focus,
+    .form-select-custom:focus {
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+    }
+    .form-control-custom::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7 !important;
+    }
+
+    /* ===== SELECTORES MÚLTIPLES ===== */
+    select[multiple].form-select-custom {
+        min-height: 160px !important;
+        overflow-y: auto !important;
+    }
+    select[multiple].form-select-custom option {
+        padding: 0.5rem 0.75rem !important;
+        border-radius: 8px !important;
+        margin: 0.2rem 0 !important;
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        transition: background 0.2s ease !important;
+    }
+    select[multiple].form-select-custom option:checked {
+        background: var(--primary) !important;
+        color: #fff !important;
+    }
+    select[multiple].form-select-custom option:hover {
+        background: var(--primary-light) !important;
+    }
+    select[multiple].form-select-custom::-webkit-scrollbar {
+        width: 6px;
+    }
+    select[multiple].form-select-custom::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    select[multiple].form-select-custom::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 6px;
+    }
+
+    /* ===== WIDGET DE MÉTRICAS ===== */
+    .metric-card {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border-radius: 24px !important;
+        padding: 1.5rem !important;
+    }
+    .metric-card * {
+        color: #fff !important;
+    }
+    .metric-card .progress {
+        background: rgba(255,255,255,0.2) !important;
+        height: 10px !important;
+        border-radius: 10px !important;
+    }
+    .metric-card .progress-bar {
+        background: #fff !important;
+        border-radius: 10px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    }
+    .metric-card .badge {
+        background: rgba(255,255,255,0.2) !important;
+        color: #fff !important;
+    }
+
+    /* ===== CARDS DE DETALLES ===== */
+    .detail-card {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 24px !important;
+        padding: 1.25rem !important;
+    }
+    .detail-card .icon {
+        width: 20px;
+        color: var(--text-muted);
+    }
+
+    /* ===== SWITCH MODO INCÓGNITO ===== */
+    .incognito-switch {
+        background: rgba(99, 102, 241, 0.05) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
+        padding: 0.75rem !important;
+    }
+    .incognito-switch .form-check-input {
+        cursor: pointer !important;
+        background-color: var(--nav-active-bg) !important;
+        border-color: var(--border) !important;
+    }
+    .incognito-switch .form-check-input:checked {
+        background-color: var(--primary) !important;
+        border-color: var(--primary) !important;
+    }
+    .incognito-switch .form-check-label {
+        cursor: pointer !important;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 991px) {
+        .card { border-radius: 16px !important; }
+        .display-5 { font-size: 2rem !important; }
+    }
+    @media (max-width: 575px) {
+        .card { border-radius: 12px !important; }
+        .display-5 { font-size: 1.8rem !important; }
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .card-animated {
+        animation: slideUp 0.5s ease;
+    }
+</style>
+
+<div class="proyecto-form-wrapper">
+    <div class="d-flex align-items-start mb-4 mb-md-5">
+        <a href="{% url 'dashboard_coordinador' %}" class="btn btn-action-icon me-3 flex-shrink-0 mt-1">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Gestión de Proyecto</h2>
+            <p class="text-muted small mb-0" style="color: var(--text-muted);">Control de asignaciones y estatus de investigación.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Formulario Principal -->
+        <div class="col-12 col-lg-8 order-2 order-lg-1">
+            <div class="card border-0 shadow-sm p-3 p-md-5 card-animated" 
+                 style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
+                <form method="post">
+                    {% csrf_token %}
+                    <h5 class="fw-bold mb-4 d-flex align-items-center gap-2" style="color: var(--text-main);">
+                        <i class="fas fa-cog" style="color: var(--primary);"></i> Configuración General
+                    </h5>
+                    
+                    <!-- Título -->
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="color: var(--text-muted);">
+                            <i class="fas fa-heading me-1"></i> Título del Proyecto
+                        </label>
+                        <input type="text" name="titulo" class="form-control form-control-custom" 
+                               value="{{ p.titulo }}" placeholder="Ingresa el título completo de la investigación">
+                    </div>
+
+                    <!-- Tipo, Estado e Incógnito -->
+                    <div class="row g-3 g-md-4 mb-4">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold text-muted text-uppercase" style="color: var(--text-muted);">
+                                <i class="fas fa-flask me-1"></i> Tipo de Investigación
+                            </label>
+                            <select name="tipo" class="form-select form-select-custom mb-3">
+                                <option value="Tesis" {% if p.tipo == 'Tesis' %}selected{% endif %}>📄 Tesis de Grado</option>
+                                <option value="Articulo" {% if p.tipo == 'Articulo' %}selected{% endif %}>📝 Artículo Científico</option>
+                                <option value="Proyecto" {% if p.tipo == 'Proyecto' %}selected{% endif %}>🔬 Proyecto de Investigación</option>
+                                <option value="Monografia" {% if p.tipo == 'Monografia' %}selected{% endif %}>📚 Monografía</option>
+                            </select>
+                            
+                            <!-- Modo Incógnito -->
+                            <div class="incognito-switch">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input ms-0 me-2" type="checkbox" name="tutores_incognito" id="incognitoCheck" 
+                                           {% if p.tutores_incognito %}checked{% endif %}>
+                                    <label class="form-check-label small fw-bold text-muted" for="incognitoCheck" style="color: var(--text-muted);">
+                                        <i class="fas fa-user-secret me-1"></i> MODO INCÓGNITO (OCULTAR TUTORES)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold text-muted text-uppercase" style="color: var(--text-muted);">
+                                <i class="fas fa-flag me-1"></i> Estatus Académico
+                            </label>
+                            <select name="estado" class="form-select form-select-custom">
+                                <option value="En Progreso" {% if p.estado == 'En Progreso' %}selected{% endif %}>🟡 En Progreso</option>
+                                <option value="Observado" {% if p.estado == 'Observado' %}selected{% endif %}>🟠 Observado</option>
+                                <option value="Aprobado" {% if p.estado == 'Aprobado' %}selected{% endif %}>🟢 Aprobado</option>
+                                <option value="Cancelado" {% if p.estado == 'Cancelado' %}selected{% endif %}>🔴 Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Selección de Personal -->
+                    <div class="row g-3 g-md-4 mb-4 mb-md-5">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-2" style="color: var(--text-muted);">
+                                <i class="fas fa-chalkboard-teacher me-1"></i> Tutores Asignados
+                                <span class="badge rounded-pill ms-1" style="background: var(--primary-light); color: var(--primary); font-size: 0.65rem;" id="tutores-count">
+                                    {{ p.profesores.all|length }} seleccionados
+                                </span>
+                            </label>
+                            <select name="profesores" class="form-select form-select-custom" multiple 
+                                    onchange="updateCount('tutores-count', this)">
+                                {% for prof in profesores %}
+                                <option value="{{ prof.id }}" {% if prof in p.profesores.all %}selected{% endif %}>
+                                    👨‍🏫 {{ prof.get_full_name|default:prof.username }}
+                                </option>
+                                {% empty %}
+                                <option disabled class="text-muted py-2">No hay profesores disponibles</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted mt-1 d-block" style="font-size: 0.7rem;">
+                                <i class="fas fa-info-circle me-1"></i> Mantén Ctrl/Cmd para seleccionar varios
+                            </small>
+                        </div>
+                        
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-2" style="color: var(--text-muted);">
+                                <i class="fas fa-user-graduate me-1"></i> Equipo Estudiantil
+                                <span class="badge rounded-pill ms-1" style="background: var(--primary-light); color: var(--primary); font-size: 0.65rem;" id="estudiantes-count">
+                                    {{ p.estudiantes.all|length }} seleccionados
+                                </span>
+                            </label>
+                            <select name="estudiantes" class="form-select form-select-custom" multiple 
+                                    onchange="updateCount('estudiantes-count', this)">
+                                {% for est in estudiantes %}
+                                <option value="{{ est.id }}" {% if est in p.estudiantes.all %}selected{% endif %}>
+                                    🎓 {{ est.get_full_name|default:est.username }}
+                                </option>
+                                {% empty %}
+                                <option disabled class="text-muted py-2">No hay estudiantes disponibles</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted mt-1 d-block" style="font-size: 0.7rem;">
+                                <i class="fas fa-info-circle me-1"></i> Mantén Ctrl/Cmd para seleccionar varios
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+                        <a href="{% url 'dashboard_coordinador' %}" class="btn btn-secondary-custom flex-grow-1 py-3 rounded-4">
+                            <i class="fas fa-times me-2"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom flex-grow-1 py-3 rounded-4 shadow fw-bold">
+                            <i class="fas fa-save me-2"></i> GUARDAR CAMBIOS
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Widgets de Estado (Sidebar Derecha) -->
+        <div class="col-12 col-lg-4 order-1 order-lg-2">
+            <!-- Métricas -->
+            <div class="metric-card mb-4">
+                <h6 class="fw-bold text-uppercase opacity-75 mb-4 d-flex align-items-center gap-2">
+                    <i class="fas fa-chart-line"></i> Métricas de Avance
+                </h6>
+                <div class="mb-4 text-center">
+                    <span class="display-5 fw-bold d-block">{{ p.porcentaje_avance }}%</span>
+                    <div class="progress bg-white bg-opacity-20 mt-3">
+                        <div class="progress-bar bg-white shadow" 
+                             style="width: {{ p.porcentaje_avance }}%;"></div>
+                    </div>
+                    <small class="d-block mt-2 opacity-75">
+                        {% if p.porcentaje_avance >= 80 %}
+                            🚀 Casi listo
+                        {% elif p.porcentaje_avance >= 50 %}
+                            📈 Buen progreso
+                        {% elif p.porcentaje_avance >= 25 %}
+                            ⏳ Avanzando
+                        {% else %}
+                            🌱 Etapa inicial
+                        {% endif %}
+                    </small>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="opacity-75">Situación Académica:</small>
+                    <span class="badge bg-white bg-opacity-20 rounded-pill px-3 py-2">
+                        {{ p.estado|upper }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Detalles -->
+            <div class="detail-card mb-4">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2" style="color: var(--text-main);">
+                    <i class="fas fa-info-circle" style="color: var(--primary);"></i> Detalles de Registro
+                </h6>
+                <div class="small mb-3 d-flex align-items-center" style="color: var(--text-muted);">
+                    <i class="far fa-calendar-alt me-2" style="width: 20px;"></i> 
+                    <span>Creado: <strong style="color: var(--text-main);">{{ p.fecha_inicio|date:"d M, Y" }}</strong></span>
+                </div>
+                {% if p.carrera %}
+                <div class="small mb-3 d-flex align-items-center" style="color: var(--text-muted);">
+                    <i class="fas fa-university me-2" style="width: 20px;"></i> 
+                    <span>Carrera: <strong style="color: var(--text-main);">{{ p.carrera.nombre }}</strong></span>
+                </div>
+                {% endif %}
+                {% if p.profesores.all %}
+                <div class="small mb-3" style="color: var(--text-muted);">
+                    <i class="fas fa-users me-2" style="width: 20px;"></i> 
+                    <span><strong style="color: var(--text-main);">{{ p.profesores.all|length }}</strong> tutor(es)</span>
+                </div>
+                {% endif %}
+                {% if p.estudiantes.all %}
+                <div class="small" style="color: var(--text-muted);">
+                    <i class="fas fa-user-graduate me-2" style="width: 20px;"></i> 
+                    <span><strong style="color: var(--text-main);">{{ p.estudiantes.all|length }}</strong> estudiante(s)</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Acciones rápidas -->
+            <div class="detail-card">
+                <h6 class="fw-bold mb-3" style="color: var(--text-main);">
+                    <i class="fas fa-bolt me-2" style="color: var(--primary);"></i> Acciones Rápidas
+                </h6>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-sm text-start py-2" 
+                            style="background: var(--nav-active-bg); color: var(--text-main); border-radius: 10px; border: none;"
+                            onclick="window.location.href='{% url 'gestion_tesis_maestro' %}'">
+                        <i class="fas fa-file-pdf me-2" style="color: #ef4444;"></i> Ver Reportes
+                    </button>
+                    <button type="button" class="btn btn-sm text-start py-2" 
+                            style="background: var(--nav-active-bg); color: var(--text-main); border-radius: 10px; border: none;">
+                        <i class="fas fa-history me-2" style="color: var(--primary);"></i> Historial de Cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Actualizar contador de seleccionados
+    function updateCount(elementId, selectElement) {
+        const count = selectElement.selectedOptions.length;
+        const badge = document.getElementById(elementId);
+        if (badge) {
+            badge.textContent = count + ' seleccionados';
+        }
+    }
+    
+    // Inicializar contadores
+    document.addEventListener('DOMContentLoaded', function() {
+        const tutoresSelect = document.querySelector('select[name="profesores"]');
+        const estudiantesSelect = document.querySelector('select[name="estudiantes"]');
+        
+        if (tutoresSelect) updateCount('tutores-count', tutoresSelect);
+        if (estudiantesSelect) updateCount('estudiantes-count', estudiantesSelect);
+    });
+</script>
+{% endblock %}

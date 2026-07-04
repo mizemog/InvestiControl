@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .plantilla-wrapper,
+    .plantilla-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .plantilla-wrapper .text-muted,
+    .plantilla-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .plantilla-wrapper .text-primary,
+    .plantilla-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepciones para colores semánticos fijos */
+    .plantilla-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .plantilla-wrapper .text-danger {
+        color: #ef4444 !important;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-primary-custom {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+        border-radius: 50px !important;
+        padding: 0.5rem 1.5rem !important;
+        font-weight: 700 !important;
+    }
+    .btn-primary-custom:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+        color: #fff !important;
+    }
+
+    .btn-action-config {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.4rem 0.75rem !important;
+        font-size: 0.85rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-action-config:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+        transform: translateY(-1px);
+    }
+
+    .btn-action-delete {
+        background: rgba(239, 68, 68, 0.1) !important;
+        color: #ef4444 !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.4rem 0.75rem !important;
+        font-size: 0.85rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-action-delete:hover {
+        background: rgba(239, 68, 68, 0.2) !important;
+        transform: scale(1.02);
+    }
+
+    /* ===== MODALES ===== */
+    .modal-content-custom {
+        background: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 24px !important;
+    }
+    .modal-content-custom .modal-body {
+        color: var(--text-main) !important;
+    }
+    .modal-content-custom .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    .btn-modal-confirm {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+        border-radius: 12px !important;
+        padding: 0.5rem 1rem !important;
+        font-weight: 700 !important;
+    }
+    .btn-modal-confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        color: #fff !important;
+    }
+
+    .btn-modal-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+        border-radius: 12px !important;
+        padding: 0.5rem 1rem !important;
+        font-weight: 700 !important;
+    }
+    .btn-modal-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        color: #fff !important;
+    }
+
+    .btn-modal-cancel {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        font-weight: 500 !important;
+        border-radius: 12px !important;
+        padding: 0.5rem 1rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-modal-cancel:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== TARJETAS ===== */
+    .plantilla-card {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 20px !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        height: 100% !important;
+    }
+    .plantilla-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1) !important;
+    }
+
+    .plantilla-card .margin-badge {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-muted) !important;
+        border-radius: 8px !important;
+        padding: 0.3rem 0.5rem !important;
+        font-size: 0.7rem !important;
+        display: block !important;
+        text-align: left !important;
+    }
+
+    /* ===== ESTADO VACÍO ===== */
+    .empty-state-icon {
+        background: var(--nav-active-bg) !important;
+        padding: 1.5rem !important;
+        border-radius: 50% !important;
+        display: inline-block !important;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 575px) {
+        .plantilla-card { border-radius: 16px !important; }
+        .btn-action-config, .btn-action-delete { font-size: 0.75rem !important; padding: 0.3rem 0.6rem !important; }
+        .btn-primary-custom { font-size: 0.85rem !important; padding: 0.4rem 1rem !important; }
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .plantilla-card {
+        animation: fadeIn 0.3s ease;
+    }
+</style>
+
+<div class="plantilla-wrapper">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 mb-md-5 gap-3">
+        <div>
+            <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Formatos de Reporte</h2>
+            <p class="mb-0" style="color: var(--text-muted);">Configuración de membretes, márgenes y pies de página oficiales.</p>
+        </div>
+        <a href="{% url 'plantilla_crear' %}" class="btn btn-primary-custom w-100 w-md-auto">
+            <i class="fas fa-plus me-2"></i> Nuevo Formato
+        </a>
+    </div>
+
+    {% if plantillas %}
+    <div class="row g-3 g-md-4">
+        {% for p in plantillas %}
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="card plantilla-card">
+                <div class="card-body p-4 d-flex flex-column">
+                    <!-- Header de la card -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="p-3 rounded-4 flex-shrink-0" style="background: rgba(99, 102, 241, 0.15); color: var(--primary);">
+                            <i class="fas fa-file-invoice fa-lg"></i>
+                        </div>
+                        {% if p.es_predeterminada %}
+                            <span class="badge rounded-pill px-3 py-2 ms-2 flex-shrink-0" 
+                                  style="background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 0.65rem; white-space: nowrap;">
+                                <i class="fas fa-star me-1"></i> PREDETERMINADO
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Contenido principal -->
+                    <h5 class="fw-bold mb-2 text-truncate" style="color: var(--text-main);" title="{{ p.nombre }}">
+                        {{ p.nombre }}
+                    </h5>
+                    
+                    {% if p.encabezado %}
+                    <p class="small mb-2 text-truncate" style="color: var(--text-muted);" title="{{ p.encabezado }}">
+                        <i class="fas fa-heading me-1 opacity-50"></i> {{ p.encabezado|truncatechars:60 }}
+                    </p>
+                    {% endif %}
+                    
+                    <!-- Info de márgenes -->
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-2" style="color: var(--text-muted);">
+                            <i class="fas fa-arrows-alt me-1 opacity-50"></i> Márgenes:
+                        </small>
+                        <div class="row g-1">
+                            <div class="col-6">
+                                <span class="margin-badge">
+                                    <i class="fas fa-arrow-up me-1 opacity-75"></i> Sup: {{ p.margen_superior }}px
+                                </span>
+                            </div>
+                            <div class="col-6">
+                                <span class="margin-badge">
+                                    <i class="fas fa-arrow-left me-1 opacity-75"></i> Izq: {{ p.margen_izquierdo }}px
+                                </span>
+                            </div>
+                            <div class="col-6">
+                                <span class="margin-badge">
+                                    <i class="fas fa-arrow-down me-1 opacity-75"></i> Inf: {{ p.margen_inferior }}px
+                                </span>
+                            </div>
+                            <div class="col-6">
+                                <span class="margin-badge">
+                                    <i class="fas fa-arrow-right me-1 opacity-75"></i> Der: {{ p.margen_derecho }}px
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer con acciones -->
+                    <div class="d-flex gap-2 pt-3 border-top mt-auto" style="border-color: var(--border) !important;">
+                        <a href="{% url 'plantilla_editar' p.id %}" 
+                           class="btn btn-action-config flex-grow-1 d-flex align-items-center justify-content-center gap-1">
+                            <i class="fas fa-cog"></i> <span class="d-none d-sm-inline">Configurar</span>
+                        </a>
+                        {% if not p.es_predeterminada %}
+                        <button onclick="eliminarPlantilla({{ p.id }}, '{{ p.nombre|escapejs }}')" 
+                                class="btn btn-action-delete px-3 d-flex align-items-center justify-content-center"
+                                title="Eliminar plantilla">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Estado vacío mejorado -->
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <div class="empty-state-icon">
+                <i class="fas fa-file-invoice fa-3x" style="color: var(--text-muted); opacity: 0.5;"></i>
+            </div>
+        </div>
+        <h4 class="fw-bold mb-2" style="color: var(--text-main);">No hay formatos de reporte</h4>
+        <p class="mb-4" style="color: var(--text-muted); max-width: 400px; margin: 0 auto;">
+            Crea tu primera plantilla para definir membretes, márgenes y pies de página estándar.
+        </p>
+        <a href="{% url 'plantilla_crear' %}" class="btn btn-primary-custom px-4 py-2">
+            <i class="fas fa-plus me-2"></i> Crear Primer Formato
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Modal de alerta -->
+    <div id="alertModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4"
+                             id="alertIcon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                            <i class="fas fa-exclamation-triangle fa-2x text-white"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold mb-2" id="alertTitle" style="color: var(--text-main);">Atención</h5>
+                    <p class="mb-4" id="alertMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                        Mensaje de alerta
+                    </p>
+                    <button type="button" class="btn btn-modal-confirm w-100 py-2 rounded-3 fw-bold" data-bs-dismiss="modal">
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para eliminación -->
+    <div id="confirmModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-body p-4 p-md-5 text-center">
+                    <div class="mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg"
+                             style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                            <i class="fas fa-trash-alt fa-2x text-white"></i>
+                        </div>
+                    </div>
+                    
+                    <h4 class="fw-bold mb-2" style="color: var(--text-main);" id="confirmTitle">¿Eliminar plantilla?</h4>
+                    <p class="mb-4" style="color: var(--text-muted); font-size: 0.9rem;" id="confirmMessage">
+                        Esta acción no se puede deshacer.
+                    </p>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-modal-cancel flex-grow-1 py-2 rounded-3" 
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="button" class="btn btn-modal-danger flex-grow-1 py-2 rounded-3 fw-bold" 
+                                id="confirmarEliminacionBtn">
+                            <i class="fas fa-trash-alt me-2"></i> ELIMINAR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario oculto para eliminación -->
+    <form id="eliminar-form" method="post" action="" style="display: none;">
+        {% csrf_token %}
+    </form>
+</div>
+
+<script>
+    // Variables globales
+    let alertModal = null;
+    let confirmModal = null;
+    let pendingDeleteId = null;
+    let pendingDeleteName = null;
+    
+    // Función para mostrar alertas estilizadas
+    function mostrarAlerta(titulo, mensaje, tipo = 'error') {
+        const alertIcon = document.getElementById('alertIcon');
+        const alertTitle = document.getElementById('alertTitle');
+        const alertMessage = document.getElementById('alertMessage');
+        
+        if (tipo === 'error') {
+            alertIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle fa-2x text-white"></i>';
+        } else if (tipo === 'warning') {
+            alertIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-circle fa-2x text-white"></i>';
+        } else if (tipo === 'success') {
+            alertIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            alertIcon.innerHTML = '<i class="fas fa-check-circle fa-2x text-white"></i>';
+        }
+        
+        alertTitle.textContent = titulo;
+        alertMessage.textContent = mensaje;
+        
+        if (alertModal) {
+            alertModal.show();
+        }
+    }
+    
+    // Función para mostrar modal de confirmación de eliminación
+    function mostrarConfirmacionEliminacion(id, nombre) {
+        pendingDeleteId = id;
+        pendingDeleteName = nombre;
+        
+        document.getElementById('confirmTitle').textContent = `¿Eliminar "${nombre}"?`;
+        document.getElementById('confirmMessage').textContent = 'Esta acción no se puede deshacer. La plantilla será eliminada permanentemente.';
+        
+        if (confirmModal) {
+            confirmModal.show();
+        }
+    }
+    
+    // Función para eliminar después de confirmar
+    function ejecutarEliminacion() {
+        if (pendingDeleteId) {
+            const form = document.getElementById('eliminar-form');
+            form.action = `/plantillas/${pendingDeleteId}/eliminar/`;
+            form.submit();
+        }
+    }
+    
+    // Inicializar modales
+    document.addEventListener('DOMContentLoaded', function() {
+        const alertModalElement = document.getElementById('alertModal');
+        if (alertModalElement) {
+            alertModal = new bootstrap.Modal(alertModalElement);
+        }
+        
+        const confirmModalElement = document.getElementById('confirmModal');
+        if (confirmModalElement) {
+            confirmModal = new bootstrap.Modal(confirmModalElement);
+            
+            const confirmBtn = document.getElementById('confirmarEliminacionBtn');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', function() {
+                    confirmModal.hide();
+                    ejecutarEliminacion();
+                });
+            }
+        }
+        
+        // Mostrar mensajes de éxito si hay parámetros en URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('eliminada') === 'success') {
+            mostrarAlerta('Plantilla eliminada', 'La plantilla ha sido eliminada correctamente.', 'success');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        if (urlParams.get('creada') === 'success') {
+            mostrarAlerta('Formato creado', 'El formato de reporte ha sido creado exitosamente.', 'success');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        if (urlParams.get('editada') === 'success') {
+            mostrarAlerta('Formato actualizado', 'El formato de reporte ha sido actualizado correctamente.', 'success');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+    
+    // Función global para eliminar plantilla
+    function eliminarPlantilla(id, nombre) {
+        if (confirmModal) {
+            mostrarConfirmacionEliminacion(id, nombre);
+        } else {
+            // Fallback por si el modal no está disponible
+            if (confirm(`¿Estás seguro de eliminar la plantilla "${nombre}"?\n\nEsta acción no se puede deshacer.`)) {
+                const form = document.getElementById('eliminar-form');
+                form.action = `/plantillas/${id}/eliminar/`;
+                form.submit();
+            }
+        }
+    }
+</script>
+{% endblock %}

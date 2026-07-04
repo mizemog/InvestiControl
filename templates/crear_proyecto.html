@@ -1,0 +1,633 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .crear-proyecto-wrapper,
+    .crear-proyecto-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .crear-proyecto-wrapper .text-muted,
+    .crear-proyecto-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .crear-proyecto-wrapper .text-primary,
+    .crear-proyecto-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepciones para colores semánticos fijos */
+    .crear-proyecto-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .crear-proyecto-wrapper .text-warning {
+        color: #f59e0b !important;
+    }
+    .crear-proyecto-wrapper .text-danger {
+        color: #ef4444 !important;
+    }
+    .crear-proyecto-wrapper .text-info {
+        color: #3b82f6 !important;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-primary-custom {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-primary-custom:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+        color: #fff !important;
+    }
+    .btn-primary-custom:disabled {
+        opacity: 0.7 !important;
+        transform: none !important;
+    }
+
+    .btn-secondary-custom {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-secondary-custom:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    .btn-modal-confirm {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-modal-confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        color: #fff !important;
+    }
+    .btn-modal-cancel {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        font-weight: 500 !important;
+    }
+    .btn-modal-cancel:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== FORMULARIO ===== */
+    .form-control-custom,
+    .form-select-custom {
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.75rem 1rem !important;
+    }
+    .form-control-custom:focus,
+    .form-select-custom:focus {
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+    }
+    .form-control-custom::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7 !important;
+    }
+
+    .input-group-text-custom {
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-muted) !important;
+        border: none !important;
+    }
+
+    textarea.form-control-custom {
+        resize: vertical;
+        min-height: 100px;
+        max-height: 300px;
+    }
+
+    /* ===== ALERTAS ===== */
+    .alert-danger-custom {
+        background: rgba(239, 68, 68, 0.1) !important;
+        color: #ef4444 !important;
+        border: none !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.85rem !important;
+    }
+    .alert-info-custom {
+        background: rgba(99, 102, 241, 0.1) !important;
+        color: var(--primary) !important;
+        border: none !important;
+        border-radius: 16px !important;
+        padding: 1rem !important;
+    }
+
+    /* ===== MODALES ===== */
+    .modal-content-custom {
+        background: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 24px !important;
+    }
+    .modal-content-custom .modal-body {
+        color: var(--text-main) !important;
+    }
+    .modal-content-custom .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    /* ===== BADGES DE PASOS ===== */
+    .step-badge {
+        padding: 0.4rem 1.2rem !important;
+        border-radius: 20px !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+    }
+    .step-badge.active {
+        background: var(--primary) !important;
+        color: #fff !important;
+    }
+    .step-badge.inactive {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-muted) !important;
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .card-animated {
+        animation: slideUp 0.5s ease;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 575px) {
+        .card { border-radius: 16px !important; }
+        .p-3.p-md-5 { padding: 1.5rem !important; }
+        .step-badge { padding: 0.3rem 0.8rem !important; font-size: 0.65rem !important; }
+    }
+</style>
+
+<div class="crear-proyecto-wrapper">
+    <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="col-11 col-sm-9 col-md-7 col-lg-6">
+            <!-- Encabezado -->
+            <div class="text-center mb-4 mb-md-5">
+                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg mb-4"
+                     style="background: var(--primary);">
+                    <i class="fas fa-folder-plus fa-2x text-white"></i>
+                </div>
+                <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Nueva Investigación</h2>
+                <p class="mb-0" style="color: var(--text-muted);">Inicia el registro oficial del proyecto en la plataforma</p>
+            </div>
+
+            <!-- Indicador de pasos -->
+            <div class="d-flex justify-content-center align-items-center gap-2 mb-4">
+                <span class="badge step-badge active">
+                    <i class="fas fa-edit me-1"></i> Datos Básicos
+                </span>
+                <i class="fas fa-chevron-right text-muted small"></i>
+                <span class="badge step-badge inactive">
+                    <i class="fas fa-users me-1"></i> Asignar Equipo
+                </span>
+                <i class="fas fa-chevron-right text-muted small"></i>
+                <span class="badge step-badge inactive">
+                    <i class="fas fa-check-circle me-1"></i> Confirmar
+                </span>
+            </div>
+
+            <!-- Tarjeta del Formulario -->
+            <div class="card border-0 shadow-lg p-3 p-md-5 card-animated" 
+                 style="background-color: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
+                
+                {% if form.errors %}
+                    <div class="alert alert-danger-custom mb-4 d-flex align-items-center gap-2">
+                        <i class="fas fa-exclamation-circle flex-shrink-0"></i>
+                        <span>Por favor corrige los errores en el formulario.</span>
+                    </div>
+                {% endif %}
+
+                <form method="post" id="formInvestigacion" autocomplete="off">
+                    {% csrf_token %}
+                    
+                    <!-- Título del Proyecto -->
+                    <div class="mb-4">
+                        <label for="titulo" class="form-label small fw-bold text-uppercase mb-2" 
+                               style="color: var(--text-muted); letter-spacing: 0.5px;">
+                            <i class="fas fa-heading me-1"></i> Título del Proyecto
+                        </label>
+                        <div class="input-group" style="border-radius: 12px; overflow: hidden;">
+                            <span class="input-group-text input-group-text-custom">
+                                <i class="fas fa-book"></i>
+                            </span>
+                            <input type="text" name="titulo" id="titulo"
+                                   class="form-control form-control-custom" 
+                                   placeholder="Ej: Análisis de Redes Neuronales Convolucionales..." 
+                                   required autofocus
+                                   oninput="contarCaracteres()">
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <small class="text-muted" style="font-size: 0.7rem;">
+                                <i class="fas fa-info-circle me-1"></i> Sé específico y descriptivo
+                            </small>
+                            <small id="contadorTitulo" class="text-muted" style="font-size: 0.7rem;">0/200</small>
+                        </div>
+                    </div>
+
+                    <!-- Carrera y Tipo -->
+                    <div class="row g-3 g-md-4 mb-4">
+                        <div class="col-12 col-md-6">
+                            <label for="carrera" class="form-label small fw-bold text-uppercase mb-2" 
+                                   style="color: var(--text-muted); letter-spacing: 0.5px;">
+                                <i class="fas fa-university me-1"></i> Carrera
+                            </label>
+                            <select name="carrera" id="carrera" 
+                                    class="form-select form-select-custom"
+                                    required>
+                                <option value="" disabled selected>Selecciona una carrera</option>
+                                {% for c in carreras %}
+                                    <option value="{{ c.id }}">{{ c.nombre }}</option>
+                                {% empty %}
+                                    <option disabled>No hay carreras disponibles</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="tipo" class="form-label small fw-bold text-uppercase mb-2" 
+                                   style="color: var(--text-muted); letter-spacing: 0.5px;">
+                                <i class="fas fa-flask me-1"></i> Tipo de Investigación
+                            </label>
+                            <select name="tipo" id="tipo" 
+                                    class="form-select form-select-custom"
+                                    onchange="actualizarDescripcionTipo()">
+                                <option value="Tesis" selected>📄 Tesis de Grado</option>
+                                <option value="Articulo">📝 Artículo Científico</option>
+                                <option value="Proyecto">🔬 Proyecto de Investigación</option>
+                                <option value="Monografia">📚 Monografía</option>
+                            </select>
+                            <small id="descripcionTipo" class="text-muted d-block mt-1" style="font-size: 0.7rem;">
+                                <i class="fas fa-info-circle me-1"></i> Trabajo de investigación extenso para obtención de título
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="mb-4">
+                        <label for="descripcion" class="form-label small fw-bold text-uppercase mb-2" 
+                               style="color: var(--text-muted); letter-spacing: 0.5px;">
+                            <i class="fas fa-align-left me-1"></i> Descripción / Resumen
+                        </label>
+                        <textarea name="descripcion" id="descripcion"
+                                  class="form-control form-control-custom" 
+                                  rows="4" 
+                                  placeholder="Describe brevemente el objetivo, metodología y alcance de la investigación..."
+                                  oninput="contarPalabras()"></textarea>
+                        <small id="contadorDescripcion" class="text-muted d-block mt-1" style="font-size: 0.7rem;">
+                            <i class="fas fa-info-circle me-1"></i> Mínimo 20 palabras recomendadas | <span id="palabrasCount">0</span> palabras
+                        </small>
+                    </div>
+
+                    <!-- Plantilla de documento (opcional) -->
+                    <div class="mb-4">
+                        <label for="plantilla" class="form-label small fw-bold text-uppercase mb-2" 
+                               style="color: var(--text-muted); letter-spacing: 0.5px;">
+                            <i class="fas fa-file-alt me-1"></i> Plantilla de Formato
+                        </label>
+                        <select name="plantilla" id="plantilla" 
+                                class="form-select form-select-custom">
+                            <option value="">Usar plantilla predeterminada</option>
+                            {% for p in plantillas %}
+                                <option value="{{ p.id }}">{{ p.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">
+                            <i class="fas fa-info-circle me-1"></i> Define membretes, márgenes y formato del documento final
+                        </small>
+                    </div>
+
+                    <!-- Aviso Informativo -->
+                    <div class="alert alert-info-custom d-flex align-items-start gap-3 mb-4">
+                        <i class="fas fa-lightbulb fa-lg flex-shrink-0 mt-1"></i>
+                        <div>
+                            <p class="small fw-bold mb-1">Siguientes pasos después del registro:</p>
+                            <ol class="small mb-0 ps-3" style="opacity: 0.9;">
+                                <li>Asignar estudiantes y tutores al proyecto</li>
+                                <li>Configurar fechas límite y cronograma</li>
+                                <li>Comenzar a recibir entregas y revisiones</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+                        <a href="{% url 'gestion_tesis_maestro' %}" class="btn btn-secondary-custom flex-grow-1 py-3 rounded-4">
+                            <i class="fas fa-times me-2"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom flex-grow-1 py-3 rounded-4 shadow fw-bold" 
+                                id="btnRegistrar">
+                            <i class="fas fa-arrow-right me-2"></i> REGISTRAR Y CONTINUAR
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Ayuda contextual -->
+            <div class="text-center mt-4">
+                <p class="small mb-0" style="color: var(--text-muted);">
+                    <i class="fas fa-question-circle me-1"></i> 
+                    ¿Necesitas ayuda? Consulta la 
+                    <a href="#" style="color: var(--primary);">guía de creación de proyectos</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de alerta -->
+<div id="alertModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4"
+                         id="alertIcon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-exclamation-triangle fa-2x text-white"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-2" id="alertTitle" style="color: var(--text-main);">Atención</h5>
+                <p class="mb-4" id="alertMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Mensaje de alerta
+                </p>
+                <button type="button" class="btn btn-modal-confirm w-100 py-2 rounded-3 fw-bold" data-bs-dismiss="modal">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="confirmModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 p-md-5 text-center">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg"
+                         id="confirmIcon" style="background: var(--primary);">
+                        <i class="fas fa-folder-plus fa-2x text-white"></i>
+                    </div>
+                </div>
+                
+                <h4 class="fw-bold mb-2" id="confirmTitle" style="color: var(--text-main);">¿Registrar proyecto?</h4>
+                <p class="mb-4" id="confirmMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Luego podrás asignar estudiantes y tutores al proyecto.
+                </p>
+                
+                <div class="rounded-3 p-3 mb-4 text-start" style="background: var(--nav-active-bg); border-left: 3px solid var(--primary);">
+                    <div class="d-flex align-items-start gap-2 mb-2">
+                        <i class="fas fa-heading mt-1" style="color: var(--primary); font-size: 0.9rem;"></i>
+                        <div>
+                            <small class="d-block fw-bold" style="color: var(--text-main); font-size: 0.75rem;">TÍTULO</small>
+                            <small id="confirmTituloPreview" style="color: var(--text-muted); font-size: 0.7rem;">-</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-2">
+                        <i class="fas fa-university mt-1" style="color: #10b981; font-size: 0.9rem;"></i>
+                        <div>
+                            <small class="d-block fw-bold" style="color: var(--text-main); font-size: 0.75rem;">CARRERA</small>
+                            <small id="confirmCarreraPreview" style="color: var(--text-muted); font-size: 0.7rem;">-</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-modal-cancel flex-grow-1 py-2 rounded-3" 
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-modal-confirm flex-grow-1 py-2 rounded-3 fw-bold" 
+                            id="confirmarRegistroBtn">
+                        <i class="fas fa-check me-2"></i> REGISTRAR PROYECTO
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables globales
+    let alertModal = null;
+    let confirmModal = null;
+    let pendingSubmit = false;
+    
+    // Función para mostrar alertas estilizadas
+    function mostrarAlerta(titulo, mensaje, tipo = 'error') {
+        const alertIcon = document.getElementById('alertIcon');
+        const alertTitle = document.getElementById('alertTitle');
+        const alertMessage = document.getElementById('alertMessage');
+        
+        if (tipo === 'error') {
+            alertIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle fa-2x text-white"></i>';
+        } else if (tipo === 'warning') {
+            alertIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-circle fa-2x text-white"></i>';
+        } else if (tipo === 'success') {
+            alertIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            alertIcon.innerHTML = '<i class="fas fa-check-circle fa-2x text-white"></i>';
+        }
+        
+        alertTitle.textContent = titulo;
+        alertMessage.textContent = mensaje;
+        
+        if (alertModal) {
+            alertModal.show();
+        }
+    }
+    
+    // Función para mostrar confirmación estilizada
+    function mostrarConfirmacionRegistro() {
+        const titulo = document.getElementById('titulo').value.trim();
+        const carreraSelect = document.getElementById('carrera');
+        const carreraTexto = carreraSelect.options[carreraSelect.selectedIndex]?.text || 'No seleccionada';
+        
+        document.getElementById('confirmTituloPreview').textContent = titulo.length > 60 ? titulo.substring(0, 60) + '...' : titulo;
+        document.getElementById('confirmCarreraPreview').textContent = carreraTexto;
+        
+        if (confirmModal) {
+            confirmModal.show();
+        }
+    }
+    
+    // Contador de caracteres para el título
+    function contarCaracteres() {
+        const titulo = document.getElementById('titulo');
+        const contador = document.getElementById('contadorTitulo');
+        const max = 200;
+        const actual = titulo.value.length;
+        
+        contador.textContent = `${actual}/${max}`;
+        
+        if (actual > max * 0.9) {
+            contador.style.color = '#f59e0b';
+        } else if (actual >= max) {
+            contador.style.color = '#ef4444';
+        } else {
+            contador.style.color = '';
+        }
+    }
+    
+    // Contador de palabras para la descripción
+    function contarPalabras() {
+        const descripcion = document.getElementById('descripcion');
+        const palabrasCount = document.getElementById('palabrasCount');
+        const texto = descripcion.value.trim();
+        const palabras = texto ? texto.split(/\s+/).length : 0;
+        
+        palabrasCount.textContent = palabras;
+        
+        if (palabras < 20 && texto.length > 0) {
+            palabrasCount.style.color = '#f59e0b';
+        } else if (palabras >= 20) {
+            palabrasCount.style.color = '#10b981';
+        } else {
+            palabrasCount.style.color = '';
+        }
+    }
+    
+    // Descripción dinámica según tipo seleccionado
+    function actualizarDescripcionTipo() {
+        const tipo = document.getElementById('tipo').value;
+        const descripcion = document.getElementById('descripcionTipo');
+        
+        const descripciones = {
+            'Tesis': 'Trabajo de investigación extenso para obtención de título de grado',
+            'Articulo': 'Documento científico para publicación en revistas indexadas',
+            'Proyecto': 'Investigación aplicada con resultados prácticos demostrables',
+            'Monografia': 'Estudio exhaustivo y documentado sobre un tema específico'
+        };
+        
+        descripcion.innerHTML = `<i class="fas fa-info-circle me-1"></i> ${descripciones[tipo] || ''}`;
+    }
+    
+    // Ejecutar envío del formulario
+    function ejecutarEnvio() {
+        const btn = document.getElementById('btnRegistrar');
+        const form = document.getElementById('formInvestigacion');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> REGISTRANDO...';
+        form.submit();
+    }
+    
+    // Validación del formulario antes de enviar
+    document.getElementById('formInvestigacion').addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevenir envío directo
+        
+        const titulo = document.getElementById('titulo').value.trim();
+        const carrera = document.getElementById('carrera').value;
+        const descripcion = document.getElementById('descripcion').value.trim();
+        
+        // Validaciones con alertas estilizadas
+        if (!titulo) {
+            mostrarAlerta('Título requerido', 'Por favor ingresa el título del proyecto.', 'warning');
+            document.getElementById('titulo').focus();
+            return false;
+        }
+        
+        if (titulo.length < 10) {
+            mostrarAlerta('Título muy corto', 'El título debe tener al menos 10 caracteres.', 'warning');
+            document.getElementById('titulo').focus();
+            return false;
+        }
+        
+        if (titulo.length > 200) {
+            mostrarAlerta('Título muy largo', 'El título no debe exceder los 200 caracteres.', 'warning');
+            document.getElementById('titulo').focus();
+            return false;
+        }
+        
+        if (!carrera) {
+            mostrarAlerta('Carrera requerida', 'Por favor selecciona una carrera para el proyecto.', 'warning');
+            document.getElementById('carrera').focus();
+            return false;
+        }
+        
+        // Validación opcional de descripción (recomendación, no obligatorio)
+        const palabras = descripcion ? descripcion.split(/\s+/).length : 0;
+        if (descripcion && palabras < 20) {
+            mostrarConfirmacionRegistro(); // Permitir continuar con advertencia suave
+            return false;
+        }
+        
+        // Mostrar modal de confirmación
+        mostrarConfirmacionRegistro();
+        return false;
+    });
+    
+    // Configurar botón de confirmación del modal
+    document.getElementById('confirmarRegistroBtn')?.addEventListener('click', function() {
+        if (confirmModal) {
+            confirmModal.hide();
+            ejecutarEnvio();
+        }
+    });
+    
+    // Inicializar modales y contadores
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar modal de alerta
+        const alertModalElement = document.getElementById('alertModal');
+        if (alertModalElement) {
+            alertModal = new bootstrap.Modal(alertModalElement);
+        }
+        
+        // Inicializar modal de confirmación
+        const confirmModalElement = document.getElementById('confirmModal');
+        if (confirmModalElement) {
+            confirmModal = new bootstrap.Modal(confirmModalElement);
+        }
+        
+        // Inicializar contadores
+        contarCaracteres();
+        contarPalabras();
+        actualizarDescripcionTipo();
+        
+        // Mostrar mensajes del backend
+        {% if messages %}
+            {% for message in messages %}
+                mostrarAlerta(
+                    '{{ message.tags|capfirst }}',
+                    '{{ message|escapejs }}',
+                    '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% else %}warning{% endif %}'
+                );
+            {% endfor %}
+        {% endif %}
+        
+        {% if form.errors %}
+            mostrarAlerta('Errores en el formulario', 'Por favor corrige los errores antes de continuar.', 'error');
+        {% endif %}
+    });
+    
+    // Prevenir envío duplicado
+    let isSubmitting = false;
+    window.ejecutarEnvio = function() {
+        if (isSubmitting) return;
+        isSubmitting = true;
+        
+        const btn = document.getElementById('btnRegistrar');
+        const form = document.getElementById('formInvestigacion');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> REGISTRANDO...';
+        form.submit();
+    };
+</script>
+{% endblock %}

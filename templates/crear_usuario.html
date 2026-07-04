@@ -1,0 +1,760 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .crear-wrapper,
+    .crear-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .crear-wrapper .text-muted,
+    .crear-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .crear-wrapper .text-primary,
+    .crear-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepciones para colores semánticos fijos */
+    .crear-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .crear-wrapper .text-warning {
+        color: #f59e0b !important;
+    }
+    .crear-wrapper .text-danger {
+        color: #ef4444 !important;
+    }
+    .crear-wrapper .text-info {
+        color: #3b82f6 !important;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-primary-custom {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-primary-custom:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+        color: #fff !important;
+    }
+    .btn-primary-custom:disabled {
+        opacity: 0.7 !important;
+        transform: none !important;
+    }
+
+    .btn-secondary-custom {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-secondary-custom:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    .btn-modal-confirm {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-modal-confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        color: #fff !important;
+    }
+    .btn-modal-cancel {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        font-weight: 500 !important;
+    }
+    .btn-modal-cancel:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== FORMULARIO ===== */
+    .form-control-custom,
+    .form-select-custom {
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.75rem 1rem !important;
+    }
+    .form-control-custom:focus,
+    .form-select-custom:focus {
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+    }
+    .form-control-custom::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7 !important;
+    }
+
+    .input-group-text-custom {
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-muted) !important;
+        border: none !important;
+    }
+
+    /* ===== CHECKBOX ===== */
+    .form-check-input-custom {
+        background-color: var(--nav-active-bg) !important;
+        border-color: var(--border) !important;
+        cursor: pointer !important;
+    }
+    .form-check-input-custom:checked {
+        background-color: var(--primary) !important;
+        border-color: var(--primary) !important;
+    }
+
+    /* ===== ALERTAS ===== */
+    .alert-danger-custom {
+        background: rgba(239, 68, 68, 0.1) !important;
+        color: #ef4444 !important;
+        border: none !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.85rem !important;
+    }
+    .alert-success-custom {
+        background: rgba(16, 185, 129, 0.1) !important;
+        color: #10b981 !important;
+        border: none !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.85rem !important;
+    }
+    .alert-warning-custom {
+        background: rgba(245, 158, 11, 0.1) !important;
+        color: #f59e0b !important;
+        border: none !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* ===== MODALES ===== */
+    .modal-content-custom {
+        background: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 24px !important;
+    }
+    .modal-content-custom .modal-body {
+        color: var(--text-main) !important;
+    }
+    .modal-content-custom .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    /* ===== MEDIDOR DE FORTALEZA ===== */
+    .strength-bar {
+        height: 3px !important;
+        background: var(--nav-active-bg) !important;
+        border-radius: 4px !important;
+        overflow: hidden !important;
+        transition: all 0.3s ease !important;
+    }
+    .strength-bar .progress-bar {
+        transition: width 0.3s ease !important;
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .card-animated {
+        animation: slideUp 0.5s ease;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 575px) {
+        .card { border-radius: 16px !important; }
+        .p-3.p-md-5 { padding: 1.5rem !important; }
+    }
+</style>
+
+<div class="crear-wrapper">
+    <div class="row justify-content-center align-items-center" style="min-height: 75vh;">
+        <div class="col-11 col-sm-9 col-md-7 col-lg-5">
+            <!-- Encabezado -->
+            <div class="text-center mb-4 mb-md-5">
+                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg mb-4"
+                     style="background: var(--primary);">
+                    <i class="fas fa-user-shield fa-2x text-white"></i>
+                </div>
+                <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Crear Nuevo Usuario</h2>
+                <p class="mb-0" style="color: var(--text-muted);">Define las credenciales y el nivel de acceso al sistema</p>
+            </div>
+
+            <!-- Tarjeta del Formulario -->
+            <div class="card border-0 shadow-lg p-3 p-md-5 card-animated" 
+                 style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
+                
+                {% if form.errors %}
+                    <div class="alert alert-danger-custom mb-4 d-flex align-items-center gap-2">
+                        <i class="fas fa-exclamation-circle flex-shrink-0"></i>
+                        <span>
+                            {% for field, errors in form.errors.items %}
+                                {{ errors|join:", " }}
+                            {% endfor %}
+                        </span>
+                    </div>
+                {% endif %}
+
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert 
+                        {% if message.tags == 'success' %}alert-success-custom
+                        {% elif message.tags == 'error' %}alert-danger-custom
+                        {% else %}alert-warning-custom{% endif %} 
+                        mb-4 d-flex align-items-center gap-2">
+                        <i class="fas fa-info-circle flex-shrink-0"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" id="formCrearUsuario" autocomplete="off">
+                    {% csrf_token %}
+                    
+                    <!-- Sección: Información Personal -->
+                    <h6 class="fw-bold mb-3 d-flex align-items-center gap-2" 
+                        style="color: var(--text-main); font-size: 0.85rem;">
+                        <i class="fas fa-user-circle" style="color: var(--primary);"></i> 
+                        INFORMACIÓN PERSONAL
+                    </h6>
+
+                    <!-- Nombre de Usuario -->
+                    <div class="mb-4">
+                        <label for="username" class="form-label small fw-bold text-uppercase mb-2" 
+                               style="color: var(--text-muted); letter-spacing: 0.5px;">
+                            <i class="fas fa-id-card me-1"></i> Nombre de Usuario
+                        </label>
+                        <div class="input-group" style="border-radius: 12px; overflow: hidden;">
+                            <span class="input-group-text input-group-text-custom">
+                                <i class="fas fa-at"></i>
+                            </span>
+                            <input type="text" name="username" id="username"
+                                   class="form-control form-control-custom" 
+                                   placeholder="usuario.ejemplo" required autofocus
+                                   oninput="validarUsername()">
+                        </div>
+                        <div id="usernameFeedback" class="small mt-1" style="display: none;"></div>
+                        <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">
+                            <i class="fas fa-info-circle me-1"></i> Solo letras, números, puntos y guiones bajos
+                        </small>
+                    </div>
+
+                    <!-- Nombre Completo -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-sm-6">
+                            <label for="first_name" class="form-label small fw-bold text-uppercase mb-2" 
+                                   style="color: var(--text-muted); letter-spacing: 0.5px;">
+                                <i class="fas fa-user me-1"></i> Nombre(s)
+                            </label>
+                            <input type="text" name="first_name" id="first_name"
+                                   class="form-control form-control-custom" 
+                                   placeholder="María José" required>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <label for="last_name" class="form-label small fw-bold text-uppercase mb-2" 
+                                   style="color: var(--text-muted); letter-spacing: 0.5px;">
+                                <i class="fas fa-user me-1"></i> Apellido(s)
+                            </label>
+                            <input type="text" name="last_name" id="last_name"
+                                   class="form-control form-control-custom" 
+                                   placeholder="García López" required>
+                        </div>
+                    </div>
+
+                    <!-- Correo Electrónico -->
+                    <div class="mb-4">
+                        <label for="email" class="form-label small fw-bold text-uppercase mb-2" 
+                               style="color: var(--text-muted); letter-spacing: 0.5px;">
+                            <i class="fas fa-envelope me-1"></i> Correo Electrónico
+                        </label>
+                        <div class="input-group" style="border-radius: 12px; overflow: hidden;">
+                            <span class="input-group-text input-group-text-custom">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input type="email" name="email" id="email"
+                                   class="form-control form-control-custom" 
+                                   placeholder="usuario@universidad.edu" required>
+                        </div>
+                    </div>
+
+                    <hr style="border-color: var(--border); margin: 1.5rem 0;">
+
+                    <!-- Sección: Seguridad y Acceso -->
+                    <h6 class="fw-bold mb-3 d-flex align-items-center gap-2" 
+                        style="color: var(--text-main); font-size: 0.85rem;">
+                        <i class="fas fa-shield-alt" style="color: var(--primary);"></i> 
+                        SEGURIDAD Y ACCESO
+                    </h6>
+
+                    <!-- Contraseña -->
+                    <div class="mb-4">
+                        <label for="password" class="form-label small fw-bold text-uppercase mb-2" 
+                               style="color: var(--text-muted); letter-spacing: 0.5px;">
+                            <i class="fas fa-lock me-1"></i> Contraseña Inicial
+                        </label>
+                        <div class="input-group" style="border-radius: 12px; overflow: hidden;">
+                            <span class="input-group-text input-group-text-custom">
+                                <i class="fas fa-key"></i>
+                            </span>
+                            <input type="password" name="password" id="password"
+                                   class="form-control form-control-custom" 
+                                   placeholder="••••••••" required minlength="8"
+                                   oninput="medirFortaleza()">
+                            <button class="btn border-0" type="button" 
+                                    style="background-color: var(--nav-active-bg); color: var(--text-muted);"
+                                    onclick="togglePassword('password', 'togglePasswordIcon1')" 
+                                    title="Mostrar/ocultar contraseña">
+                                <i class="fas fa-eye" id="togglePasswordIcon1"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Medidor de fortaleza -->
+                        <div class="mt-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted" style="font-size: 0.65rem;">Fortaleza:</small>
+                                <small id="strengthText" class="fw-bold" style="font-size: 0.65rem; color: var(--text-muted);">—</small>
+                            </div>
+                            <div class="strength-bar">
+                                <div id="strengthBar" class="progress-bar" style="width: 0%; background: #ef4444;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generar contraseña automática -->
+                    <div class="mb-4 p-3 rounded-3" style="background: var(--nav-active-bg);">
+                        <div class="form-check">
+                            <input class="form-check-input form-check-input-custom" type="checkbox" id="generarPassword" 
+                                   onchange="toggleGenerarPassword()">
+                            <label class="form-check-label small fw-bold" for="generarPassword" 
+                                   style="color: var(--text-main); cursor: pointer;">
+                                <i class="fas fa-magic me-1"></i> Generar contraseña segura automáticamente
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-1 ms-4" style="font-size: 0.7rem;">
+                            Se enviará al correo electrónico del usuario
+                        </small>
+                    </div>
+
+                    <!-- Rol en el Sistema -->
+                    <div class="mb-4">
+                        <label for="rol" class="form-label small fw-bold text-uppercase mb-2" 
+                               style="color: var(--text-muted); letter-spacing: 0.5px;">
+                            <i class="fas fa-user-tag me-1"></i> Rol en el Sistema
+                        </label>
+                        <select name="rol" id="rol" 
+                                class="form-select form-select-custom"
+                                onchange="mostrarInfoRol()">
+                            <option value="estudiante">🎓 Estudiante</option>
+                            <option value="profesor">👨‍🏫 Profesor</option>
+                            <option value="coordinador">👑 Coordinador Académico</option>
+                        </select>
+                        <div id="infoRol" class="small mt-2 p-2 rounded-3" 
+                             style="background: rgba(99, 102, 241, 0.05); color: var(--text-muted); font-size: 0.75rem; display: none;">
+                        </div>
+                    </div>
+
+                    <!-- Notificar al usuario -->
+                    <div class="form-check mb-4">
+                        <input class="form-check-input form-check-input-custom" type="checkbox" name="notificar" id="notificar" checked>
+                        <label class="form-check-label small" for="notificar" 
+                               style="color: var(--text-muted); cursor: pointer;">
+                            <i class="fas fa-bell me-1"></i> Enviar credenciales por correo electrónico
+                        </label>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="d-flex flex-column flex-sm-row gap-2 pt-3 border-top" 
+                         style="border-color: var(--border) !important;">
+                        <a href="{% url 'gestionar_usuarios' %}" class="btn btn-secondary-custom flex-grow-1 py-3 rounded-4">
+                            <i class="fas fa-times me-2"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom flex-grow-1 py-3 rounded-4 shadow fw-bold" 
+                                id="btnGuardar">
+                            <i class="fas fa-user-plus me-2"></i> CREAR USUARIO
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Footer -->
+            <div class="text-center mt-4">
+                <a href="{% url 'gestionar_usuarios' %}" class="text-decoration-none small fw-bold d-inline-block mb-2" 
+                   style="color: var(--primary); transition: color 0.2s ease;"
+                   onmouseover="this.style.color='#818cf8'" onmouseout="this.style.color='var(--primary)'">
+                    <i class="fas fa-arrow-left me-2"></i> Volver al listado de usuarios
+                </a>
+                <p class="small mb-0" style="color: var(--text-muted); font-size: 0.7rem;">
+                    <i class="fas fa-info-circle me-1"></i> 
+                    El usuario deberá cambiar su contraseña en el primer inicio de sesión
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de alerta -->
+<div id="alertModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4"
+                         id="alertIcon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-exclamation-triangle fa-2x text-white"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-2" id="alertTitle" style="color: var(--text-main);">Atención</h5>
+                <p class="mb-4" id="alertMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Mensaje de alerta
+                </p>
+                <button type="button" class="btn btn-modal-confirm w-100 py-2 rounded-3 fw-bold" data-bs-dismiss="modal">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="confirmModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 p-md-5 text-center">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg"
+                         id="confirmIcon" style="background: var(--primary);">
+                        <i class="fas fa-user-plus fa-2x text-white"></i>
+                    </div>
+                </div>
+                
+                <h4 class="fw-bold mb-2" id="confirmTitle" style="color: var(--text-main);">¿Crear nuevo usuario?</h4>
+                <p class="mb-4" id="confirmMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    El usuario recibirá un correo con sus credenciales de acceso.
+                </p>
+                
+                <div class="rounded-3 p-3 mb-4 text-start" style="background: var(--nav-active-bg); border-left: 3px solid var(--primary);">
+                    <div class="d-flex align-items-start gap-2 mb-2">
+                        <i class="fas fa-user mt-1" style="color: var(--primary); font-size: 0.9rem;"></i>
+                        <div>
+                            <small class="d-block fw-bold" style="color: var(--text-main); font-size: 0.75rem;">NOMBRE COMPLETO</small>
+                            <small id="confirmNombrePreview" style="color: var(--text-muted); font-size: 0.7rem;">-</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-2 mb-2">
+                        <i class="fas fa-id-card mt-1" style="color: #10b981; font-size: 0.9rem;"></i>
+                        <div>
+                            <small class="d-block fw-bold" style="color: var(--text-main); font-size: 0.75rem;">USUARIO</small>
+                            <small id="confirmUsernamePreview" style="color: var(--text-muted); font-size: 0.7rem;">-</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-2">
+                        <i class="fas fa-envelope mt-1" style="color: #f59e0b; font-size: 0.9rem;"></i>
+                        <div>
+                            <small class="d-block fw-bold" style="color: var(--text-main); font-size: 0.75rem;">CORREO</small>
+                            <small id="confirmEmailPreview" style="color: var(--text-muted); font-size: 0.7rem;">-</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-modal-cancel flex-grow-1 py-2 rounded-3" 
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-modal-confirm flex-grow-1 py-2 rounded-3 fw-bold" 
+                            id="confirmarCreacionBtn">
+                        <i class="fas fa-check me-2"></i> CREAR USUARIO
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables globales
+    let alertModal = null;
+    let confirmModal = null;
+    
+    // Función para mostrar alertas estilizadas
+    function mostrarAlerta(titulo, mensaje, tipo = 'error') {
+        const alertIcon = document.getElementById('alertIcon');
+        const alertTitle = document.getElementById('alertTitle');
+        const alertMessage = document.getElementById('alertMessage');
+        
+        if (tipo === 'error') {
+            alertIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle fa-2x text-white"></i>';
+        } else if (tipo === 'warning') {
+            alertIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-circle fa-2x text-white"></i>';
+        } else if (tipo === 'success') {
+            alertIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            alertIcon.innerHTML = '<i class="fas fa-check-circle fa-2x text-white"></i>';
+        }
+        
+        alertTitle.textContent = titulo;
+        alertMessage.textContent = mensaje;
+        
+        if (alertModal) {
+            alertModal.show();
+        }
+    }
+    
+    // Función para mostrar confirmación estilizada
+    function mostrarConfirmacionCreacion() {
+        const username = document.getElementById('username').value.trim();
+        const first_name = document.getElementById('first_name').value.trim();
+        const last_name = document.getElementById('last_name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        
+        document.getElementById('confirmNombrePreview').textContent = `${first_name} ${last_name}`;
+        document.getElementById('confirmUsernamePreview').textContent = username;
+        document.getElementById('confirmEmailPreview').textContent = email;
+        
+        if (confirmModal) {
+            confirmModal.show();
+        }
+    }
+    
+    // Toggle para mostrar/ocultar contraseña
+    function togglePassword(inputId, iconId) {
+        const passwordInput = document.getElementById(inputId);
+        const toggleIcon = document.getElementById(iconId);
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+    
+    // Validar nombre de usuario en tiempo real
+    function validarUsername() {
+        const username = document.getElementById('username').value;
+        const feedback = document.getElementById('usernameFeedback');
+        const regex = /^[a-zA-Z0-9._]+$/;
+        
+        if (username.length === 0) {
+            feedback.style.display = 'none';
+        } else if (!regex.test(username)) {
+            feedback.style.display = 'block';
+            feedback.innerHTML = '<i class="fas fa-times-circle text-danger me-1"></i> Caracteres no permitidos';
+            feedback.style.color = '#ef4444';
+        } else if (username.length < 4) {
+            feedback.style.display = 'block';
+            feedback.innerHTML = '<i class="fas fa-exclamation-triangle text-warning me-1"></i> Mínimo 4 caracteres';
+            feedback.style.color = '#f59e0b';
+        } else {
+            feedback.style.display = 'block';
+            feedback.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i> Nombre de usuario válido';
+            feedback.style.color = '#10b981';
+        }
+    }
+    
+    // Medidor de fortaleza de contraseña
+    function medirFortaleza() {
+        const password = document.getElementById('password').value;
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+        
+        let strength = 0;
+        
+        if (password.length >= 8) strength++;
+        if (password.match(/[a-z]+/)) strength++;
+        if (password.match(/[A-Z]+/)) strength++;
+        if (password.match(/[0-9]+/)) strength++;
+        if (password.match(/[!@#$%^&*(),.?":{}|<>]+/)) strength++;
+        
+        const strengthColors = ['#ef4444', '#f59e0b', '#eab308', '#84cc16', '#10b981'];
+        const strengthLabels = ['Muy débil', 'Débil', 'Media', 'Fuerte', 'Muy fuerte'];
+        
+        strengthBar.style.width = (strength * 20) + '%';
+        strengthBar.style.backgroundColor = strengthColors[strength - 1] || '#ef4444';
+        strengthText.textContent = strength > 0 ? strengthLabels[strength - 1] : '—';
+        strengthText.style.color = strengthColors[strength - 1] || 'var(--text-muted)';
+    }
+    
+    // Generar contraseña automática
+    function toggleGenerarPassword() {
+        const checkbox = document.getElementById('generarPassword');
+        const passwordInput = document.getElementById('password');
+        
+        if (checkbox.checked) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+            let password = '';
+            for (let i = 0; i < 12; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            passwordInput.value = password;
+            passwordInput.type = 'text';
+            document.getElementById('togglePasswordIcon1').classList.remove('fa-eye');
+            document.getElementById('togglePasswordIcon1').classList.add('fa-eye-slash');
+            medirFortaleza();
+        } else {
+            passwordInput.value = '';
+            passwordInput.type = 'password';
+            document.getElementById('togglePasswordIcon1').classList.remove('fa-eye-slash');
+            document.getElementById('togglePasswordIcon1').classList.add('fa-eye');
+            medirFortaleza();
+        }
+    }
+    
+    // Mostrar información del rol seleccionado
+    function mostrarInfoRol() {
+        const rol = document.getElementById('rol').value;
+        const infoRol = document.getElementById('infoRol');
+        
+        const descripciones = {
+            'estudiante': '<i class="fas fa-info-circle me-1"></i> <strong>Estudiante:</strong> Puede subir avances, ver revisiones y consultar el estado de su tesis.',
+            'profesor': '<i class="fas fa-info-circle me-1"></i> <strong>Profesor:</strong> Puede revisar trabajos, aprobar entregas y gestionar sus tutorías asignadas.',
+            'coordinador': '<i class="fas fa-info-circle me-1"></i> <strong>Coordinador:</strong> Acceso completo al sistema. Gestiona usuarios, carreras y configura plantillas.'
+        };
+        
+        infoRol.innerHTML = descripciones[rol] || '';
+        infoRol.style.display = 'block';
+    }
+    
+    // Ejecutar envío del formulario
+    function ejecutarEnvio() {
+        const btn = document.getElementById('btnGuardar');
+        const form = document.getElementById('formCrearUsuario');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> CREANDO USUARIO...';
+        form.submit();
+    }
+    
+    // Validación del formulario antes de enviar
+    document.getElementById('formCrearUsuario').addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevenir envío directo
+        
+        const username = document.getElementById('username').value.trim();
+        const first_name = document.getElementById('first_name').value.trim();
+        const last_name = document.getElementById('last_name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        
+        // Validación de username
+        const usernameRegex = /^[a-zA-Z0-9._]+$/;
+        if (username.length < 4) {
+            mostrarAlerta('Usuario muy corto', 'El nombre de usuario debe tener al menos 4 caracteres.', 'warning');
+            document.getElementById('username').focus();
+            return false;
+        }
+        
+        if (!usernameRegex.test(username)) {
+            mostrarAlerta('Usuario inválido', 'El nombre de usuario solo puede contener letras, números, puntos y guiones bajos.', 'warning');
+            document.getElementById('username').focus();
+            return false;
+        }
+        
+        // Validación de nombre y apellido
+        if (!first_name) {
+            mostrarAlerta('Nombre requerido', 'Por favor ingresa el nombre del usuario.', 'warning');
+            document.getElementById('first_name').focus();
+            return false;
+        }
+        
+        if (!last_name) {
+            mostrarAlerta('Apellido requerido', 'Por favor ingresa el apellido del usuario.', 'warning');
+            document.getElementById('last_name').focus();
+            return false;
+        }
+        
+        // Validación de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            mostrarAlerta('Email inválido', 'Por favor ingresa un correo electrónico válido.', 'warning');
+            document.getElementById('email').focus();
+            return false;
+        }
+        
+        // Validación de contraseña
+        if (password.length < 8) {
+            mostrarAlerta('Contraseña muy corta', 'La contraseña debe tener al menos 8 caracteres.', 'warning');
+            document.getElementById('password').focus();
+            return false;
+        }
+        
+        // Mostrar modal de confirmación
+        mostrarConfirmacionCreacion();
+        return false;
+    });
+    
+    // Configurar botón de confirmación del modal
+    document.getElementById('confirmarCreacionBtn')?.addEventListener('click', function() {
+        if (confirmModal) {
+            confirmModal.hide();
+            ejecutarEnvio();
+        }
+    });
+    
+    // Inicializar modales
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar modal de alerta
+        const alertModalElement = document.getElementById('alertModal');
+        if (alertModalElement) {
+            alertModal = new bootstrap.Modal(alertModalElement);
+        }
+        
+        // Inicializar modal de confirmación
+        const confirmModalElement = document.getElementById('confirmModal');
+        if (confirmModalElement) {
+            confirmModal = new bootstrap.Modal(confirmModalElement);
+        }
+        
+        // Mostrar información del rol por defecto
+        mostrarInfoRol();
+        
+        // Mostrar mensajes del backend
+        {% if messages %}
+            {% for message in messages %}
+                mostrarAlerta(
+                    '{{ message.tags|capfirst }}',
+                    '{{ message|escapejs }}',
+                    '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% else %}warning{% endif %}'
+                );
+            {% endfor %}
+        {% endif %}
+        
+        {% if form.errors %}
+            mostrarAlerta('Errores en el formulario', 'Por favor corrige los errores antes de continuar.', 'error');
+        {% endif %}
+    });
+    
+    // Prevenir envío duplicado
+    let isSubmitting = false;
+    window.ejecutarEnvio = function() {
+        if (isSubmitting) return;
+        isSubmitting = true;
+        
+        const btn = document.getElementById('btnGuardar');
+        const form = document.getElementById('formCrearUsuario');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> CREANDO USUARIO...';
+        form.submit();
+    };
+</script>
+{% endblock %}

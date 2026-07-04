@@ -1,0 +1,525 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .correccion-wrapper,
+    .correccion-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .correccion-wrapper .text-muted,
+    .correccion-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .correccion-wrapper .text-primary,
+    .correccion-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepción: colores semánticos fijos para íconos y badges */
+    .correccion-wrapper .text-warning {
+        color: #f59e0b !important;
+    }
+    .correccion-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .correccion-wrapper .text-danger {
+        color: #ef4444 !important;
+    }
+
+    /* ===== ALERTA DE OBSERVACIÓN ===== */
+    .alert-observacion {
+        background: rgba(245, 158, 11, 0.1) !important;
+        border-left: 4px solid #f59e0b !important;
+    }
+    .alert-observacion .badge-metadata {
+        color: var(--text-muted) !important;
+        font-size: 0.7rem !important;
+    }
+
+    /* ===== CHECKBOX ===== */
+    .form-check-input:checked {
+        background-color: #f59e0b !important;
+        border-color: #f59e0b !important;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+        border: none !important;
+        color: #fff !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-primary-custom:hover:not(:disabled) {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4) !important;
+        color: #fff !important;
+    }
+    .btn-primary-custom:disabled {
+        opacity: 0.7 !important;
+        cursor: not-allowed !important;
+    }
+
+    .btn-secondary-custom {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        transition: all 0.2s !important;
+    }
+    .btn-secondary-custom:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== TEXTAREA ===== */
+    textarea.form-control-custom {
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border-radius: 12px !important;
+        border: none !important;
+        resize: vertical !important;
+        min-height: 150px !important;
+        max-height: 400px !important;
+        padding: 1rem 1.25rem !important;
+    }
+    textarea.form-control-custom:focus {
+        box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.15) !important;
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+    }
+    textarea.form-control-custom::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7 !important;
+    }
+
+    /* ===== MODALES ===== */
+    .modal-content-custom {
+        background: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 24px !important;
+    }
+    .modal-content-custom .modal-body {
+        color: var(--text-main) !important;
+    }
+    .modal-content-custom .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 575px) {
+        .card {
+            border-radius: 16px !important;
+        }
+        .p-3.p-md-5 {
+            padding: 1.5rem !important;
+        }
+        textarea.form-control-custom {
+            min-height: 120px !important;
+            font-size: 0.9rem !important;
+        }
+    }
+
+    /* ===== ANIMACIÓN ===== */
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .card {
+        animation: slideUp 0.5s ease;
+    }
+</style>
+
+<div class="correccion-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-11 col-sm-9 col-md-7 col-lg-6">
+            <!-- Header -->
+            <div class="text-center mb-4 mb-md-5">
+                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg mb-4"
+                     style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                    <i class="fas fa-clipboard-check fa-2x text-white"></i>
+                </div>
+                <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Resolver Observación</h2>
+                <p class="mb-0" style="color: var(--text-muted);">
+                    Indica los cambios realizados según el feedback recibido
+                </p>
+            </div>
+
+            <!-- Tarjeta Principal -->
+            <div class="card border-0 shadow-lg p-3 p-md-5" 
+                 style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
+                
+                <!-- Alerta de Observación -->
+                <div class="alert alert-observacion border-0 rounded-4 p-4 mb-4">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                                 style="width: 45px; height: 45px; background: rgba(245, 158, 11, 0.2); color: #f59e0b;">
+                                <i class="fas fa-comment-dots fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <h6 class="fw-bold mb-2 d-flex align-items-center gap-2" style="color: #f59e0b;">
+                                <i class="fas fa-exclamation-triangle"></i> Observación del Profesor
+                            </h6>
+                            <div class="p-3 rounded-3" style="background: rgba(245, 158, 11, 0.05);">
+                                <p class="mb-0 fst-italic" style="color: var(--text-main); font-size: 0.9rem; line-height: 1.6;">
+                                    <i class="fas fa-quote-left me-2 opacity-25"></i>
+                                    "{{ comentario.texto }}"
+                                    <i class="fas fa-quote-right ms-2 opacity-25"></i>
+                                </p>
+                            </div>
+                            
+                            <!-- Metadatos del comentario -->
+                            {% if comentario.fecha %}
+                            <div class="d-flex flex-wrap gap-3 mt-2">
+                                <small class="badge-metadata">
+                                    <i class="far fa-calendar-alt me-1"></i>
+                                    {{ comentario.fecha|date:"d/m/Y H:i" }}
+                                </small>
+                                {% if comentario.autor %}
+                                <small class="badge-metadata">
+                                    <i class="fas fa-user me-1"></i>
+                                    {{ comentario.autor.get_full_name }}
+                                </small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indicador de progreso -->
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <div class="flex-grow-1">
+                        <div class="progress" style="height: 4px; background: var(--nav-active-bg);">
+                            <div class="progress-bar" style="width: 75%; background: #f59e0b; border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                    <small class="text-muted" style="font-size: 0.7rem;">Paso 2 de 3</small>
+                </div>
+
+                <!-- Formulario -->
+                <form method="post" id="formResolver" autocomplete="off">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="descripcion" class="form-label small fw-bold text-uppercase mb-2" 
+                               style="color: var(--text-muted); letter-spacing: 0.5px;">
+                            <i class="fas fa-pen me-1"></i> Respuesta de la Corrección
+                        </label>
+                        
+                        <!-- Barra de herramientas simulada -->
+                        <div class="d-flex gap-1 mb-2 px-3 py-2 rounded-3" style="background: var(--nav-active-bg);">
+                            <button type="button" class="btn btn-sm border-0 rounded-2 px-2" style="color: var(--text-muted);" title="Negrita">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm border-0 rounded-2 px-2" style="color: var(--text-muted);" title="Cursiva">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm border-0 rounded-2 px-2" style="color: var(--text-muted);" title="Lista">
+                                <i class="fas fa-list-ul"></i>
+                            </button>
+                            <div class="vr mx-1 opacity-25"></div>
+                            <button type="button" class="btn btn-sm border-0 rounded-2 px-2" style="color: var(--text-muted);" title="Vista previa">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        
+                        <textarea name="descripcion" id="descripcion"
+                                  class="form-control form-control-custom" 
+                                  rows="5" 
+                                  placeholder="Describe detalladamente los cambios realizados para resolver esta observación..."
+                                  required
+                                  oninput="contarCaracteres()"></textarea>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-muted" style="font-size: 0.7rem;">
+                                <i class="fas fa-info-circle me-1"></i> 
+                                Sé específico: menciona secciones, páginas o líneas modificadas
+                            </small>
+                            <small id="contadorDescripcion" class="text-muted" style="font-size: 0.7rem;">0 caracteres</small>
+                        </div>
+                    </div>
+
+                    <!-- Checklist de verificación -->
+                    <div class="p-3 rounded-3 mb-4" style="background: var(--nav-active-bg);">
+                        <small class="fw-bold text-uppercase d-block mb-2" style="color: var(--text-muted); font-size: 0.65rem; letter-spacing: 1px;">
+                            <i class="fas fa-tasks me-1"></i> Antes de enviar, verifica:
+                        </small>
+                        <div class="form-check mb-1">
+                            <input class="form-check-input" type="checkbox" id="check1" style="cursor: pointer;">
+                            <label class="form-check-label small" for="check1" style="color: var(--text-muted); cursor: pointer;">
+                                He leído y entendido la observación del profesor
+                            </label>
+                        </div>
+                        <div class="form-check mb-1">
+                            <input class="form-check-input" type="checkbox" id="check2" style="cursor: pointer;">
+                            <label class="form-check-label small" for="check2" style="color: var(--text-muted); cursor: pointer;">
+                                He realizado los cambios solicitados en el documento
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="check3" style="cursor: pointer;">
+                            <label class="form-check-label small" for="check3" style="color: var(--text-muted); cursor: pointer;">
+                                Mi respuesta describe claramente las modificaciones
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+                        <a href="{% url 'home' %}" class="btn btn-secondary-custom flex-grow-1 py-3 rounded-4">
+                            <i class="fas fa-times me-2"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom flex-grow-1 py-3 rounded-4 shadow fw-bold" 
+                                id="btnResolver">
+                            <i class="fas fa-check-double me-2"></i> MARCAR COMO CORREGIDO
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer informativo -->
+            <div class="text-center mt-4">
+                <p class="small mb-0" style="color: var(--text-muted);">
+                    <i class="fas fa-lightbulb me-1" style="color: #f59e0b;"></i> 
+                    <strong>Consejo:</strong> Una respuesta detallada ayuda al profesor a entender tus cambios rápidamente.
+                </p>
+                <a href="{% url 'home' %}" class="text-decoration-none small fw-bold mt-2 d-inline-block" 
+                   style="color: var(--primary);">
+                    <i class="fas fa-arrow-left me-1"></i> Volver al inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de alerta -->
+<div id="alertModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4"
+                         id="alertIcon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-exclamation-triangle fa-2x text-white"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-2" id="alertTitle" style="color: var(--text-main);">Atención</h5>
+                <p class="mb-4" id="alertMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Mensaje de alerta
+                </p>
+                <button type="button" class="btn btn-primary-custom w-100 py-2 rounded-3 fw-bold" data-bs-dismiss="modal">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="confirmModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 p-md-5 text-center">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg"
+                         id="confirmIcon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="fas fa-check-double fa-2x text-white"></i>
+                    </div>
+                </div>
+                
+                <h4 class="fw-bold mb-2" id="confirmTitle" style="color: var(--text-main);">¿Marcar como corregida?</h4>
+                <p class="mb-4" id="confirmMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Esta acción notificará al profesor que has realizado los cambios solicitados.
+                </p>
+                
+                <!-- Resumen de la respuesta -->
+                <div class="rounded-3 p-3 mb-4 text-start" style="background: var(--nav-active-bg); border-left: 3px solid #f59e0b;">
+                    <div class="d-flex align-items-start gap-2">
+                        <i class="fas fa-pen mt-1" style="color: #f59e0b; font-size: 0.9rem;"></i>
+                        <div>
+                            <small class="d-block fw-bold" style="color: var(--text-main); font-size: 0.75rem;">RESPUESTA DE CORRECCIÓN</small>
+                            <small id="confirmRespuestaPreview" style="color: var(--text-muted); font-size: 0.7rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">-</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-secondary-custom flex-grow-1 py-2 rounded-3" 
+                            data-bs-dismiss="modal" style="font-weight: 500;">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary-custom flex-grow-1 py-2 rounded-3 fw-bold" 
+                            id="confirmarResolverBtn">
+                        <i class="fas fa-check me-2"></i> CONFIRMAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables globales
+    let alertModal = null;
+    let confirmModal = null;
+    
+    // Función para mostrar alertas estilizadas
+    function mostrarAlerta(titulo, mensaje, tipo = 'error') {
+        const alertIcon = document.getElementById('alertIcon');
+        const alertTitle = document.getElementById('alertTitle');
+        const alertMessage = document.getElementById('alertMessage');
+        
+        if (tipo === 'error') {
+            alertIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle fa-2x text-white"></i>';
+        } else if (tipo === 'warning') {
+            alertIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-circle fa-2x text-white"></i>';
+        } else if (tipo === 'success') {
+            alertIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            alertIcon.innerHTML = '<i class="fas fa-check-circle fa-2x text-white"></i>';
+        }
+        
+        alertTitle.textContent = titulo;
+        alertMessage.textContent = mensaje;
+        
+        if (alertModal) {
+            alertModal.show();
+        }
+    }
+    
+    // Función para mostrar confirmación estilizada
+    function mostrarConfirmacionResolver() {
+        const descripcion = document.getElementById('descripcion').value.trim();
+        const preview = descripcion.length > 100 ? descripcion.substring(0, 100) + '...' : descripcion;
+        document.getElementById('confirmRespuestaPreview').textContent = preview || '(Sin descripción)';
+        
+        if (confirmModal) {
+            confirmModal.show();
+        }
+    }
+    
+    // Contador de caracteres
+    function contarCaracteres() {
+        const descripcion = document.getElementById('descripcion');
+        const contador = document.getElementById('contadorDescripcion');
+        const actual = descripcion.value.length;
+        
+        contador.textContent = `${actual} caracteres`;
+        
+        if (actual < 20 && actual > 0) {
+            contador.style.color = '#f59e0b';
+        } else if (actual >= 20) {
+            contador.style.color = '#10b981';
+        } else {
+            contador.style.color = '';
+        }
+    }
+    
+    // Ejecutar envío del formulario
+    function ejecutarEnvio() {
+        const btn = document.getElementById('btnResolver');
+        const form = document.getElementById('formResolver');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> ENVIANDO...';
+        form.submit();
+    }
+    
+    // Validación del formulario antes de enviar
+    document.getElementById('formResolver').addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevenir envío directo
+        
+        const descripcion = document.getElementById('descripcion').value.trim();
+        const check1 = document.getElementById('check1').checked;
+        const check2 = document.getElementById('check2').checked;
+        const check3 = document.getElementById('check3').checked;
+        
+        // Validación de descripción
+        if (descripcion.length < 10) {
+            mostrarAlerta('Respuesta muy corta', 'Por favor describe los cambios realizados (mínimo 10 caracteres).', 'warning');
+            document.getElementById('descripcion').focus();
+            return false;
+        }
+        
+        // Validación de checklist
+        if (!check1) {
+            mostrarAlerta('Checklist incompleta', 'Por favor confirma que has leído la observación del profesor.', 'warning');
+            return false;
+        }
+        
+        if (!check2) {
+            mostrarAlerta('Checklist incompleta', 'Por favor confirma que has realizado los cambios solicitados.', 'warning');
+            return false;
+        }
+        
+        if (!check3) {
+            mostrarAlerta('Checklist incompleta', 'Por favor confirma que tu respuesta describe claramente las modificaciones.', 'warning');
+            return false;
+        }
+        
+        // Mostrar modal de confirmación
+        mostrarConfirmacionResolver();
+        return false;
+    });
+    
+    // Configurar botón de confirmación del modal
+    document.getElementById('confirmarResolverBtn')?.addEventListener('click', function() {
+        if (confirmModal) {
+            confirmModal.hide();
+            ejecutarEnvio();
+        }
+    });
+    
+    // Inicializar modales y contadores
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar modal de alerta
+        const alertModalElement = document.getElementById('alertModal');
+        if (alertModalElement) {
+            alertModal = new bootstrap.Modal(alertModalElement);
+        }
+        
+        // Inicializar modal de confirmación
+        const confirmModalElement = document.getElementById('confirmModal');
+        if (confirmModalElement) {
+            confirmModal = new bootstrap.Modal(confirmModalElement);
+        }
+        
+        // Inicializar contador
+        contarCaracteres();
+        document.getElementById('descripcion').focus();
+        
+        // Mostrar mensajes del backend
+        {% if messages %}
+            {% for message in messages %}
+                mostrarAlerta(
+                    '{{ message.tags|capfirst }}',
+                    '{{ message|escapejs }}',
+                    '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% else %}warning{% endif %}'
+                );
+            {% endfor %}
+        {% endif %}
+    });
+    
+    // Prevenir envío duplicado
+    let isSubmitting = false;
+    window.ejecutarEnvio = function() {
+        if (isSubmitting) return;
+        isSubmitting = true;
+        
+        const btn = document.getElementById('btnResolver');
+        const form = document.getElementById('formResolver');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> ENVIANDO...';
+        form.submit();
+    };
+</script>
+{% endblock %}

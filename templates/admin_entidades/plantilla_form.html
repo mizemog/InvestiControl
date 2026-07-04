@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .plantilla-form-wrapper,
+    .plantilla-form-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .plantilla-form-wrapper .text-muted,
+    .plantilla-form-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .plantilla-form-wrapper .text-primary,
+    .plantilla-form-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-primary-custom {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+        font-weight: 700 !important;
+    }
+    .btn-primary-custom:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+        color: #fff !important;
+    }
+    .btn-primary-custom:disabled {
+        opacity: 0.7 !important;
+        transform: none !important;
+    }
+
+    .btn-secondary-custom {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+        font-weight: 700 !important;
+    }
+    .btn-secondary-custom:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== FORMULARIO ===== */
+    .form-control-custom,
+    .form-select-custom {
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.75rem 1.25rem !important;
+    }
+    .form-control-custom:focus,
+    .form-select-custom:focus {
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+    }
+    .form-control-custom::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7 !important;
+    }
+
+    textarea.form-control-custom {
+        resize: vertical !important;
+        min-height: 80px !important;
+    }
+
+    /* ===== CAMPOS DE NÚMERO ===== */
+    .margin-input {
+        background: transparent !important;
+        border: none !important;
+        padding: 0.25rem 0 !important;
+        font-weight: 700 !important;
+        color: var(--text-main) !important;
+        width: 100% !important;
+        outline: none !important;
+    }
+    .margin-input:focus {
+        box-shadow: 0 0 0 0.15rem rgba(99, 102, 241, 0.2) !important;
+        border-radius: 4px !important;
+    }
+    /* Ocultar flechas en inputs number */
+    .margin-input::-webkit-inner-spin-button,
+    .margin-input::-webkit-outer-spin-button {
+        -webkit-appearance: none !important;
+        margin: 0 !important;
+    }
+    .margin-input[type="number"] {
+        -moz-appearance: textfield !important;
+    }
+
+    .margin-box {
+        background: var(--nav-active-bg) !important;
+        border-radius: 12px !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    .margin-box label {
+        color: var(--text-muted) !important;
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        display: block !important;
+        margin-bottom: 0.2rem !important;
+    }
+
+    /* ===== SWITCH ===== */
+    .form-switch-custom .form-check-input {
+        cursor: pointer !important;
+        background-color: var(--nav-active-bg) !important;
+        border-color: var(--border) !important;
+    }
+    .form-switch-custom .form-check-input:checked {
+        background-color: var(--primary) !important;
+        border-color: var(--primary) !important;
+    }
+    .form-switch-custom .form-check-label {
+        cursor: pointer !important;
+    }
+
+    .default-box {
+        background: var(--nav-active-bg) !important;
+        border-radius: 12px !important;
+        padding: 0.75rem 1rem !important;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 575px) {
+        .card { border-radius: 16px !important; }
+        .margin-box { padding: 0.4rem 0.6rem !important; }
+        .margin-box label { font-size: 0.6rem !important; }
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .card-animated {
+        animation: slideUp 0.5s ease;
+    }
+</style>
+
+<div class="plantilla-form-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="d-flex align-items-center mb-4 mb-md-5">
+                <a href="{% url 'plantilla_lista' %}" class="btn btn-action-icon me-3 flex-shrink-0">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h2 class="fw-bold h3 h2-md mb-0" style="color: var(--text-main);">Maquetación de Reporte</h2>
+                    <p class="small mb-0 d-none d-sm-block" style="color: var(--text-muted);">
+                        {% if p %}Editar plantilla existente{% else %}Crear nueva plantilla{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-lg p-3 p-md-5 card-animated" 
+                 style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="color: var(--text-muted);">
+                            <i class="fas fa-tag me-1"></i> Nombre Identificador
+                        </label>
+                        <input type="text" name="nombre" class="form-control form-control-custom" 
+                               value="{{ p.nombre }}" placeholder="Ej: Formato Tesis" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="color: var(--text-muted);">
+                            <i class="fas fa-heading me-1"></i> Encabezado (Membrete)
+                        </label>
+                        <textarea name="encabezado" class="form-control form-control-custom" 
+                                  rows="4" placeholder="República Bolivariana de Venezuela...">{{ p.encabezado }}</textarea>
+                        <small class="text-muted" style="font-size: 0.7rem;">
+                            <i class="fas fa-info-circle me-1"></i>Este texto aparecerá en la parte superior de cada página del reporte
+                        </small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase" style="color: var(--text-muted);">
+                            <i class="fas fa-level-down-alt me-1"></i> Pie de Página
+                        </label>
+                        <input type="text" name="pie_pagina" class="form-control form-control-custom" 
+                               value="{{ p.pie_pagina }}" placeholder="Ej: Universidad - Año 2024">
+                    </div>
+
+                    <!-- CONFIGURACIÓN DE MÁRGENES -->
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase mb-3" style="color: var(--text-muted);">
+                            <i class="fas fa-arrows-alt me-1"></i> Configuración de Márgenes (px)
+                        </label>
+                        <div class="row g-2 g-md-3">
+                            <div class="col-6 col-md-3">
+                                <div class="margin-box">
+                                    <label><i class="fas fa-arrow-up me-1"></i> Superior</label>
+                                    <input type="number" name="m_sup" class="margin-input" 
+                                           value="{{ p.margen_superior|default:50 }}" min="0" max="200">
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="margin-box">
+                                    <label><i class="fas fa-arrow-down me-1"></i> Inferior</label>
+                                    <input type="number" name="m_inf" class="margin-input" 
+                                           value="{{ p.margen_inferior|default:50 }}" min="0" max="200">
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="margin-box">
+                                    <label><i class="fas fa-arrow-left me-1"></i> Izquierdo</label>
+                                    <input type="number" name="m_izq" class="margin-input" 
+                                           value="{{ p.margen_izquierdo|default:50 }}" min="0" max="200">
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="margin-box">
+                                    <label><i class="fas fa-arrow-right me-1"></i> Derecho</label>
+                                    <input type="number" name="m_der" class="margin-input" 
+                                           value="{{ p.margen_derecho|default:50 }}" min="0" max="200">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Switch de plantilla predeterminada -->
+                    <div class="form-switch-custom default-box mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="default" id="def" 
+                                   {% if p.es_predeterminada %}checked{% endif %}>
+                            <label class="form-check-label fw-bold" for="def" style="color: var(--text-main);">
+                                <i class="fas fa-star me-2" style="color: var(--primary);"></i>
+                                Establecer como plantilla predeterminada
+                            </label>
+                            <p class="small mb-0 ms-4 ps-2" style="color: var(--text-muted);">
+                                Esta plantilla se usará automáticamente en nuevos reportes
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+                        <a href="{% url 'plantilla_lista' %}" class="btn btn-secondary-custom flex-grow-1 py-3 rounded-4">
+                            <i class="fas fa-times me-2"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom flex-grow-1 py-3 rounded-4 shadow fw-bold">
+                            <i class="fas fa-save me-2"></i> 
+                            {% if p %}ACTUALIZAR PLANTILLA{% else %}GUARDAR PLANTILLA{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

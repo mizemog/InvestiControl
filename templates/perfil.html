@@ -1,0 +1,765 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .perfil-wrapper,
+    .perfil-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .perfil-wrapper .text-muted,
+    .perfil-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .perfil-wrapper .text-primary,
+    .perfil-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepciones para colores semánticos fijos */
+    .perfil-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .perfil-wrapper .text-warning {
+        color: #f59e0b !important;
+    }
+    .perfil-wrapper .text-info {
+        color: #3b82f6 !important;
+    }
+    .perfil-wrapper .text-danger {
+        color: #ef4444 !important;
+    }
+
+    /* ===== AVATAR ===== */
+    .avatar-wrapper {
+        position: relative;
+        cursor: pointer;
+        display: inline-block;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+    }
+    
+    .avatar-wrapper:hover { 
+        transform: scale(1.05); 
+    }
+    
+    .avatar-circle {
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .avatar-wrapper:hover .avatar-circle {
+        box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.2) !important;
+    }
+
+    .avatar-overlay {
+        position: absolute;
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        color: white !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+    
+    .avatar-wrapper:hover .avatar-overlay { 
+        opacity: 1; 
+    }
+
+    /* ===== FIRMA ===== */
+    .firma-dropzone { 
+        transition: all 0.3s ease; 
+        background: var(--nav-active-bg) !important;
+        border: 2px dashed var(--border) !important;
+        border-radius: 16px !important;
+        cursor: pointer;
+    }
+    
+    .firma-dropzone:hover {
+        border-color: var(--primary) !important;
+        background: var(--primary-light) !important;
+        transform: translateY(-2px);
+    }
+    
+    .firma-overlay {
+        position: absolute;
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%;
+        background: rgba(0,0,0,0.4);
+        color: white !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        font-size: 0.8rem;
+        gap: 0.5rem;
+    }
+    
+    .firma-dropzone:hover .firma-overlay {
+        opacity: 1;
+    }
+
+    /* ===== INFO CARDS ===== */
+    .info-card {
+        background: var(--nav-active-bg) !important;
+        transition: all 0.2s ease;
+        border-radius: 12px !important;
+        padding: 0.75rem 1rem !important;
+    }
+    
+    .info-card:hover {
+        background: var(--border) !important;
+        transform: translateY(-1px);
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-primary-custom {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-primary-custom:hover {
+        background: #818cf8 !important;
+        color: #fff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-outline-danger-custom {
+        background: transparent !important;
+        color: #ef4444 !important;
+        border: 1px solid #ef4444 !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-outline-danger-custom:hover {
+        background: #ef4444 !important;
+        color: #fff !important;
+    }
+
+    .btn-secondary-custom {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-secondary-custom:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-content-custom {
+        background: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 24px !important;
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .card-animated {
+        animation: fadeInUp 0.4s ease forwards;
+    }
+    
+    .card-animated:nth-child(2) { animation-delay: 0.1s; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 575px) {
+        .avatar-circle {
+            width: 100px !important;
+            height: 100px !important;
+        }
+        
+        .avatar-circle span {
+            font-size: 2.2rem !important;
+        }
+        
+        .card {
+            border-radius: 16px !important;
+        }
+        
+        .info-card {
+            padding: 0.75rem !important;
+        }
+    }
+    
+    /* ===== TEMA OSCURO - AJUSTE DE IMÁGENES ===== */
+    [data-theme="dark"] img[style*="mix-blend-mode"] { 
+        filter: brightness(0.9) contrast(1.1); 
+    }
+</style>
+
+<div class="perfil-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <!-- Header -->
+            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center mb-4 mb-md-5 gap-3">
+                <div>
+                    <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Mi Perfil</h2>
+                    <p class="mb-0" style="color: var(--text-muted);">
+                        <i class="fas fa-user-cog me-1"></i> Gestiona tu identidad digital y seguridad
+                    </p>
+                </div>
+                <a href="{% url 'home' %}" class="btn btn-secondary-custom btn-sm rounded-pill px-3 ms-md-auto">
+                    <i class="fas fa-arrow-left me-1"></i> Volver
+                </a>
+            </div>
+
+            <!-- TARJETA PRINCIPAL: AVATAR Y DATOS -->
+            <div class="card border-0 shadow-sm p-3 p-md-5 mb-4 card-animated" 
+                 style="background-color: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
+                
+                <!-- Sección Avatar y Nombre -->
+                <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start mb-4 gap-4">
+                    
+                    <!-- FOTO DE PERFIL INTERACTIVA -->
+                    <div class="position-relative flex-shrink-0">
+                        <form method="post" enctype="multipart/form-data" id="form-avatar">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="update_avatar">
+                            <label for="avatar-input" class="avatar-wrapper" title="Haz clic para cambiar tu foto">
+                                <div class="avatar-circle" style="width: 120px; height: 120px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: 4px solid var(--bg-card); box-shadow: 0 0 0 3px var(--primary-light);">
+                                    {% if user.avatar %}
+                                        <img src="{{ user.avatar.url }}?t={% now 'U' %}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <span class="text-white fw-bold" style="font-size: 2.8rem;">{{ user.username|slice:":2"|upper }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="avatar-overlay">
+                                    <i class="fas fa-camera fa-lg"></i>
+                                    <small class="d-block mt-1">Cambiar</small>
+                                </div>
+                            </label>
+                            <input type="file" name="avatar" id="avatar-input" hidden accept="image/*" onchange="previewAvatar(this);">
+                        </form>
+                        {% if user.avatar %}
+                        <button type="button" class="btn btn-danger btn-sm rounded-circle position-absolute" 
+                                style="top: -5px; right: -5px; width: 28px; height: 28px; padding: 0; font-size: 0.7rem; background: #ef4444; color: #fff; border: none;"
+                                title="Eliminar foto" onclick="mostrarConfirmacionEliminarAvatar()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <!-- Información del Usuario -->
+                    <div class="text-center text-sm-start flex-grow-1">
+                        <h3 class="fw-bold mb-1" style="color: var(--text-main);">{{ user.get_full_name|default:user.username }}</h3>
+                        <p class="mb-2" style="color: var(--text-muted);">
+                            <i class="fas fa-envelope me-1 opacity-50"></i> {{ user.email }}
+                        </p>
+                        <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
+                            <span class="badge rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1" 
+                                  style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.15); color: var(--primary);">
+                                <i class="fas fa-shield-halved"></i> {{ user.rol|upper }}
+                            </span>
+                            {% if user.firma %}
+                            <span class="badge rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1" 
+                                  style="font-size: 0.7rem; background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                                <i class="fas fa-signature"></i> Firma Configurada
+                            </span>
+                            {% endif %}
+                            <span class="badge rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1" 
+                                  style="font-size: 0.7rem; background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                                <i class="fas fa-circle" style="font-size: 0.4rem;"></i> Activo
+                            </span>
+                        </div>
+                        
+                        <!-- Última conexión -->
+                        <p class="mt-2 mb-0" style="font-size: 0.75rem; color: var(--text-muted);">
+                            <i class="fas fa-clock me-1 opacity-50"></i> 
+                            Último acceso: {{ user.last_login|date:"d/m/Y H:i"|default:"Primer acceso" }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Grid de Datos -->
+                <div class="row g-3 g-md-4">
+                    <div class="col-12 col-sm-6">
+                        <div class="info-card">
+                            <small class="fw-bold text-uppercase d-block mb-1" style="color: var(--text-muted); font-size: 0.65rem; letter-spacing: 0.5px;">
+                                <i class="fas fa-user me-1"></i> Nombre de Usuario
+                            </small>
+                            <span class="fw-bold" style="color: var(--text-main);">
+                                <i class="fas fa-at me-1 opacity-50"></i> {{ user.username }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <div class="info-card">
+                            <small class="fw-bold text-uppercase d-block mb-1" style="color: var(--text-muted); font-size: 0.65rem; letter-spacing: 0.5px;">
+                                <i class="fas fa-envelope me-1"></i> Correo Electrónico
+                            </small>
+                            <span class="fw-bold text-break" style="color: var(--text-main); font-size: 0.9rem;">
+                                {{ user.email }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <div class="info-card">
+                            <small class="fw-bold text-uppercase d-block mb-1" style="color: var(--text-muted); font-size: 0.65rem; letter-spacing: 0.5px;">
+                                <i class="fas fa-calendar-alt me-1"></i> Miembro Desde
+                            </small>
+                            <span class="fw-bold" style="color: var(--text-main);">
+                                <i class="fas fa-calendar-check me-1 opacity-50"></i> {{ user.date_joined|date:"d M, Y" }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <div class="info-card">
+                            <small class="fw-bold text-uppercase d-block mb-1" style="color: var(--text-muted); font-size: 0.65rem; letter-spacing: 0.5px;">
+                                <i class="fas fa-fingerprint me-1"></i> ID de Usuario
+                            </small>
+                            <span class="fw-bold" style="color: var(--text-muted); font-size: 0.8rem; font-family: monospace;">
+                                #{{ user.id|stringformat:"06d" }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Estadísticas rápidas -->
+                <div class="row g-3 g-md-4 mt-3">
+                    <div class="col-6 col-sm-3">
+                        <div class="text-center p-3 rounded-3" style="background: var(--nav-active-bg);">
+                            <h4 class="fw-bold mb-0" style="color: var(--primary);">{{ proyectos_count|default:0 }}</h4>
+                            <small class="text-muted" style="font-size: 0.65rem;">Proyectos</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="text-center p-3 rounded-3" style="background: var(--nav-active-bg);">
+                            <h4 class="fw-bold mb-0" style="color: #10b981;">{{ revisiones_count|default:0 }}</h4>
+                            <small class="text-muted" style="font-size: 0.65rem;">Revisiones</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="text-center p-3 rounded-3" style="background: var(--nav-active-bg);">
+                            <h4 class="fw-bold mb-0" style="color: #3b82f6;">{{ entregas_count|default:0 }}</h4>
+                            <small class="text-muted" style="font-size: 0.65rem;">Entregas</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="text-center p-3 rounded-3" style="background: var(--nav-active-bg);">
+                            <h4 class="fw-bold mb-0" style="color: #f59e0b;">{{ notificaciones_count|default:0 }}</h4>
+                            <small class="text-muted" style="font-size: 0.65rem;">Notificaciones</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN DE ACCIONES: CLAVE Y FIRMA -->
+            <div class="row g-3 g-md-4">
+                <!-- Cambio de Contraseña -->
+                <div class="{% if user.rol != 'estudiante' %}col-md-6{% else %}col-12{% endif %}">
+                    <div class="card border-0 shadow-sm p-3 p-md-4 h-100 card-animated" 
+                         style="background-color: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 20px;
+                                border-left: 4px solid var(--primary) !important;">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div class="rounded-3 p-2" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h5 class="fw-bold mb-0" style="color: var(--text-main); font-size: 1rem;">Seguridad</h5>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;" class="mb-3">
+                            Actualiza tu contraseña mediante verificación por correo electrónico.
+                        </p>
+                        <a href="{% url 'enviar_otp' %}" class="btn btn-primary-custom rounded-pill px-4 py-2 fw-bold w-100 w-sm-auto">
+                            <i class="fas fa-key me-2"></i> Cambiar Contraseña
+                        </a>
+                        <small class="text-muted d-block mt-2" style="font-size: 0.65rem;">
+                            <i class="fas fa-info-circle me-1"></i> Recibirás un código de verificación
+                        </small>
+                    </div>
+                </div>
+
+                {% if user.rol != 'estudiante' %}
+                <!-- FIRMA DIGITAL -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm p-3 p-md-4 h-100 card-animated" 
+                         style="background-color: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 20px;">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div class="rounded-3 p-2" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                                <i class="fas fa-signature"></i>
+                            </div>
+                            <h5 class="fw-bold mb-0" style="color: var(--text-main); font-size: 1rem;">Firma Digital</h5>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;" class="mb-3">
+                            Sube tu firma para que aparezca en certificados y documentos oficiales.
+                        </p>
+
+                        <form method="post" enctype="multipart/form-data" id="form-firma">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="update_firma">
+                            <label for="firma-input" class="d-block p-3 rounded-4 text-center firma-dropzone">
+                                {% if user.firma %}
+                                    <div class="position-relative d-inline-block">
+                                        <img src="{{ user.firma.url }}?t={% now 'U' %}" style="max-height: 70px; width: auto; mix-blend-mode: multiply;" class="opacity-90">
+                                        <div class="firma-overlay">
+                                            <i class="fas fa-sync-alt"></i> Cambiar
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="py-3">
+                                        <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2 d-block opacity-50" style="color: var(--text-muted) !important;"></i>
+                                        <p class="mb-1 text-muted fw-bold" style="color: var(--text-muted) !important; font-size: 0.85rem;">Clic para subir firma</p>
+                                        <small class="text-muted" style="color: var(--text-muted) !important; font-size: 0.65rem;">PNG o JPG, fondo transparente recomendado</small>
+                                    </div>
+                                {% endif %}
+                                <input type="file" name="firma" id="firma-input" hidden accept="image/*" onchange="subirFirma(this)">
+                            </label>
+                        </form>
+                        
+                        {% if user.firma %}
+                        <button type="button" class="btn btn-outline-danger-custom btn-sm rounded-pill mt-2 w-100" 
+                                onclick="mostrarConfirmacionEliminarFirma()" style="font-size: 0.75rem;">
+                            <i class="fas fa-trash-alt me-1"></i> Eliminar Firma
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de alerta estilizado -->
+<div id="alertModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4"
+                         id="alertIcon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-exclamation-triangle fa-2x text-white"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-2" id="alertTitle" style="color: var(--text-main);">Atención</h5>
+                <p class="mb-4" id="alertMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Mensaje de alerta
+                </p>
+                <button type="button" class="btn btn-primary-custom w-100 py-2 rounded-3 fw-bold" data-bs-dismiss="modal">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación estilizado -->
+<div id="confirmModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 p-md-5 text-center">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg"
+                         id="confirmIcon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-trash-alt fa-2x text-white"></i>
+                    </div>
+                </div>
+                
+                <h4 class="fw-bold mb-2" id="confirmTitle" style="color: var(--text-main);">¿Eliminar archivo?</h4>
+                <p class="mb-4" id="confirmMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Esta acción no se puede deshacer.
+                </p>
+                
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-secondary-custom flex-grow-1 py-2 rounded-3" 
+                            data-bs-dismiss="modal" style="font-weight: 500;">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger flex-grow-1 py-2 rounded-3 fw-bold" 
+                            id="confirmarAccionBtn"
+                            style="background: linear-gradient(135deg, #ef4444, #dc2626); border: none; color: #fff;">
+                        <i class="fas fa-trash-alt me-2"></i> ELIMINAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables globales
+    let alertModal = null;
+    let confirmModal = null;
+    let pendingAction = null;
+    
+    // Función para mostrar alertas estilizadas
+    function mostrarAlerta(titulo, mensaje, tipo = 'error') {
+        const alertIcon = document.getElementById('alertIcon');
+        const alertTitle = document.getElementById('alertTitle');
+        const alertMessage = document.getElementById('alertMessage');
+        
+        if (tipo === 'error') {
+            alertIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle fa-2x text-white"></i>';
+        } else if (tipo === 'warning') {
+            alertIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-circle fa-2x text-white"></i>';
+        } else if (tipo === 'success') {
+            alertIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            alertIcon.innerHTML = '<i class="fas fa-check-circle fa-2x text-white"></i>';
+        }
+        
+        alertTitle.textContent = titulo;
+        alertMessage.textContent = mensaje;
+        
+        if (alertModal) {
+            alertModal.show();
+        }
+    }
+    
+    // Mostrar confirmación de eliminación de avatar
+    function mostrarConfirmacionEliminarAvatar() {
+        document.getElementById('confirmTitle').textContent = '¿Eliminar foto de perfil?';
+        document.getElementById('confirmMessage').textContent = 'Esta acción eliminará tu foto de perfil. Puedes subir una nueva después.';
+        pendingAction = 'avatar';
+        
+        if (confirmModal) {
+            confirmModal.show();
+        }
+    }
+    
+    // Mostrar confirmación de eliminación de firma
+    function mostrarConfirmacionEliminarFirma() {
+        document.getElementById('confirmTitle').textContent = '¿Eliminar firma digital?';
+        document.getElementById('confirmMessage').textContent = 'Esta acción eliminará tu firma de todos los documentos donde aparezca.';
+        pendingAction = 'firma';
+        
+        if (confirmModal) {
+            confirmModal.show();
+        }
+    }
+    
+    // Ejecutar acción de eliminación según el tipo
+    function ejecutarEliminacion() {
+        if (pendingAction === 'avatar') {
+            // Crear formulario para eliminar avatar
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = window.location.href;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (csrfToken) {
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = 'csrfmiddlewaretoken';
+                tokenInput.value = csrfToken.value;
+                form.appendChild(tokenInput);
+            }
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'delete_avatar';
+            form.appendChild(actionInput);
+            document.body.appendChild(form);
+            form.submit();
+        } else if (pendingAction === 'firma') {
+            // Crear formulario para eliminar firma
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = window.location.href;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (csrfToken) {
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = 'csrfmiddlewaretoken';
+                tokenInput.value = csrfToken.value;
+                form.appendChild(tokenInput);
+            }
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'delete_firma';
+            form.appendChild(actionInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+        pendingAction = null;
+    }
+    
+    // Previsualizar avatar antes de subir
+    function previewAvatar(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            
+            // Validar tipo de archivo
+            if (!file.type.startsWith('image/')) {
+                mostrarAlerta('Formato no válido', 'Por favor selecciona una imagen (JPG, PNG, GIF).', 'warning');
+                input.value = '';
+                return;
+            }
+            
+            // Validar tamaño (máx 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                mostrarAlerta('Archivo muy grande', 'La imagen no debe superar los 2MB.', 'warning');
+                input.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const avatarImg = document.querySelector('.avatar-circle img');
+                const avatarSpan = document.querySelector('.avatar-circle span');
+                
+                if (avatarImg) {
+                    avatarImg.src = e.target.result;
+                } else if (avatarSpan) {
+                    avatarSpan.style.display = 'none';
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    document.querySelector('.avatar-circle').appendChild(img);
+                }
+            }
+            reader.readAsDataURL(file);
+            
+            // Auto-submit después de previsualizar
+            document.getElementById('form-avatar').submit();
+        }
+    }
+    
+    // Subir firma con validación
+    function subirFirma(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            
+            // Validar tipo de archivo
+            if (!file.type.startsWith('image/')) {
+                mostrarAlerta('Formato no válido', 'Por favor selecciona una imagen (JPG, PNG).', 'warning');
+                input.value = '';
+                return;
+            }
+            
+            // Validar tamaño (máx 1MB para firma)
+            if (file.size > 1 * 1024 * 1024) {
+                mostrarAlerta('Archivo muy grande', 'La firma no debe superar 1MB.', 'warning');
+                input.value = '';
+                return;
+            }
+            
+            // Mostrar confirmación antes de subir
+            mostrarConfirmacionSubidaFirma();
+            
+            function ejecutarSubida() {
+                document.getElementById('form-firma').submit();
+            }
+            
+            window.subirFirmaConfirmada = ejecutarSubida;
+        }
+    }
+    
+    // Confirmar subida de firma
+    function mostrarConfirmacionSubidaFirma() {
+        const confirmIcon = document.getElementById('confirmIcon');
+        const confirmTitle = document.getElementById('confirmTitle');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const confirmBtn = document.getElementById('confirmarAccionBtn');
+        
+        confirmIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        confirmIcon.innerHTML = '<i class="fas fa-cloud-upload-alt fa-2x text-white"></i>';
+        confirmTitle.textContent = '¿Subir firma digital?';
+        confirmMessage.textContent = 'La firma se aplicará automáticamente a tus documentos oficiales.';
+        confirmBtn.innerHTML = '<i class="fas fa-upload me-2"></i> SUBIR FIRMA';
+        confirmBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        
+        pendingAction = 'subir_firma';
+        
+        if (confirmModal) {
+            confirmModal.show();
+        }
+    }
+    
+    // Configurar botón de confirmación del modal
+    document.getElementById('confirmarAccionBtn')?.addEventListener('click', function() {
+        if (confirmModal) {
+            confirmModal.hide();
+            if (pendingAction === 'avatar' || pendingAction === 'firma') {
+                ejecutarEliminacion();
+            } else if (pendingAction === 'subir_firma' && window.subirFirmaConfirmada) {
+                window.subirFirmaConfirmada();
+            }
+            pendingAction = null;
+        }
+    });
+    
+    // Restaurar modal a estado original al cerrar
+    document.getElementById('confirmModal')?.addEventListener('hidden.bs.modal', function() {
+        const confirmIcon = document.getElementById('confirmIcon');
+        const confirmBtn = document.getElementById('confirmarAccionBtn');
+        confirmIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        confirmIcon.innerHTML = '<i class="fas fa-trash-alt fa-2x text-white"></i>';
+        confirmBtn.innerHTML = '<i class="fas fa-trash-alt me-2"></i> ELIMINAR';
+        confirmBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        pendingAction = null;
+        window.subirFirmaConfirmada = null;
+    });
+    
+    // Inicializar modales
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar modal de alerta
+        const alertModalElement = document.getElementById('alertModal');
+        if (alertModalElement) {
+            alertModal = new bootstrap.Modal(alertModalElement);
+        }
+        
+        // Inicializar modal de confirmación
+        const confirmModalElement = document.getElementById('confirmModal');
+        if (confirmModalElement) {
+            confirmModal = new bootstrap.Modal(confirmModalElement);
+        }
+        {% if messages %}
+            {% for message in messages %}
+                mostrarAlerta(
+                    '{{ message.tags|capfirst }}',
+                    '{{ message|escapejs }}',
+                    '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% else %}warning{% endif %}'
+                );
+            {% endfor %}
+        {% endif %}
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('avatar') === 'updated') {
+            mostrarAlerta('Foto actualizada', 'Tu foto de perfil se ha actualizado correctamente.', 'success');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        if (urlParams.get('firma') === 'updated') {
+            mostrarAlerta('Firma actualizada', 'Tu firma digital se ha actualizado correctamente.', 'success');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        if (urlParams.get('avatar') === 'deleted') {
+            mostrarAlerta('Foto eliminada', 'Tu foto de perfil se ha eliminado correctamente.', 'success');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        if (urlParams.get('firma') === 'deleted') {
+            mostrarAlerta('Firma eliminada', 'Tu firma digital se ha eliminado correctamente.', 'success');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+</script>
+{% endblock %}

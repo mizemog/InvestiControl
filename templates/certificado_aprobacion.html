@@ -1,0 +1,534 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* 1. VISTA WEB RESPONSIVE */
+    .cert-container { 
+        padding: 20px 10px; 
+        background: var(--bg-body);
+        max-width: 100%;
+        overflow-x: auto;
+    }
+    
+    /* Contenedor para centrar en pantalla */
+    .cert-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 600px;
+    }
+
+    /* 2. CONFIGURACIÓN DEL DIPLOMA (A4 ESTRICTO) */
+    #printable-certificate {
+        background-color: white !important;
+        color: black !important;
+        width: 21cm;
+        min-height: 29.7cm;
+        margin: 0 auto;
+        padding: 1.5cm;
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        font-family: "Times New Roman", Times, serif;
+        box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .cert-inner-border {
+        border: 4px double #4f46e5;
+        height: 100%;
+        padding: 1.5cm;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        position: relative;
+        box-sizing: border-box;
+        min-height: 26cm;
+    }
+
+    /* Marca de agua */
+    .cert-watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 12cm;
+        color: rgba(79, 70, 229, 0.03);
+        z-index: 0;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .cert-content { 
+        position: relative; 
+        z-index: 1;
+        flex: 1;
+    }
+
+    .cert-header {
+        margin-bottom: 1cm;
+    }
+
+    .cert-university {
+        letter-spacing: 4px; 
+        font-weight: bold; 
+        color: #6366f1; 
+        margin-bottom: 5px; 
+        font-size: 10pt;
+        text-transform: uppercase;
+    }
+
+    .cert-title {
+        font-size: 26pt;
+        font-weight: bold;
+        margin: 0.4cm 0;
+        color: #1e293b;
+        text-transform: uppercase;
+        line-height: 1.2;
+    }
+
+    .cert-divider {
+        width: 80px; 
+        height: 3px; 
+        background: #4f46e5; 
+        margin: 0 auto 0.6cm;
+    }
+
+    .cert-text {
+        font-size: 12pt;
+        line-height: 1.8;
+        color: #334155;
+        text-align: justify;
+        margin-bottom: 0.5cm;
+    }
+
+    .cert-project {
+        font-size: 14pt;
+        font-weight: bold;
+        color: #4f46e5;
+        font-style: italic;
+        margin: 0.5cm 0;
+        text-align: center;
+        line-height: 1.4;
+    }
+
+    .cert-authors {
+        font-size: 15pt; 
+        font-weight: bold; 
+        margin: 0.3cm 0; 
+        color: #1e293b;
+        text-align: center;
+    }
+
+    .cert-approval {
+        margin: 0.8cm 0;
+    }
+
+    .cert-approval-text {
+        font-size: 34pt; 
+        font-weight: 900; 
+        color: #10b981; 
+        letter-spacing: 8px;
+        text-transform: uppercase;
+    }
+
+    /* SECCIÓN DE FIRMAS MEJORADA */
+    .cert-signatures {
+        margin-top: auto;
+        display: flex;
+        justify-content: space-around;
+        align-items: flex-end;
+        padding: 0 0.5cm 0.5cm 0.5cm;
+        gap: 2cm;
+    }
+
+    .sig-box {
+        flex: 1;
+        max-width: 5cm;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .sig-img-container {
+        height: 80px;
+        width: 100%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        margin-bottom: 2px;
+    }
+
+    .sig-img-container img {
+        max-height: 75px;
+        width: auto;
+        mix-blend-mode: multiply;
+        object-fit: contain;
+    }
+
+    .sig-line {
+        width: 100%;
+        border-top: 1.5px solid #000;
+        margin-bottom: 8px;
+    }
+
+    .sig-name {
+        font-size: 9pt;
+        font-weight: bold;
+        margin-bottom: 2px;
+        color: #000;
+    }
+
+    .sig-role {
+        font-size: 7.5pt;
+        color: #64748b;
+        margin-bottom: 0;
+    }
+
+    .cert-footer {
+        border-top: 1px solid #e2e8f0;
+        padding-top: 8px;
+        margin-top: 0.3cm;
+    }
+
+    .cert-verification {
+        font-size: 6pt;
+        letter-spacing: 1px;
+        color: #94a3b8;
+        text-align: center;
+    }
+
+    /* 3. BOTONES DE ACCIÓN */
+    .cert-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-cert {
+        padding: 0.75rem 2rem;
+        border-radius: 50px;
+        font-weight: 700;
+        border: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .btn-print {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-print:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-download {
+        background: var(--nav-active-bg);
+        color: var(--text-main);
+        border: 1px solid var(--border);
+    }
+
+    .btn-download:hover {
+        background: var(--border);
+    }
+
+    .btn-back {
+        background: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+    }
+
+    .btn-back:hover {
+        background: var(--nav-active-bg);
+        color: var(--text-main);
+    }
+
+    /* 4. RESPONSIVE PARA PANTALLA */
+    @media (max-width: 768px) {
+        .cert-container {
+            padding: 10px 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .cert-wrapper {
+            justify-content: flex-start;
+            min-width: 21cm;
+        }
+        
+        #printable-certificate {
+            transform: scale(0.7);
+            transform-origin: top center;
+            margin-bottom: -8cm;
+        }
+        
+        .cert-actions {
+            flex-direction: column;
+            align-items: center;
+            padding: 0 1rem;
+        }
+        
+        .btn-cert {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        #printable-certificate {
+            transform: scale(0.5);
+            transform-origin: top center;
+            margin-bottom: -14cm;
+        }
+    }
+
+    /* 5. REGLAS DE IMPRESIÓN */
+    @media print {
+        @page { 
+            size: A4; 
+            margin: 0; 
+        }
+        
+        body * { 
+            visibility: hidden; 
+        }
+        
+        #printable-certificate, 
+        #printable-certificate * { 
+            visibility: visible; 
+        }
+        
+        #printable-certificate {
+            position: fixed; 
+            left: 0; 
+            top: 0;
+            width: 21cm !important; 
+            height: 29.7cm !important;
+            margin: 0 !important; 
+            padding: 1.5cm !important;
+            border: none !important; 
+            box-shadow: none !important;
+            transform: none !important;
+        }
+        
+        .cert-inner-border {
+            min-height: auto;
+            height: 100%;
+        }
+        
+        * { 
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important; 
+        }
+        
+        .cert-actions {
+            display: none !important;
+        }
+        
+        /* Forzar colores en impresión */
+        .cert-project { color: #4f46e5 !important; }
+        .cert-approval-text { color: #10b981 !important; }
+        .cert-title { color: #1e293b !important; }
+    }
+
+    /* Tooltip de zoom en desktop */
+    @media (min-width: 769px) {
+        #printable-certificate:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 50px rgba(0,0,0,0.4);
+            cursor: zoom-in;
+        }
+    }
+</style>
+
+<div class="cert-container">
+    <!-- Botones de Acción (no se imprimen) -->
+    <div class="cert-actions d-print-none">
+        <a href="{% url 'gestion_tesis_maestro' %}" class="btn-cert btn-back">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+        <button onclick="descargarPDF()" class="btn-cert btn-download">
+            <i class="fas fa-download"></i> Descargar PDF
+        </button>
+    </div>
+
+    <!-- Vista previa del certificado -->
+    <div class="cert-wrapper">
+        <div id="printable-certificate">
+            <!-- Marca de agua -->
+            <div class="cert-watermark">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            
+            <div class="cert-inner-border">
+                <!-- Contenido principal -->
+                <div class="cert-content">
+                    <!-- Encabezado -->
+                    <div class="cert-header">
+                        <p class="cert-university">República Universitaria</p>
+                        <h1 class="cert-title">Acta de Aprobación</h1>
+                        <div class="cert-divider"></div>
+                    </div>
+
+                    <!-- Cuerpo del certificado -->
+                    <div class="cert-text">
+                        <p style="margin-bottom: 0.3cm;">
+                            Por medio de la presente, el Comité Evaluador hace constar que el Proyecto de Investigación titulado:
+                        </p>
+                        
+                        <div class="cert-project">
+                            "{{ proyecto.titulo|upper }}"
+                        </div>
+
+                        <p style="margin-bottom: 0.3cm;">
+                            Presentado por el/los autor(es):
+                        </p>
+                        
+                        <div class="cert-authors">
+                            {% for e in proyecto.estudiantes.all %}
+                                {{ e.get_full_name|upper }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <p style="margin: 0.3cm 0;">
+                            Perteneciente al programa académico de 
+                            <strong>{{ proyecto.carrera.nombre }}</strong>, 
+                            ha sido evaluado bajo los estándares de originalidad y calidad científica, 
+                            obteniendo el dictamen final de:
+                        </p>
+                    </div>
+
+                    <!-- Resultado -->
+                    <div class="cert-approval">
+                        <span class="cert-approval-text">Aprobado</span>
+                        {% if proyecto.fecha_aprobacion %}
+                            <p style="font-size: 10pt; color: #64748b; margin-top: 0.3cm;">
+                                Fecha: {{ proyecto.fecha_aprobacion|date:"d \d\e F \d\e Y" }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Sección de Firmas -->
+                <div class="cert-signatures">
+                    <!-- Firma del Coordinador -->
+                    <div class="sig-box">
+                        <div class="sig-img-container">
+                            {% if user.firma %}
+                                <img src="{{ user.firma.url }}" alt="Firma Coordinador">
+                            {% else %}
+                                <div style="height: 75px;"></div>
+                            {% endif %}
+                        </div>
+                        <div class="sig-line"></div>
+                        <p class="sig-name">{{ user.get_full_name|upper }}</p>
+                        <p class="sig-role">Coordinador Académico</p>
+                    </div>
+                    
+                    <!-- Firma del Tutor -->
+                    <div class="sig-box">
+                        <div class="sig-img-container">
+                            {% with tutor=proyecto.profesores.first %}
+                                {% if tutor and tutor.firma %}
+                                    <img src="{{ tutor.firma.url }}" alt="Firma Tutor">
+                                {% else %}
+                                    <div style="height: 75px;"></div>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="sig-line"></div>
+                        <p class="sig-name">
+                            {% with tutor=proyecto.profesores.first %}
+                                {{ tutor.get_full_name|upper|default:"TUTOR ASIGNADO" }}
+                            {% endwith %}
+                        </p>
+                        <p class="sig-role">Tutor Principal</p>
+                    </div>
+
+                    <!-- Firma del Jurado (opcional) -->
+                    {% if proyecto.jurado %}
+                    <div class="sig-box">
+                        <div class="sig-img-container">
+                            {% if proyecto.jurado.firma %}
+                                <img src="{{ proyecto.jurado.firma.url }}" alt="Firma Jurado">
+                            {% else %}
+                                <div style="height: 75px;"></div>
+                            {% endif %}
+                        </div>
+                        <div class="sig-line"></div>
+                        <p class="sig-name">{{ proyecto.jurado.get_full_name|upper }}</p>
+                        <p class="sig-role">Jurado Evaluador</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Pie del certificado -->
+                <div class="cert-footer">
+                    <p class="cert-verification">
+                        VERIFICACIÓN ELECTRÓNICA: {{ proyecto.id }}-{% now "Ymd" %} | 
+                        EMITIDO POR SISTEMA INVESTICONTROL | 
+                        {{ proyecto.carrera.nombre|upper }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Función para descargar como PDF
+    function descargarPDF() {
+        // Mostrar mensaje
+        const btnDownload = event.target.closest('button');
+        const originalHTML = btnDownload.innerHTML;
+        btnDownload.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando PDF...';
+        btnDownload.disabled = true;
+        
+        // Usar la API de impresión del navegador que permite guardar como PDF
+        setTimeout(() => {
+            window.print();
+            btnDownload.innerHTML = originalHTML;
+            btnDownload.disabled = false;
+        }, 500);
+    }
+    
+    // Zoom en móvil con doble toque
+    let lastTap = 0;
+    document.getElementById('printable-certificate')?.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            
+            if (tapLength < 300 && tapLength > 0) {
+                // Doble tap
+                e.preventDefault();
+                this.style.transform = this.style.transform === 'scale(1)' ? 'scale(0.7)' : 'scale(1)';
+            }
+            lastTap = currentTime;
+        }
+    });
+    
+    // Ajustar escala inicial en móvil
+    function ajustarEscala() {
+        const cert = document.getElementById('printable-certificate');
+        if (cert && window.innerWidth <= 768) {
+            const escala = Math.min((window.innerWidth - 40) / (21 * 37.8), 0.7);
+            cert.style.transform = `scale(${escala})`;
+            cert.style.marginBottom = `-${(1 - escala) * 29.7}cm`;
+        }
+    }
+    
+    window.addEventListener('resize', ajustarEscala);
+    window.addEventListener('load', ajustarEscala);
+</script>
+{% endblock %}

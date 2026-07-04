@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .directorio-wrapper,
+    .directorio-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .directorio-wrapper .text-muted,
+    .directorio-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .directorio-wrapper .text-primary,
+    .directorio-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepciones para colores semánticos fijos */
+    .directorio-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .directorio-wrapper .text-danger {
+        color: #ef4444 !important;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-outline-primary-custom {
+        background: transparent !important;
+        color: var(--primary) !important;
+        border: 1px solid var(--primary) !important;
+        transition: all 0.2s ease !important;
+        border-radius: 50px !important;
+        padding: 0.5rem 1.5rem !important;
+        font-weight: 700 !important;
+    }
+    .btn-outline-primary-custom:hover {
+        background: var(--primary) !important;
+        color: #fff !important;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-action-custom {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.4rem 0.75rem !important;
+        font-size: 0.8rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-action-custom:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+        transform: translateY(-1px);
+    }
+    .btn-action-custom i {
+        margin-right: 0.25rem;
+    }
+    .btn-action-custom .d-sm-inline {
+        display: none;
+    }
+    @media (min-width: 576px) {
+        .btn-action-custom .d-sm-inline {
+            display: inline;
+        }
+    }
+
+    /* ===== TARJETAS DE USUARIO ===== */
+    .user-card {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 24px !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        padding: 1.5rem !important;
+        height: 100% !important;
+        text-align: center !important;
+    }
+    .user-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.12) !important;
+    }
+    .user-card .avatar-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.8rem;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+        margin: 0 auto 1rem;
+    }
+    .user-card:hover .avatar-circle {
+        transform: scale(1.05);
+    }
+    .user-card .rol-badge {
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        padding: 0.3rem 1rem !important;
+        border-radius: 20px !important;
+    }
+    .user-card .rol-badge.coordinador {
+        background: rgba(99, 102, 241, 0.15) !important;
+        color: var(--primary) !important;
+    }
+    .user-card .rol-badge.profesor {
+        background: rgba(59, 130, 246, 0.15) !important;
+        color: #60a5fa !important;
+    }
+    .user-card .rol-badge.estudiante {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-muted) !important;
+        border: 1px solid var(--border) !important;
+    }
+
+    .user-card .online-indicator {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 20px;
+        height: 20px;
+        background: #10b981;
+        border: 3px solid var(--bg-card);
+        border-radius: 50%;
+        display: block;
+    }
+    .user-card .online-indicator.offline {
+        background: #ef4444;
+        display: none;
+    }
+
+    /* ===== INPUTS Y SELECTS ===== */
+    .form-control-custom,
+    .form-select-custom {
+        background-color: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+    }
+    .form-control-custom:focus,
+    .form-select-custom:focus {
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+        border-color: var(--primary) !important;
+        background-color: var(--bg-card) !important;
+        color: var(--text-main) !important;
+    }
+    .form-control-custom::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7 !important;
+    }
+
+    .input-group-text-custom {
+        background: var(--bg-card) !important;
+        color: var(--text-muted) !important;
+        border: 1px solid var(--border) !important;
+        border-right: none !important;
+        border-radius: 16px 0 0 16px !important;
+        padding: 0 1.25rem !important;
+    }
+
+    /* ===== ESTADO VACÍO ===== */
+    .empty-state-icon {
+        background: var(--nav-active-bg) !important;
+        padding: 1.5rem !important;
+        border-radius: 50% !important;
+        display: inline-block !important;
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .usuario-card {
+        animation: fadeIn 0.3s ease;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 767px) {
+        .user-card .avatar-circle {
+            width: 70px;
+            height: 70px;
+            font-size: 1.5rem;
+        }
+        .user-card {
+            border-radius: 16px !important;
+        }
+    }
+    @media (max-width: 575px) {
+        .user-card .avatar-circle {
+            width: 60px;
+            height: 60px;
+            font-size: 1.3rem;
+        }
+        .btn-action-custom {
+            font-size: 0.7rem !important;
+            padding: 0.3rem 0.6rem !important;
+        }
+        .btn-action-custom .d-sm-inline {
+            display: none !important;
+        }
+    }
+</style>
+
+<div class="directorio-wrapper">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 mb-md-5 gap-3">
+        <div>
+            <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Directorio de Usuarios</h2>
+            <p class="mb-0" style="color: var(--text-muted);">
+                <i class="fas fa-users me-1"></i> 
+                <span id="contador-usuarios">{{ usuarios|length }}</span> miembro(s) registrado(s)
+            </p>
+        </div>
+        <a href="{% url 'gestionar_usuarios' %}" class="btn btn-outline-primary-custom w-100 w-md-auto">
+            <i class="fas fa-user-cog me-2"></i> Gestionar Cuentas
+        </a>
+    </div>
+
+    <!-- Buscador y Filtros -->
+    <div class="row mb-4 g-3">
+        <div class="col-12 col-md-8">
+            <div class="input-group shadow-sm" style="border-radius: 16px; overflow: hidden; border: 1px solid var(--border);">
+                <span class="input-group-text input-group-text-custom">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" id="buscarUsuario" class="form-control form-control-custom" 
+                       style="border-left: none !important; border-radius: 0 16px 16px 0 !important;"
+                       placeholder="Buscar por nombre, correo o rol..."
+                       onkeyup="filtrarUsuarios()">
+                <button class="btn border-0 pe-4" style="background: var(--bg-card); color: var(--text-muted); border-radius: 0 16px 16px 0;" 
+                        onclick="document.getElementById('buscarUsuario').value = ''; filtrarUsuarios();">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <select id="filtroRol" class="form-select form-select-custom" onchange="filtrarUsuarios()">
+                <option value="todos">👥 Todos los roles</option>
+                <option value="estudiante">🎓 Estudiantes</option>
+                <option value="profesor">👨‍🏫 Profesores</option>
+                <option value="coordinador">👑 Coordinadores</option>
+            </select>
+        </div>
+    </div>
+
+    {% if usuarios %}
+    <!-- Contenedor de usuarios -->
+    <div class="row g-3 g-md-4" id="listaUsuarios">
+        {% for u in usuarios %}
+        <div class="col-12 col-sm-6 col-xl-4 usuario-card" 
+             data-nombre="{{ u.get_full_name|lower|default:u.username|lower }}" 
+             data-email="{{ u.email|lower }}" 
+             data-rol="{{ u.rol|lower }}">
+            <div class="card user-card">
+                
+                <!-- Estado online/offline (simulado) -->
+                <div class="position-relative d-inline-block mx-auto mb-4">
+                    <div class="avatar-circle" 
+                         style="{% if u.rol == 'coordinador' %}
+                                    background: var(--primary); color: white;
+                                {% elif u.rol == 'profesor' %}
+                                    background: #3b82f6; color: white;
+                                {% else %}
+                                    background: var(--primary-light); color: var(--primary);
+                                {% endif %}">
+                        {% if u.avatar %}
+                            <img src="{{ u.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% else %}
+                            {{ u.username|slice:":2"|upper }}
+                        {% endif %}
+                    </div>
+                    <span class="online-indicator {% cycle '' 'offline' '' 'offline' %}"></span>
+                </div>
+                
+                <!-- Información del usuario -->
+                <h5 class="fw-bold mb-1 text-truncate" style="color: var(--text-main);" title="{{ u.get_full_name|default:u.username }}">
+                    {{ u.get_full_name|default:u.username }}
+                </h5>
+                <p class="mb-2" style="color: var(--text-muted); font-size: 0.85rem;">
+                    <i class="fas fa-envelope me-1 opacity-50"></i>
+                    <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ u.email }}">
+                        {{ u.email }}
+                    </span>
+                </p>
+                
+                <!-- Rol Badge -->
+                <div class="mb-3">
+                    <span class="badge rol-badge {{ u.rol }}">
+                        {% if u.rol == 'coordinador' %}
+                            <i class="fas fa-crown me-1"></i>
+                        {% elif u.rol == 'profesor' %}
+                            <i class="fas fa-chalkboard-teacher me-1"></i>
+                        {% else %}
+                            <i class="fas fa-user-graduate me-1"></i>
+                        {% endif %}
+                        {{ u.rol|title }}
+                    </span>
+                </div>
+                
+                <!-- Estadísticas rápidas -->
+                <div class="row g-2 mb-4">
+                    <div class="col-6">
+                        <small class="d-block text-muted" style="font-size: 0.65rem;">Proyectos</small>
+                        <strong style="color: var(--text-main); font-size: 0.9rem;">
+                            {{ u.proyectos_count|default:0 }}
+                        </strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="d-block text-muted" style="font-size: 0.65rem;">Estado</small>
+                        <span class="badge rounded-pill" 
+                              style="font-size: 0.6rem; 
+                              {% if u.is_active %}background: rgba(16, 185, 129, 0.15); color: #10b981;
+                              {% else %}background: rgba(239, 68, 68, 0.15); color: #ef4444;{% endif %}">
+                            {% if u.is_active %}Activo{% else %}Inactivo{% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Acciones -->
+                <div class="border-top pt-3 mt-auto" style="border-color: var(--border) !important;">
+                    <div class="d-flex gap-2">
+                        <a href="mailto:{{ u.email }}" 
+                           class="btn btn-action-custom flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+                           title="Enviar correo">
+                            <i class="fas fa-envelope"></i> <span class="d-sm-inline">Email</span>
+                        </a>
+                        {% if user.rol == 'coordinador' %}
+                        <a href="{% url 'usuario_editar' u.id %}" 
+                           class="btn btn-action-custom flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+                           title="Editar usuario">
+                            <i class="fas fa-edit"></i> <span class="d-sm-inline">Editar</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Estado vacío -->
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <div class="empty-state-icon">
+                <i class="fas fa-user-slash fa-3x" style="color: var(--text-muted); opacity: 0.5;"></i>
+            </div>
+        </div>
+        <h4 class="fw-bold mb-2" style="color: var(--text-main);">No se encontraron usuarios</h4>
+        <p class="mb-4" style="color: var(--text-muted); max-width: 400px; margin: 0 auto;">
+            No hay usuarios que coincidan con los criterios de búsqueda.
+        </p>
+        <button class="btn btn-outline-primary-custom" onclick="document.getElementById('buscarUsuario').value = ''; document.getElementById('filtroRol').value = 'todos'; filtrarUsuarios();">
+            <i class="fas fa-sync me-2"></i> Limpiar Filtros
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Mensaje de sin resultados (insertado por JS) -->
+    <div id="sinResultadosContainer"></div>
+</div>
+
+<script>
+    function filtrarUsuarios() {
+        const busqueda = document.getElementById('buscarUsuario').value.toLowerCase().trim();
+        const filtroRol = document.getElementById('filtroRol').value.toLowerCase();
+        const cards = document.querySelectorAll('.usuario-card');
+        let contadorVisibles = 0;
+        
+        cards.forEach(card => {
+            const nombre = card.getAttribute('data-nombre') || '';
+            const email = card.getAttribute('data-email') || '';
+            const rol = card.getAttribute('data-rol') || '';
+            
+            const coincideBusqueda = busqueda === '' || 
+                                    nombre.includes(busqueda) || 
+                                    email.includes(busqueda) || 
+                                    rol.includes(busqueda);
+            const coincideRol = filtroRol === 'todos' || rol === filtroRol;
+            
+            if (coincideBusqueda && coincideRol) {
+                card.style.display = '';
+                contadorVisibles++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Actualizar contador
+        const contador = document.getElementById('contador-usuarios');
+        if (contador) {
+            contador.textContent = contadorVisibles;
+        }
+        
+        // Mostrar mensaje si no hay resultados
+        const container = document.getElementById('sinResultadosContainer');
+        const totalCards = cards.length;
+        
+        if (contadorVisibles === 0 && totalCards > 0) {
+            container.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-search fa-3x mb-3 d-block" style="color: var(--text-muted); opacity: 0.3;"></i>
+                    <p class="text-muted mb-3" style="color: var(--text-muted);">No hay usuarios que coincidan con tu búsqueda.</p>
+                    <button class="btn btn-outline-primary-custom" 
+                            onclick="document.getElementById('buscarUsuario').value = ''; document.getElementById('filtroRol').value = 'todos'; filtrarUsuarios();">
+                        <i class="fas fa-sync me-2"></i> Limpiar Filtros
+                    </button>
+                </div>
+            `;
+            container.style.display = 'block';
+        } else {
+            container.innerHTML = '';
+            container.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

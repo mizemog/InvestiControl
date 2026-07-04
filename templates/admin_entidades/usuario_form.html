@@ -1,0 +1,618 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .usuario-form-wrapper,
+    .usuario-form-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .usuario-form-wrapper .text-muted,
+    .usuario-form-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .usuario-form-wrapper .text-primary,
+    .usuario-form-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepciones para colores semánticos fijos */
+    .usuario-form-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .usuario-form-wrapper .text-danger {
+        color: #ef4444 !important;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-primary-custom {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+        font-weight: 700 !important;
+    }
+    .btn-primary-custom:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+        color: #fff !important;
+    }
+    .btn-primary-custom:disabled {
+        opacity: 0.7 !important;
+        transform: none !important;
+    }
+
+    .btn-secondary-custom {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+        border-radius: 16px !important;
+        padding: 0.75rem 1rem !important;
+        font-weight: 700 !important;
+    }
+    .btn-secondary-custom:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    .btn-danger-custom {
+        background: rgba(239, 68, 68, 0.1) !important;
+        color: #ef4444 !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.4rem 1.25rem !important;
+        transition: all 0.2s ease !important;
+        font-weight: 600 !important;
+    }
+    .btn-danger-custom:hover {
+        background: rgba(239, 68, 68, 0.2) !important;
+        transform: scale(1.02);
+    }
+
+    /* ===== FORMULARIO ===== */
+    .form-control-custom,
+    .form-select-custom {
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.75rem 1.25rem !important;
+    }
+    .form-control-custom:focus,
+    .form-select-custom:focus {
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+    }
+    .form-control-custom::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7 !important;
+    }
+
+    /* ===== MODALES ===== */
+    .modal-content-custom {
+        background: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 24px !important;
+    }
+    .modal-content-custom .modal-body {
+        color: var(--text-main) !important;
+    }
+    .modal-content-custom .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    .btn-modal-confirm {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+        border-radius: 12px !important;
+        padding: 0.5rem 1rem !important;
+        font-weight: 700 !important;
+    }
+    .btn-modal-confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        color: #fff !important;
+    }
+    .btn-modal-cancel {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        font-weight: 500 !important;
+        border-radius: 12px !important;
+        padding: 0.5rem 1rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-modal-cancel:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== AVATAR ===== */
+    .avatar-circle {
+        width: 60px;
+        height: 60px;
+        background: var(--primary);
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.5rem;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    /* ===== ZONA DE PELIGRO ===== */
+    .danger-zone {
+        background: rgba(239, 68, 68, 0.05) !important;
+        border: 1px solid rgba(239, 68, 68, 0.2) !important;
+        border-radius: 20px !important;
+        padding: 1.25rem !important;
+        margin-top: 1.5rem !important;
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .card-animated {
+        animation: slideUp 0.5s ease;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 575px) {
+        .card { border-radius: 16px !important; }
+        .p-3.p-md-5 { padding: 1.5rem !important; }
+        .avatar-circle { width: 50px; height: 50px; font-size: 1.2rem; }
+    }
+</style>
+
+<div class="usuario-form-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-7">
+            <div class="d-flex align-items-start mb-4 mb-md-5">
+                <a href="{% url 'usuario_lista' %}" class="btn btn-action-icon me-3 flex-shrink-0 mt-1">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Editar Usuario</h2>
+                    <p class="text-muted small mb-0">
+                        <i class="fas fa-user-edit me-1"></i> 
+                        {{ u.get_full_name|default:u.username }} — 
+                        <span class="badge ms-1" style="background: var(--primary-light); color: var(--primary); font-size: 0.7rem;">
+                            {{ u.rol|upper }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Card de información rápida -->
+            <div class="card border-0 shadow-sm p-4 mb-4 card-animated" style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 20px;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-circle">
+                        {% if u.avatar %}
+                            <img src="{{ u.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        {% else %}
+                            {{ u.username|slice:":2"|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                        <h5 class="fw-bold mb-0 text-truncate" style="color: var(--text-main);">
+                            {{ u.get_full_name|default:u.username }}
+                        </h5>
+                        <small style="color: var(--text-muted);">
+                            <i class="fas fa-envelope me-1 opacity-50"></i> {{ u.email }}
+                        </small>
+                        <div class="mt-1">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1 opacity-50"></i> 
+                                Último acceso: {{ u.last_login|date:"d/m/Y H:i"|default:"Nunca" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de edición -->
+            <div class="card border-0 shadow-lg p-3 p-md-5 card-animated" style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
+                <form method="post" enctype="multipart/form-data" id="formEditarUsuario">
+                    {% csrf_token %}
+                    
+                    <h5 class="fw-bold mb-4 d-flex align-items-center gap-2" style="color: var(--text-main);">
+                        <i class="fas fa-user-cog" style="color: var(--primary);"></i> 
+                        Información Personal
+                    </h5>
+
+                    <!-- Nombre y Apellido -->
+                    <div class="row g-3 g-md-4 mb-4">
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label small fw-bold text-muted text-uppercase">
+                                <i class="fas fa-user me-1"></i> Nombre
+                            </label>
+                            <input type="text" name="nombre" class="form-control form-control-custom" 
+                                   value="{{ u.first_name }}" placeholder="Nombre(s)" required>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label small fw-bold text-muted text-uppercase">
+                                <i class="fas fa-user me-1"></i> Apellido
+                            </label>
+                            <input type="text" name="apellido" class="form-control form-control-custom" 
+                                   value="{{ u.last_name }}" placeholder="Apellido(s)" required>
+                        </div>
+                    </div>
+
+                    <!-- Correo Electrónico -->
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase">
+                            <i class="fas fa-envelope me-1"></i> Correo Electrónico
+                        </label>
+                        <input type="email" name="email" class="form-control form-control-custom" 
+                               value="{{ u.email }}" placeholder="correo@ejemplo.com" required>
+                    </div>
+
+                    <!-- Avatar (opcional) -->
+                    {% if user.rol == 'coordinador' %}
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase">
+                            <i class="fas fa-camera me-1"></i> Foto de Perfil
+                        </label>
+                        <input type="file" name="avatar" class="form-control form-control-custom" 
+                               id="avatarInput" accept="image/*" style="padding-top: 0.6rem;">
+                        <small class="text-muted mt-1 d-block" style="font-size: 0.7rem;">
+                            <i class="fas fa-info-circle me-1"></i> Formatos: JPG, PNG. Máx: 2MB
+                        </small>
+                    </div>
+                    {% endif %}
+
+                    <h5 class="fw-bold mb-4 d-flex align-items-center gap-2" style="color: var(--text-main);">
+                        <i class="fas fa-shield-alt" style="color: var(--primary);"></i> 
+                        Configuración de Cuenta
+                    </h5>
+
+                    <!-- Rol y Estado -->
+                    <div class="row g-3 g-md-4 mb-4">
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label small fw-bold text-muted text-uppercase">
+                                <i class="fas fa-user-tag me-1"></i> Rol Asignado
+                            </label>
+                            <select name="rol" class="form-select form-select-custom">
+                                <option value="estudiante" {% if u.rol == 'estudiante' %}selected{% endif %}>
+                                    🎓 Estudiante
+                                </option>
+                                <option value="profesor" {% if u.rol == 'profesor' %}selected{% endif %}>
+                                    👨‍🏫 Profesor
+                                </option>
+                                <option value="coordinador" {% if u.rol == 'coordinador' %}selected{% endif %}>
+                                    👑 Coordinador
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label small fw-bold text-muted text-uppercase">
+                                <i class="fas fa-toggle-on me-1"></i> Estado de Cuenta
+                            </label>
+                            <select name="estado" class="form-select form-select-custom" 
+                                    onchange="cambiarColorEstado(this)">
+                                <option value="Activo" {% if u.estado == 'Activo' %}selected{% endif %}>
+                                    🟢 Activo
+                                </option>
+                                <option value="Inactivo" {% if u.estado == 'Inactivo' %}selected{% endif %}>
+                                    🔴 Inactivo
+                                </option>
+                            </select>
+                            <small class="text-muted mt-1 d-block" style="font-size: 0.7rem;" id="estado-descripcion">
+                                {% if u.estado == 'Activo' %}
+                                    <i class="fas fa-check-circle text-success me-1"></i> El usuario puede acceder al sistema
+                                {% else %}
+                                    <i class="fas fa-ban text-danger me-1"></i> El usuario no podrá iniciar sesión
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="d-flex flex-column flex-sm-row gap-2 pt-3 border-top" style="border-color: var(--border) !important;">
+                        <a href="{% url 'usuario_lista' %}" class="btn btn-secondary-custom flex-grow-1 py-3 rounded-4">
+                            <i class="fas fa-times me-2"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom flex-grow-1 py-3 rounded-4 shadow fw-bold" id="btnGuardar">
+                            <i class="fas fa-save me-2"></i> GUARDAR CAMBIOS
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Card de peligro (acciones destructivas) -->
+            {% if user.rol == 'coordinador' and user != u %}
+            <div class="danger-zone">
+                <h6 class="fw-bold mb-2" style="color: #ef4444;">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Zona de Peligro
+                </h6>
+                <p class="small mb-3" style="color: var(--text-muted);">
+                    Acciones irreversibles para esta cuenta de usuario
+                </p>
+                <button class="btn btn-danger-custom" onclick="mostrarConfirmacionEliminacion()">
+                    <i class="fas fa-trash-alt me-2"></i> Eliminar Usuario
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de alerta -->
+<div id="alertModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4"
+                         id="alertIcon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-exclamation-triangle fa-2x text-white"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-2" id="alertTitle" style="color: var(--text-main);">Atención</h5>
+                <p class="mb-4" id="alertMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Mensaje de alerta
+                </p>
+                <button type="button" class="btn btn-modal-confirm w-100 py-2 rounded-3 fw-bold" data-bs-dismiss="modal">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar usuario -->
+<div id="confirmModal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body p-4 p-md-5 text-center">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg"
+                         id="confirmIcon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-user-slash fa-2x text-white"></i>
+                    </div>
+                </div>
+                
+                <h4 class="fw-bold mb-2" id="confirmTitle" style="color: var(--text-main);">¿Eliminar usuario?</h4>
+                <p class="mb-4" id="confirmMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Esta acción no se puede deshacer y eliminará todos los datos asociados a este usuario.
+                </p>
+                
+                <div class="rounded-3 p-3 mb-4 text-start" style="background: var(--nav-active-bg); border-left: 3px solid #ef4444;">
+                    <div class="d-flex align-items-start gap-2">
+                        <i class="fas fa-user mt-1" style="color: #ef4444; font-size: 0.9rem;"></i>
+                        <div>
+                            <small class="d-block fw-bold" style="color: var(--text-main); font-size: 0.75rem;">USUARIO AFECTADO</small>
+                            <small id="modalUsuarioNombre" style="color: var(--text-muted); font-size: 0.7rem;">-</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-modal-cancel flex-grow-1 py-2 rounded-3" 
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-modal-confirm flex-grow-1 py-2 rounded-3 fw-bold" 
+                            id="confirmarEliminacionBtn"
+                            style="background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff;">
+                        <i class="fas fa-trash-alt me-2"></i> ELIMINAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables globales
+    let alertModal = null;
+    let confirmModal = null;
+    
+    // Función para mostrar alertas estilizadas
+    function mostrarAlerta(titulo, mensaje, tipo = 'error') {
+        const alertIcon = document.getElementById('alertIcon');
+        const alertTitle = document.getElementById('alertTitle');
+        const alertMessage = document.getElementById('alertMessage');
+        
+        if (tipo === 'error') {
+            alertIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle fa-2x text-white"></i>';
+        } else if (tipo === 'warning') {
+            alertIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            alertIcon.innerHTML = '<i class="fas fa-exclamation-circle fa-2x text-white"></i>';
+        } else if (tipo === 'success') {
+            alertIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            alertIcon.innerHTML = '<i class="fas fa-check-circle fa-2x text-white"></i>';
+        }
+        
+        alertTitle.textContent = titulo;
+        alertMessage.textContent = mensaje;
+        
+        if (alertModal) {
+            alertModal.show();
+        }
+    }
+    
+    // Cambiar descripción del estado
+    function cambiarColorEstado(select) {
+        const descripcion = document.getElementById('estado-descripcion');
+        if (select.value === 'Activo') {
+            descripcion.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i> El usuario puede acceder al sistema';
+        } else {
+            descripcion.innerHTML = '<i class="fas fa-ban text-danger me-1"></i> El usuario no podrá iniciar sesión';
+        }
+    }
+    
+    // Mostrar confirmación de eliminación estilizada
+    function mostrarConfirmacionEliminacion() {
+        const nombreUsuario = "{{ u.get_full_name|default:u.username|escapejs }}";
+        document.getElementById('modalUsuarioNombre').textContent = nombreUsuario;
+        
+        // Resetear modal a estado de eliminación
+        const confirmIcon = document.getElementById('confirmIcon');
+        const confirmTitle = document.getElementById('confirmTitle');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const confirmBtn = document.getElementById('confirmarEliminacionBtn');
+        
+        confirmIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        confirmIcon.innerHTML = '<i class="fas fa-user-slash fa-2x text-white"></i>';
+        confirmTitle.textContent = '¿Eliminar usuario?';
+        confirmMessage.textContent = 'Esta acción no se puede deshacer y eliminará todos los datos asociados a este usuario.';
+        confirmBtn.innerHTML = '<i class="fas fa-trash-alt me-2"></i> ELIMINAR';
+        confirmBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        confirmBtn.onclick = function() {
+            confirmModal.hide();
+            ejecutarEliminacion();
+        };
+        
+        if (confirmModal) {
+            confirmModal.show();
+        }
+    }
+    
+    // Ejecutar eliminación
+    function ejecutarEliminacion() {
+        const csrfToken = document.querySelector('#formEditarUsuario input[name="csrfmiddlewaretoken"]')?.value;
+        if (!csrfToken) {
+            mostrarAlerta('Error', 'No se encontró CSRF token.', 'error');
+            return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = "{% url 'usuario_eliminar' u.id %}";
+        form.style.display = 'none';
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'csrfmiddlewaretoken';
+        input.value = csrfToken;
+        form.appendChild(input);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+    // Validación del formulario antes de enviar (con modal de confirmación)
+    document.getElementById('formEditarUsuario')?.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevenir envío directo
+        
+        const nombre = document.querySelector('input[name="nombre"]').value.trim();
+        const apellido = document.querySelector('input[name="apellido"]').value.trim();
+        const email = document.querySelector('input[name="email"]').value.trim();
+        
+        // Validar nombre
+        if (nombre.length < 2) {
+            mostrarAlerta('Nombre inválido', 'El nombre debe tener al menos 2 caracteres.', 'warning');
+            return false;
+        }
+        
+        // Validar apellido
+        if (apellido.length < 2) {
+            mostrarAlerta('Apellido inválido', 'El apellido debe tener al menos 2 caracteres.', 'warning');
+            return false;
+        }
+        
+        // Validar email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            mostrarAlerta('Email inválido', 'Por favor ingresa un correo electrónico válido.', 'warning');
+            return false;
+        }
+        
+        // Validar avatar (si se seleccionó)
+        const avatarInput = document.getElementById('avatarInput');
+        if (avatarInput && avatarInput.files.length > 0) {
+            const file = avatarInput.files[0];
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            
+            if (!validTypes.includes(file.type)) {
+                mostrarAlerta('Formato no válido', 'Solo se permiten imágenes en formato JPG o PNG.', 'warning');
+                return false;
+            }
+            
+            if (file.size > maxSize) {
+                mostrarAlerta('Archivo muy grande', 'La imagen no debe superar los 2MB.', 'warning');
+                return false;
+            }
+        }
+        
+        // Mostrar modal de confirmación de guardado
+        const confirmIcon = document.getElementById('confirmIcon');
+        const confirmTitle = document.getElementById('confirmTitle');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const confirmBtn = document.getElementById('confirmarEliminacionBtn');
+        const usuarioNombreEl = document.getElementById('modalUsuarioNombre');
+        
+        confirmIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        confirmIcon.innerHTML = '<i class="fas fa-save fa-2x text-white"></i>';
+        confirmTitle.textContent = '¿Guardar cambios?';
+        confirmMessage.textContent = 'Los datos del usuario serán actualizados.';
+        usuarioNombreEl.parentElement.parentElement.style.display = 'none';
+        
+        confirmBtn.innerHTML = '<i class="fas fa-save me-2"></i> GUARDAR';
+        confirmBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        confirmBtn.onclick = function() {
+            confirmModal.hide();
+            // Restaurar botón para futuras eliminaciones
+            confirmBtn.innerHTML = '<i class="fas fa-trash-alt me-2"></i> ELIMINAR';
+            confirmBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            confirmBtn.onclick = function() {
+                confirmModal.hide();
+                ejecutarEliminacion();
+            };
+            document.getElementById('formEditarUsuario').submit();
+        };
+        
+        if (confirmModal) {
+            confirmModal.show();
+        }
+        
+        // Restaurar al cerrar modal
+        confirmModal._element?.addEventListener('hidden.bs.modal', function() {
+            usuarioNombreEl.parentElement.parentElement.style.display = 'flex';
+            confirmBtn.innerHTML = '<i class="fas fa-trash-alt me-2"></i> ELIMINAR';
+            confirmBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            confirmBtn.onclick = function() {
+                confirmModal.hide();
+                ejecutarEliminacion();
+            };
+            confirmIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            confirmIcon.innerHTML = '<i class="fas fa-user-slash fa-2x text-white"></i>';
+            confirmTitle.textContent = '¿Eliminar usuario?';
+            confirmMessage.textContent = 'Esta acción no se puede deshacer y eliminará todos los datos asociados a este usuario.';
+        }, { once: true });
+    });
+    
+    // Inicializar modales
+    document.addEventListener('DOMContentLoaded', function() {
+        const alertModalElement = document.getElementById('alertModal');
+        if (alertModalElement) {
+            alertModal = new bootstrap.Modal(alertModalElement);
+        }
+        
+        const confirmModalElement = document.getElementById('confirmModal');
+        if (confirmModalElement) {
+            confirmModal = new bootstrap.Modal(confirmModalElement);
+        }
+        
+        // Mostrar mensajes de éxito si hay parámetros en URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('actualizado') === 'success') {
+            mostrarAlerta('Usuario actualizado', 'Los datos del usuario han sido guardados correctamente.', 'success');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+</script>
+{% endblock %}

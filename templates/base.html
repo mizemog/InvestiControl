@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvestiControl | Portal Académico</title>
+    <!-- Fuente Inter y Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* MODO CLARO */
+            --primary: #6366f1;
+            --primary-light: rgba(99, 102, 241, 0.1);
+            --bg-body: #f8fafc;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --nav-active-bg: #f1f5f9;
+            --sidebar-width: 80px;
+            --sidebar-expanded-width: 260px;
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #000000;     
+            --bg-sidebar: #0a0a0a;  
+            --bg-card: #111111;      
+            --text-main: #ffffff;   
+            --text-muted: #a1a1aa;  
+            --border: #262626;
+            --nav-active-bg: #1e1e1e;
+            --primary-light: rgba(99, 102, 241, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            transition: background 0.3s ease;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* ====== MEJORAS DE LEGIBILIDAD ====== */
+        /* Placeholders para input y textarea */
+        input::placeholder,
+        textarea::placeholder {
+            color: var(--text-muted) !important;
+            opacity: 0.7; /* mejor visibilidad */
+        }
+
+        /* Estilos base para inputs y textareas */
+        input, textarea {
+            color: var(--text-main) !important;
+            background-color: var(--bg-card) !important;
+            border-color: var(--border) !important;
+        }
+
+        input:focus, textarea:focus {
+            background-color: var(--nav-active-bg) !important;
+            color: var(--text-main) !important;
+            box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+            border-color: var(--primary) !important;
+        }
+
+        /* Sobrescribir .text-muted de Bootstrap para usar nuestra variable */
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        /* Líneas divisorias */
+        hr {
+            border-color: var(--border) !important;
+            opacity: 0.5;
+        }
+
+        /* Badges adaptativos */
+        .badge-soft-primary {
+            background-color: var(--primary-light) !important;
+            color: var(--primary) !important;
+        }
+        /* ====== FIN MEJORAS ====== */
+
+        /* SIDEBAR - Siempre colapsada por defecto */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0; 
+            top: 0;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 0.75rem;
+            z-index: 1050;
+            transition: var(--transition);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar expandida al hover en desktop */
+        @media (min-width: 993px) {
+            .sidebar:hover {
+                width: var(--sidebar-expanded-width);
+                padding: 1.5rem;
+            }
+            
+            .sidebar:hover .nav-text,
+            .sidebar:hover .logo-name,
+            .sidebar:hover .user-info,
+            .sidebar:hover .nav-section-title,
+            .sidebar:hover .badge {
+                display: inline-block !important;
+            }
+            
+            .sidebar:hover .nav-link {
+                justify-content: flex-start;
+                padding: 0.75rem 1rem;
+            }
+            
+            .sidebar:hover .nav-link i {
+                margin-right: 12px;
+            }
+            
+            .sidebar:hover .avatar-circle {
+                margin-right: 1rem !important;
+            }
+        }
+
+        /* Sidebar móvil */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: var(--sidebar-expanded-width);
+                padding: 1.5rem;
+                box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .sidebar .nav-text,
+            .sidebar .logo-name,
+            .sidebar .user-info,
+            .sidebar .nav-section-title,
+            .sidebar .badge {
+                display: inline-block !important;
+            }
+            
+            .sidebar .nav-link {
+                justify-content: flex-start;
+                padding: 0.75rem 1rem;
+            }
+            
+            .sidebar .nav-link i {
+                margin-right: 12px;
+            }
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            transition: var(--transition);
+            min-height: 100vh;
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        @media (min-width: 993px) {
+            .sidebar:hover ~ .main-content {
+                margin-left: var(--sidebar-expanded-width);
+                width: calc(100% - var(--sidebar-expanded-width));
+            }
+        }
+
+        @media (max-width: 992px) {
+            .main-content { 
+                margin-left: 0; 
+                padding: 1.5rem;
+                width: 100%;
+            }
+        }
+
+        /* Sidebar Overlay para móvil */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1040;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        @media (min-width: 993px) {
+            .sidebar-overlay.active {
+                display: none;
+            }
+        }
+
+        /* NAVEGACIÓN */
+        .nav-link {
+            display: flex;
+            align-items: center;
+            color: var(--text-muted);
+            padding: 0.75rem;
+            border-radius: 12px;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: 0.2s;
+            white-space: nowrap;
+            justify-content: center;
+        }
+
+        .nav-link i { 
+            min-width: 24px; 
+            font-size: 1.2rem; 
+            margin-right: 0;
+            transition: var(--transition); 
+            text-align: center;
+        }
+        
+        .nav-link:hover { 
+            background: var(--nav-active-bg); 
+            color: var(--primary); 
+        }
+
+        /* ESTADO ACTIVO (Highlight) */
+        .nav-link.active {
+            background: var(--primary-light) !important;
+            color: var(--primary) !important;
+            font-weight: 600;
+        }
+
+        /* Elementos ocultos en sidebar colapsada */
+        .nav-text, 
+        .logo-name, 
+        .user-info,
+        .nav-section-title,
+        .badge {
+            display: none;
+        }
+
+        /* TOP BAR */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        /* PERFIL INFERIOR */
+        .user-profile-bottom {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar-circle {
+            width: 40px; 
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            margin-right: 0;
+        }
+
+        .btn-action-icon {
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 40px; 
+            height: 40px;
+            border-radius: 10px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .btn-action-icon:hover { 
+            background: var(--nav-active-bg); 
+            color: var(--primary); 
+        }
+
+        /* MEJORAS RESPONSIVE */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .top-nav {
+                margin-bottom: 1.5rem;
+            }
+            
+            .btn-action-icon {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .top-nav .d-md-block {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 0.75rem;
+            }
+            
+            .top-nav {
+                flex-direction: row;
+                gap: 0.5rem;
+            }
+            
+            .card {
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* UTILIDADES */
+        .card {
+            background-color: var(--bg-card) !important;
+            border: 1px solid var(--border) !important;
+            color: var(--text-main) !important;
+            transition: var(--transition);
+        }
+        
+        .stat-icon {
+            background-color: var(--nav-active-bg) !important;
+        }
+
+        /* Badge de notificaciones en sidebar colapsada */
+        .sidebar .badge {
+            display: none;
+        }
+        
+        @media (min-width: 993px) {
+            .sidebar:hover .badge {
+                display: inline-block !important;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar.mobile-open .badge {
+                display: inline-block !important;
+            }
+        }
+
+        /* Scrollbar personalizada */
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+{% if user.is_authenticated %}
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+    {% if user.is_authenticated %}
+    <aside class="sidebar {% if request.COOKIES.sidebar == 'collapsed' %}collapsed{% endif %}" id="sidebar">
+        <div class="d-flex align-items-center mb-5 px-2">
+            <div class="bg-primary text-white p-2 rounded-3 me-2 shadow-sm flex-shrink-0">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <div class="logo-name">
+                <span class="fw-bold d-block h5 mb-0" style="color: var(--text-main) !important;">InvestiControl</span>
+                <span class="text-muted small">Portal Académico</span>
+            </div>
+        </div>
+
+        <!-- Menu Principal -->
+        <nav class="nav flex-column mb-4">
+            <small class="nav-section-title text-muted text-uppercase fw-bold mb-2 ps-3 logo-name" style="font-size: 0.65rem; letter-spacing: 1px;">Control Académico</small>
+            
+            <!-- Inicio: Redirige al Dashboard que corresponda según el rol -->
+            <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" title="Inicio">
+                <i class="fas fa-home"></i> <span class="nav-text">Inicio</span>
+            </a>
+
+            <!-- Gestión Maestra: SOLO para Coordinador -->
+            {% if user.rol == 'coordinador' %}
+            <a href="{% url 'dashboard_coordinador' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard_coordinador' %}active{% endif %}" title="Estadísticas">
+                <i class="fas fa-chart-pie"></i> <span class="nav-text">Estadísticas</span>
+            </a>
+
+            <a href="{% url 'gestion_tesis_maestro' %}" class="nav-link {% if request.resolver_match.url_name == 'gestion_tesis_maestro' %}active{% endif %}" title="Gestión Tesis">
+                <i class="fas fa-folder-tree"></i> <span class="nav-text">Gestión Tesis</span>
+            </a>
+            {% endif %}
+
+            {% if user.rol == 'estudiante' or user.rol == 'coordinador' %}
+            <a href="{% url 'dashboard_estudiante' %}" class="nav-link {% if 'estudiante' in request.path or 'subir-version' in request.path or 'historial' in request.path %}active{% endif %}" title="Mis Entregas">
+                <i class="fas fa-book"></i> <span class="nav-text">Mis Entregas</span>
+            </a>
+            {% endif %}
+            
+            <!-- Revisiones: Profesor y Coordinador -->
+            {% if user.rol == 'profesor' or user.rol == 'coordinador' %}
+                <a href="{% url 'dashboard_profesor' %}" class="nav-link {% if 'profesor' in request.path or 'revisar' in request.path %}active{% endif %}">
+                    <i class="fas fa-file-signature"></i> <span class="nav-text">Revisiones</span>
+                </a>
+            {% endif %}
+        </nav>
+
+        <!-- Menu Administración: SOLO Coordinadores -->
+        {% if user.rol == 'coordinador' %}
+        <nav class="nav flex-column mb-4">
+            <small class="nav-section-title text-muted text-uppercase fw-bold mb-2 ps-3 logo-name" style="font-size: 0.65rem; letter-spacing: 1px;">Administración</small>
+            
+            <a href="{% url 'usuario_lista' %}" class="nav-link {% if request.resolver_match.url_name == 'usuario_lista' %}active{% endif %}" title="Directorio">
+                <i class="fas fa-users"></i> <span class="nav-text">Directorio</span>
+            </a>
+
+            <a href="{% url 'gestionar_usuarios' %}" class="nav-link {% if 'gestion-usuarios' in request.path or 'usuarios/editar' in request.path or 'usuarios/crear' in request.path %}active{% endif %}" title="Cuentas">
+                <i class="fas fa-user-shield"></i> <span class="nav-text">Cuentas</span>
+            </a>
+
+            <a href="{% url 'carrera_lista' %}" class="nav-link {% if 'carreras' in request.path %}active{% endif %}" title="Carreras">
+                <i class="fas fa-university"></i> <span class="nav-text">Carreras</span>
+            </a>
+
+            <a href="{% url 'plantilla_lista' %}" class="nav-link {% if 'plantillas' in request.path %}active{% endif %}" title="Plantillas">
+                <i class="fas fa-file-alt"></i> <span class="nav-text">Plantillas</span>
+            </a>
+        </nav>
+        {% endif %}
+
+        <!-- Menu Sistema (Ajustes) -->
+        <nav class="nav flex-column mt-auto">
+            <small class="nav-section-title text-muted text-uppercase fw-bold mb-2 ps-3 logo-name" style="font-size: 0.65rem; letter-spacing: 1px;">Ajustes</small>
+            <a href="{% url 'ver_notificaciones' %}" class="nav-link {% if request.resolver_match.url_name == 'ver_notificaciones' %}active{% endif %}" title="Notificaciones">
+                <i class="fas fa-bell"></i> <span class="nav-text">Notificaciones</span>
+                {% if user.contar_notificaciones_sin_leer > 0 %}
+                    <span class="badge bg-danger rounded-pill ms-auto nav-text" style="font-size: 0.6rem;">{{ user.contar_notificaciones_sin_leer }}</span>
+                {% endif %}
+            </a>
+
+            <a href="{% url 'ver_perfil' %}" class="nav-link {% if request.resolver_match.url_name == 'ver_perfil' %}active{% endif %}" title="Mi Perfil">
+                <i class="fas fa-user-circle"></i> <span class="nav-text">Mi Perfil</span>
+            </a>
+            
+            <hr class="logo-name">
+            
+            <form id="logout-form" action="{% url 'logout' %}" method="post" class="d-none">{% csrf_token %}</form>
+            <a href="#" onclick="document.getElementById('logout-form').submit();" class="nav-link text-danger" title="Cerrar Sesión">
+                <i class="fas fa-sign-out-alt"></i> <span class="nav-text">Cerrar Sesión</span>
+            </a>
+        </nav>
+
+        <!-- Perfil Usuario Abajo -->
+        <div class="user-profile-bottom mt-auto">
+            <div class="avatar-circle shadow-sm" style="background: var(--primary); color: white; width: 40px; height: 40px; overflow: hidden; border: 2px solid var(--border);">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Avatar">
+                {% else %}
+                    {{ user.username|slice:":2"|upper }}
+                {% endif %}
+            </div>
+            <div class="user-info ms-3 logo-name">
+                <small class="d-block text-truncate fw-bold" style="max-width: 110px; color: var(--text-main);">{{ user.get_full_name|default:user.username }}</small>
+                <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary" style="font-size: 0.6rem;">{{ user.rol|upper }}</span>
+            </div>
+        </div>
+    </aside>
+    {% endif %}
+{% endif %}
+
+    <!-- Área de Contenido -->
+    <main class="{% if user.is_authenticated %}main-content{% endif %}">
+        {% if user.is_authenticated %}
+        <!-- Top Bar -->
+        <header class="top-nav">
+            <button class="btn-action-icon" onclick="toggleSidebar()" id="btn-sidebar" title="Menú">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn-action-icon" onclick="toggleTheme()" title="Cambiar Tema">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
+                <div class="ms-2 d-none d-md-block text-end">
+                    <span class="d-block fw-bold small" style="color: var(--text-main);">{{ user.username }}</span>
+                    <span class="badge badge-soft-primary" style="font-size: 0.6rem;">{{ user.rol|upper }}</span>
+                </div>
+            </div>
+        </header>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        // Función para abrir/cerrar sidebar en móvil
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            if (!sidebar) return;
+            
+            if (window.innerWidth <= 992) {
+                // En móvil: toggle clase mobile-open
+                sidebar.classList.toggle('mobile-open');
+                overlay.classList.toggle('active');
+                
+                // Prevenir scroll del body cuando sidebar está abierto
+                document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+            }
+        }
+
+        // Función para cerrar sidebar (usada por el overlay)
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            if (sidebar && overlay) {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Cerrar sidebar con tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSidebar();
+            }
+        });
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const targetTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            applyTheme(targetTheme);
+        }
+
+        function applyTheme(theme) {
+            const html = document.documentElement;
+            html.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cargar tema guardado
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+
+            // Cerrar sidebar al hacer clic en un enlace (móvil)
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 992) {
+                        closeSidebar();
+                    }
+                });
+            });
+
+            // Ajustar al redimensionar ventana
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 992) {
+                    closeSidebar();
+                }
+            });
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

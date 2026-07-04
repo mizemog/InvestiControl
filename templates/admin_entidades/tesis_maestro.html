@@ -1,0 +1,442 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .tesis-maestro-wrapper,
+    .tesis-maestro-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .tesis-maestro-wrapper .text-muted,
+    .tesis-maestro-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .tesis-maestro-wrapper .text-primary,
+    .tesis-maestro-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepciones para colores semánticos fijos */
+    .tesis-maestro-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .tesis-maestro-wrapper .text-warning {
+        color: #f59e0b !important;
+    }
+    .tesis-maestro-wrapper .text-info {
+        color: #3b82f6 !important;
+    }
+
+    /* ===== BOTONES DE ACCIÓN ===== */
+    .btn-action-editar {
+        background: var(--nav-active-bg) !important;
+        color: var(--primary) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.3rem 0.6rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-action-editar:hover {
+        background: var(--primary) !important;
+        color: #fff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-action-reporte {
+        background: rgba(16, 185, 129, 0.1) !important;
+        color: #10b981 !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.3rem 0.6rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-action-reporte:hover {
+        background: #10b981 !important;
+        color: #fff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-movil-editar {
+        background: var(--nav-active-bg) !important;
+        color: var(--primary) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.8rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-movil-editar:hover {
+        background: var(--primary) !important;
+        color: #fff !important;
+    }
+
+    .btn-movil-reporte {
+        background: rgba(16, 185, 129, 0.1) !important;
+        color: #10b981 !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.8rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-movil-reporte:hover {
+        background: #10b981 !important;
+        color: #fff !important;
+    }
+
+    /* ===== FORMULARIO DE BÚSQUEDA ===== */
+    .input-group-search {
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        border: 1px solid var(--border) !important;
+        background: var(--nav-active-bg) !important;
+    }
+    .input-group-search .input-group-text {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-muted) !important;
+        border: none !important;
+        border-radius: 12px 0 0 12px !important;
+        padding: 0 1rem !important;
+    }
+    .input-group-search input {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        border-radius: 0 12px 12px 0 !important;
+        padding: 0.5rem 1rem !important;
+    }
+    .input-group-search input:focus {
+        box-shadow: none !important;
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+    }
+    .input-group-search input::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7 !important;
+    }
+
+    /* ===== TABLA ===== */
+    .table-proyectos {
+        color: var(--text-main) !important;
+        --bs-table-bg: transparent !important;
+    }
+    .table-proyectos thead {
+        background: var(--nav-active-bg) !important;
+    }
+    .table-proyectos thead th {
+        color: var(--text-muted) !important;
+        border-bottom: 2px solid var(--border) !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        font-size: 0.75rem !important;
+        letter-spacing: 0.5px !important;
+        padding: 1rem 1.5rem !important;
+    }
+    .table-proyectos tbody tr {
+        border-bottom: 1px solid var(--border) !important;
+        transition: background 0.2s ease !important;
+    }
+    .table-proyectos tbody tr:hover {
+        background: var(--nav-active-bg) !important;
+    }
+    .table-proyectos tbody td {
+        padding: 1rem 1.5rem !important;
+        vertical-align: middle !important;
+        border: none !important;
+    }
+
+    .progress-custom {
+        height: 6px !important;
+        background: var(--nav-active-bg) !important;
+        border-radius: 10px !important;
+        overflow: hidden !important;
+    }
+    .progress-custom .progress-bar {
+        border-radius: 10px !important;
+        transition: width 0.6s ease !important;
+    }
+
+    /* ===== CARDS MÓVIL ===== */
+    .card-proyecto-movil {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        padding: 1.25rem !important;
+        transition: transform 0.2s ease !important;
+    }
+    .card-proyecto-movil:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
+    }
+
+    /* ===== ESTADO VACÍO ===== */
+    .empty-state-icon {
+        background: var(--nav-active-bg) !important;
+        padding: 1.5rem !important;
+        border-radius: 50% !important;
+        display: inline-block !important;
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .proyecto-row, .card-proyecto-movil {
+        animation: fadeIn 0.3s ease;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 767px) {
+        .card-proyecto-movil {
+            border-radius: 12px !important;
+        }
+    }
+</style>
+
+<div class="tesis-maestro-wrapper">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 mb-md-5 gap-3">
+        <div>
+            <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Maestro de Investigaciones</h2>
+            <p class="mb-0" style="color: var(--text-muted);">
+                <i class="fas fa-database me-1"></i> {{ proyectos|length }} proyecto(s) registrado(s)
+            </p>
+        </div>
+        <div class="d-flex gap-2 w-100 w-md-auto">
+            <div class="input-group input-group-search" style="max-width: 300px;">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" id="buscarProyecto" 
+                       placeholder="Buscar proyecto..." 
+                       onkeyup="filtrarTabla()">
+            </div>
+        </div>
+    </div>
+
+    {% if proyectos %}
+    <!-- Vista Desktop: Tabla normal -->
+    <div class="card border-0 shadow-sm overflow-hidden d-none d-md-block" style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
+        <div class="table-responsive">
+            <table class="table table-proyectos table-hover mb-0" id="tablaProyectos">
+                <thead>
+                    <tr>
+                        <th style="min-width: 250px;">
+                            <i class="fas fa-book me-1"></i> Título del Proyecto
+                        </th>
+                        <th style="min-width: 180px;">
+                            <i class="fas fa-user-graduate me-1"></i> Equipo
+                        </th>
+                        <th style="min-width: 150px;">
+                            <i class="fas fa-chalkboard-teacher me-1"></i> Tutores
+                        </th>
+                        <th style="min-width: 140px;">
+                            <i class="fas fa-chart-line me-1"></i> Progreso
+                        </th>
+                        <th class="text-end" style="min-width: 100px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in proyectos %}
+                    <tr class="proyecto-row" data-search="{{ p.titulo|lower }} {{ p.carrera.nombre|lower }} {% for e in p.estudiantes.all %}{{ e.get_full_name|lower }} {% endfor %} {% for t in p.profesores.all %}{{ t.last_name|lower }} {% endfor %}">
+                        <td>
+                            <div class="fw-bold text-truncate" style="max-width: 300px; color: var(--text-main);" title="{{ p.titulo }}">
+                                {{ p.titulo }}
+                            </div>
+                            <div class="small" style="color: var(--text-muted);">
+                                <i class="fas fa-university me-1 opacity-50"></i> {{ p.carrera.nombre }}
+                            </div>
+                            {% if p.tipo %}
+                            <span class="badge mt-1" style="background: var(--primary-light); color: var(--primary); font-size: 0.65rem;">
+                                {{ p.tipo }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="small">
+                            {% if p.estudiantes.all %}
+                                {% for e in p.estudiantes.all %}
+                                    <div class="mb-1" style="color: var(--text-main);">
+                                        <i class="fas fa-user-circle me-1 opacity-50"></i>
+                                        {{ e.get_full_name|default:e.username }}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <span style="color: var(--text-muted);">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="small">
+                            {% if p.profesores.all %}
+                                {% for t in p.profesores.all %}
+                                    <div class="mb-1" style="color: var(--text-main);">
+                                        <i class="fas fa-user-tie me-1 opacity-50"></i>
+                                        {{ t.get_full_name|default:t.username }}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <span style="color: var(--text-muted);">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress-custom flex-grow-1">
+                                    <div class="progress-bar bg-primary" 
+                                         style="width: {{ p.porcentaje_avance }}%;" 
+                                         role="progressbar" 
+                                         aria-valuenow="{{ p.porcentaje_avance }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <span class="small fw-bold" style="min-width: 35px; color: var(--text-main);">{{ p.porcentaje_avance }}%</span>
+                            </div>
+                            {% if p.estado %}
+                            <small class="d-block mt-1" style="color: var(--text-muted); font-size: 0.7rem;">
+                                {% if p.estado == 'Aprobado' %}🟢{% elif p.estado == 'Observado' %}🟠{% else %}🟡{% endif %} 
+                                {{ p.estado }}
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex gap-1 justify-content-end">
+                                <a href="{% url 'proyecto_editar' p.id %}" 
+                                   class="btn btn-action-editar"
+                                   title="Editar proyecto">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if p.porcentaje_avance >= 100 %}
+                                <a href="#" 
+                                   class="btn btn-action-reporte"
+                                   title="Ver reporte final">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Vista Móvil: Cards -->
+    <div class="d-md-none">
+        <div class="row g-3" id="cardsProyectos">
+            {% for p in proyectos %}
+            <div class="col-12 proyecto-row" data-search="{{ p.titulo|lower }} {{ p.carrera.nombre|lower }} {% for e in p.estudiantes.all %}{{ e.get_full_name|lower }} {% endfor %} {% for t in p.profesores.all %}{{ t.last_name|lower }} {% endfor %}">
+                <div class="card-proyecto-movil">
+                    <!-- Título y tipo -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="flex-grow-1 min-w-0">
+                            <h6 class="fw-bold mb-1 text-truncate" style="color: var(--text-main);">{{ p.titulo }}</h6>
+                            <small style="color: var(--text-muted);">
+                                <i class="fas fa-university me-1"></i> {{ p.carrera.nombre }}
+                            </small>
+                        </div>
+                        {% if p.tipo %}
+                        <span class="badge ms-2 flex-shrink-0" style="background: var(--primary-light); color: var(--primary); font-size: 0.65rem;">
+                            {{ p.tipo }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Progreso -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="fw-bold" style="color: var(--text-muted);">Progreso</small>
+                            <small class="fw-bold" style="color: var(--text-main);">{{ p.porcentaje_avance }}%</small>
+                        </div>
+                        <div class="progress-custom">
+                            <div class="progress-bar bg-primary" style="width: {{ p.porcentaje_avance }}%"></div>
+                        </div>
+                        {% if p.estado %}
+                        <small class="d-block mt-2" style="color: var(--text-muted);">
+                            {% if p.estado == 'Aprobado' %}🟢{% elif p.estado == 'Observado' %}🟠{% else %}🟡{% endif %} 
+                            {{ p.estado }}
+                        </small>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Equipo -->
+                    <div class="row g-2 mb-3">
+                        {% if p.estudiantes.all %}
+                        <div class="col-6">
+                            <small class="d-block text-muted mb-1" style="color: var(--text-muted);"><i class="fas fa-user-graduate me-1"></i> Estudiantes:</small>
+                            {% for e in p.estudiantes.all %}
+                            <small class="d-block" style="color: var(--text-main);">{{ e.get_full_name|truncatechars:20 }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if p.profesores.all %}
+                        <div class="col-6">
+                            <small class="d-block text-muted mb-1" style="color: var(--text-muted);"><i class="fas fa-chalkboard-teacher me-1"></i> Tutores:</small>
+                            {% for t in p.profesores.all %}
+                            <small class="d-block" style="color: var(--text-main);">{{ t.get_full_name|truncatechars:20 }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Acciones -->
+                    <div class="d-flex gap-2 pt-3 border-top" style="border-color: var(--border) !important;">
+                        <a href="{% url 'proyecto_editar' p.id %}" 
+                           class="btn btn-movil-editar flex-grow-1 d-flex align-items-center justify-content-center gap-1">
+                            <i class="fas fa-edit me-1"></i> Editar
+                        </a>
+                        {% if p.porcentaje_avance >= 100 %}
+                        <a href="#" 
+                           class="btn btn-movil-reporte flex-grow-1 d-flex align-items-center justify-content-center gap-1">
+                            <i class="fas fa-file-pdf me-1"></i> Reporte
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Estado vacío -->
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <div class="empty-state-icon">
+                <i class="fas fa-folder-open fa-3x" style="color: var(--text-muted); opacity: 0.5;"></i>
+            </div>
+        </div>
+        <h4 class="fw-bold mb-2" style="color: var(--text-main);">No hay proyectos registrados</h4>
+        <p class="mb-0" style="color: var(--text-muted); max-width: 400px; margin: 0 auto;">
+            Los proyectos de investigación aparecerán aquí una vez que sean creados en el sistema.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function filtrarTabla() {
+    const input = document.getElementById('buscarProyecto');
+    const filter = input.value.toLowerCase().trim();
+    
+    // Filtrar tabla desktop
+    const tabla = document.getElementById('tablaProyectos');
+    if (tabla) {
+        const filas = tabla.getElementsByTagName('tr');
+        for (let i = 1; i < filas.length; i++) {
+            const fila = filas[i];
+            const textoBusqueda = fila.getAttribute('data-search') || '';
+            fila.style.display = textoBusqueda.includes(filter) ? '' : 'none';
+        }
+    }
+    
+    // Filtrar cards móvil
+    const cardsContainer = document.getElementById('cardsProyectos');
+    if (cardsContainer) {
+        const cards = cardsContainer.getElementsByClassName('col-12');
+        for (let card of cards) {
+            const textoBusqueda = card.getAttribute('data-search') || '';
+            card.style.display = textoBusqueda.includes(filter) ? '' : 'none';
+        }
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .notificaciones-wrapper,
+    .notificaciones-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .notificaciones-wrapper .text-muted,
+    .notificaciones-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .notificaciones-wrapper .text-primary,
+    .notificaciones-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepciones para colores semánticos fijos */
+    .notificaciones-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .notificaciones-wrapper .text-warning {
+        color: #f59e0b !important;
+    }
+    .notificaciones-wrapper .text-info {
+        color: #3b82f6 !important;
+    }
+
+    /* ===== NOTIFICACIONES ===== */
+    .notificacion-card {
+        transition: all 0.2s ease;
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+    }
+    
+    .notificacion-card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
+    }
+    
+    /* Badge NUEVO con animación */
+    @keyframes pulse-badge {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    /* Botones de filtro */
+    .btn-filtro {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        font-size: 0.75rem !important;
+        border-radius: 20px !important;
+        padding: 0.35rem 1rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-filtro:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+    .btn-filtro.active {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+    }
+    
+    /* Botón de más opciones */
+    .btn-more-options {
+        background: transparent !important;
+        color: var(--text-muted) !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-more-options:hover {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .notificacion-item {
+        animation: fadeInRight 0.3s ease forwards;
+    }
+    
+    .notificacion-item:nth-child(1) { animation-delay: 0.05s; }
+    .notificacion-item:nth-child(2) { animation-delay: 0.1s; }
+    .notificacion-item:nth-child(3) { animation-delay: 0.15s; }
+    .notificacion-item:nth-child(4) { animation-delay: 0.2s; }
+    .notificacion-item:nth-child(5) { animation-delay: 0.25s; }
+    .notificacion-item:nth-child(6) { animation-delay: 0.3s; }
+    .notificacion-item:nth-child(7) { animation-delay: 0.35s; }
+    .notificacion-item:nth-child(8) { animation-delay: 0.4s; }
+    .notificacion-item:nth-child(9) { animation-delay: 0.45s; }
+    .notificacion-item:nth-child(10) { animation-delay: 0.5s; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 767px) {
+        .notificacion-card {
+            border-radius: 12px !important;
+        }
+        
+        .icon-circle {
+            min-width: 40px !important;
+            width: 40px !important;
+            height: 40px !important;
+        }
+        
+        .btn-filtro {
+            font-size: 0.65rem !important;
+            padding: 0.25rem 0.6rem !important;
+        }
+    }
+</style>
+
+<div class="notificaciones-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-9">
+            <!-- Header -->
+            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center mb-4 mb-md-5 gap-3">
+                <div class="d-flex align-items-center">
+                    <div class="p-3 rounded-4 me-3 flex-shrink-0" style="background: rgba(99, 102, 241, 0.15); color: var(--primary);">
+                        <i class="fas fa-bell fa-2x"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Notificaciones</h2>
+                        <p class="mb-0" style="color: var(--text-muted);">
+                            {% with no_leidas=notificaciones_no_leidas|default:0 %}
+                                <span id="contadorNoLeidas" class="fw-bold" style="color: var(--primary);">{{ no_leidas }}</span> 
+                                sin leer de {{ notificaciones.count }} total(es)
+                            {% endwith %}
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Acciones -->
+                <div class="d-flex gap-2 ms-md-auto flex-wrap">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button class="btn btn-filtro active" onclick="filtrarNotificaciones('todas')" id="btnTodas">
+                            <i class="fas fa-list me-1"></i> Todas
+                        </button>
+                        <button class="btn btn-filtro" onclick="filtrarNotificaciones('no_leidas')" id="btnNoLeidas">
+                            <i class="fas fa-circle me-1" style="color: var(--primary); font-size: 0.4rem;"></i> No leídas
+                        </button>
+                        <button class="btn btn-filtro" onclick="filtrarNotificaciones('leidas')" id="btnLeidas">
+                            <i class="fas fa-check me-1"></i> Leídas
+                        </button>
+                    </div>
+                    
+                    {% if notificaciones.count > 0 %}
+                    <a href="{% url 'marcar_todas_leidas' %}" 
+                       class="btn btn-sm rounded-pill px-3 d-flex align-items-center gap-1"
+                       style="background: var(--nav-active-bg); color: var(--text-main); border: 1px solid var(--border); font-size: 0.75rem;">
+                        <i class="fas fa-check-double"></i> Marcar todas leídas
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Lista de Notificaciones -->
+            {% if notificaciones %}
+            <div class="notification-list" id="listaNotificaciones">
+                {% for n in notificaciones %}
+                <div class="notificacion-item mb-2" 
+                     data-estado="{% if n.estado == 'No leido' %}no_leida{% else %}leida{% endif %}"
+                     data-tipo="{% if 'aprobada' in n.mensaje %}aprobacion{% elif 'Observaciones' in n.mensaje %}observacion{% elif 'entrega' in n.mensaje %}entrega{% else %}sistema{% endif %}">
+                    
+                    <div class="card border-0 shadow-sm position-relative notificacion-card"
+                         style="{% if n.estado == 'No leido' %}
+                                    border-left: 4px solid var(--primary) !important;
+                                    background: linear-gradient(90deg, rgba(99, 102, 241, 0.03), var(--bg-card)) !important;
+                                {% endif %}">
+                        
+                        <div class="card-body d-flex align-items-start p-3 p-md-4 gap-3">
+                            <!-- Icono según tipo -->
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 icon-circle"
+                                 style="min-width: 48px; width: 48px; height: 48px;
+                                        {% if 'aprobada' in n.mensaje %}
+                                            background: rgba(16, 185, 129, 0.1); color: #10b981;
+                                        {% elif 'Observaciones' in n.mensaje %}
+                                            background: rgba(245, 158, 11, 0.1); color: #f59e0b;
+                                        {% elif 'entrega' in n.mensaje %}
+                                            background: rgba(59, 130, 246, 0.1); color: #3b82f6;
+                                        {% else %}
+                                            background: rgba(99, 102, 241, 0.1); color: #6366f1;
+                                        {% endif %}">
+                                {% if 'aprobada' in n.mensaje %}
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                {% elif 'Observaciones' in n.mensaje %}
+                                    <i class="fas fa-exclamation-circle fa-lg"></i>
+                                {% elif 'entrega' in n.mensaje %}
+                                    <i class="fas fa-file-upload fa-lg"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle fa-lg"></i>
+                                {% endif %}
+                            </div>
+
+                            <!-- Contenido -->
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-1">
+                                    <h6 class="fw-bold mb-0 d-flex align-items-center gap-2" style="color: var(--text-main); font-size: 0.9rem;">
+                                        {% if 'aprobada' in n.mensaje %}
+                                            <i class="fas fa-trophy" style="color: #10b981;"></i> Tesis Aprobada
+                                        {% elif 'Observaciones' in n.mensaje %}
+                                            <i class="fas fa-comment-dots" style="color: #f59e0b;"></i> Observaciones Enviadas
+                                        {% elif 'entrega' in n.mensaje %}
+                                            <i class="fas fa-file-alt" style="color: #3b82f6;"></i> Nueva Entrega
+                                        {% else %}
+                                            <i class="fas fa-bell" style="color: var(--primary);"></i> Actualización
+                                        {% endif %}
+                                        
+                                        {% if n.estado == 'No leido' %}
+                                            <span class="badge rounded-pill px-2 py-0" 
+                                                  style="background: var(--primary); color: white; font-size: 0.6rem; animation: pulse-badge 2s infinite;">
+                                                NUEVO
+                                            </span>
+                                        {% endif %}
+                                    </h6>
+                                    
+                                    <small style="color: var(--text-muted); font-size: 0.7rem; white-space: nowrap;">
+                                        <i class="far fa-clock me-1"></i> {{ n.fecha_envio|timesince }}
+                                    </small>
+                                </div>
+                                
+                                <p class="mb-2" style="color: var(--text-main); font-size: 0.85rem; line-height: 1.5;">
+                                    {{ n.mensaje }}
+                                </p>
+                                
+                                <!-- Metadatos adicionales -->
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% if n.proyecto %}
+                                    <small class="text-muted" style="font-size: 0.7rem;">
+                                        <i class="fas fa-book me-1"></i> {{ n.proyecto.titulo|truncatechars:40 }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Acciones -->
+                            <div class="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+                                {% if n.estado == 'No leido' %}
+                                <a href="{% url 'marcar_leida' n.id %}" 
+                                   class="btn btn-sm rounded-3 px-3 py-1 d-flex align-items-center gap-1"
+                                   style="background: var(--primary); color: white; font-size: 0.7rem; white-space: nowrap;"
+                                   title="Marcar como leída">
+                                    <i class="fas fa-check"></i> <span class="d-none d-sm-inline">Leída</span>
+                                </a>
+                                {% endif %}
+                                <button class="btn btn-sm rounded-3 px-2 py-1 btn-more-options"
+                                        title="Más opciones">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Estado vacío -->
+            <div class="text-center py-5">
+                <div class="d-inline-flex p-4 rounded-circle mb-4" style="background: var(--nav-active-bg);">
+                    <i class="fas fa-bell-slash fa-3x" style="color: var(--text-muted); opacity: 0.4;"></i>
+                </div>
+                <h4 class="fw-bold mb-2" style="color: var(--text-main);">No tienes notificaciones</h4>
+                <p class="mb-0" style="color: var(--text-muted); max-width: 400px; margin: 0 auto;">
+                    Todo está al día. Las notificaciones aparecerán aquí cuando haya actualizaciones de tus proyectos.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function filtrarNotificaciones(filtro) {
+        const notificaciones = document.querySelectorAll('.notificacion-item');
+        let contadorNoLeidas = 0;
+        
+        notificaciones.forEach(notif => {
+            const estado = notif.getAttribute('data-estado');
+            
+            if (filtro === 'todas') {
+                notif.style.display = '';
+            } else if (filtro === 'no_leidas') {
+                notif.style.display = estado === 'no_leida' ? '' : 'none';
+            } else if (filtro === 'leidas') {
+                notif.style.display = estado === 'leida' ? '' : 'none';
+            }
+            
+            if (estado === 'no_leida' && notif.style.display !== 'none') {
+                contadorNoLeidas++;
+            }
+        });
+        
+        // Actualizar botones activos
+        document.querySelectorAll('.btn-filtro').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        const btnActivo = document.getElementById('btn' + filtro.charAt(0).toUpperCase() + filtro.slice(1).replace('_', ''));
+        if (btnActivo) {
+            btnActivo.classList.add('active');
+        }
+        
+        // Actualizar contador
+        document.getElementById('contadorNoLeidas').textContent = contadorNoLeidas;
+    }
+</script>
+{% endblock %}

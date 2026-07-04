@@ -1,0 +1,469 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .historial-wrapper,
+    .historial-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .historial-wrapper .text-muted,
+    .historial-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .historial-wrapper .text-primary,
+    .historial-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepciones para colores semánticos fijos */
+    .historial-wrapper .text-success {
+        color: #10b981 !important;
+    }
+    .historial-wrapper .text-warning {
+        color: #f59e0b !important;
+    }
+    .historial-wrapper .text-danger {
+        color: #ef4444 !important;
+    }
+    .historial-wrapper .text-info {
+        color: #3b82f6 !important;
+    }
+
+    /* ===== TIMELINE ===== */
+    .timeline-container {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .timeline-item {
+        position: relative;
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .timeline-marker {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-shrink: 0;
+        width: 40px;
+    }
+    
+    .timeline-point {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .timeline-point.active {
+        box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.15);
+        animation: pulse-point 2s infinite;
+    }
+    
+    @keyframes pulse-point {
+        0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.3); }
+        70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    }
+    
+    .timeline-version {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+    
+    .timeline-line {
+        width: 2px;
+        flex-grow: 1;
+        background: var(--border);
+        min-height: 40px;
+        margin-top: 4px;
+    }
+    
+    .timeline-item:last-child .timeline-line {
+        display: none;
+    }
+    
+    .timeline-content {
+        flex-grow: 1;
+        min-width: 0;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Efecto hover en cards */
+    .timeline-content .card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+    }
+
+    /* ===== BOTONES DE ACCIÓN ===== */
+    .btn-action-icon {
+        background: var(--bg-sidebar) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text-muted) !important;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .btn-action-icon:hover {
+        background: var(--nav-active-bg) !important;
+        color: var(--primary) !important;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 767px) {
+        .timeline-container {
+            padding-left: 0.5rem;
+        }
+        
+        .timeline-item {
+            gap: 0.75rem;
+        }
+        
+        .timeline-marker {
+            width: 32px;
+        }
+        
+        .timeline-point {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .timeline-version {
+            font-size: 0.6rem;
+        }
+        
+        .timeline-content .card {
+            border-radius: 16px !important;
+        }
+    }
+    
+    @media (max-width: 575px) {
+        .timeline-container {
+            padding-left: 0.25rem;
+        }
+        
+        .timeline-item {
+            gap: 0.5rem;
+        }
+        
+        .timeline-marker {
+            width: 28px;
+        }
+        
+        .timeline-point {
+            width: 28px;
+            height: 28px;
+        }
+        
+        .timeline-version {
+            font-size: 0.55rem;
+        }
+    }
+    
+    /* ===== ANIMACIÓN DE ENTRADA ===== */
+    @keyframes fadeInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .timeline-item {
+        animation: fadeInLeft 0.4s ease forwards;
+    }
+    
+    .timeline-item:nth-child(1) { animation-delay: 0.1s; }
+    .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+    .timeline-item:nth-child(3) { animation-delay: 0.3s; }
+    .timeline-item:nth-child(4) { animation-delay: 0.4s; }
+    .timeline-item:nth-child(5) { animation-delay: 0.5s; }
+    .timeline-item:nth-child(6) { animation-delay: 0.6s; }
+    .timeline-item:nth-child(7) { animation-delay: 0.7s; }
+    .timeline-item:nth-child(8) { animation-delay: 0.8s; }
+</style>
+
+<div class="historial-wrapper">
+    <!-- Header -->
+    <div class="mb-4 mb-md-5">
+        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3 mb-3">
+            <div class="d-flex align-items-center">
+                <a href="{% url 'home' %}" class="btn-action-icon me-3 flex-shrink-0">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">
+                        <i class="fas fa-timeline me-2" style="color: var(--primary);"></i>Línea de Tiempo
+                    </h2>
+                    <p class="mb-0" style="color: var(--text-muted);">
+                        Seguimiento detallado de: 
+                        <span class="fw-bold" style="color: var(--text-main);">{{ proyecto.titulo }}</span>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Estadísticas rápidas -->
+            <div class="d-flex gap-2 flex-wrap ms-md-auto">
+                <div class="badge rounded-pill px-3 py-2" style="background: var(--primary-light); color: var(--primary); font-size: 0.7rem;">
+                    <i class="fas fa-code-branch me-1"></i> {{ versiones|length }} versión(es)
+                </div>
+                {% with ultima_version=versiones.last %}
+                    {% if ultima_version %}
+                    <div class="badge rounded-pill px-3 py-2" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem;">
+                        <i class="fas fa-clock me-1"></i> Última: {{ ultima_version.fecha_subida|date:"d/m/Y" }}
+                    </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+    {% if versiones %}
+    <!-- Timeline -->
+    <div class="timeline-container">
+        {% for v in versiones %}
+        <div class="timeline-item">
+            <!-- Línea y punto del timeline -->
+            <div class="timeline-marker">
+                <div class="timeline-point {% if forloop.first %}active{% endif %}" 
+                     style="background: {% if forloop.first %}var(--primary){% else %}var(--nav-active-bg){% endif %}; 
+                            border: 3px solid {% if forloop.first %}var(--primary){% else %}var(--border){% endif %};">
+                    <span class="timeline-version">v{{ v.numero_version }}</span>
+                </div>
+                {% if not forloop.last %}
+                <div class="timeline-line"></div>
+                {% endif %}
+            </div>
+            
+            <!-- Contenido de la versión -->
+            <div class="timeline-content">
+                <div class="card border-0 shadow-sm" style="background: var(--bg-card); border-radius: 20px; transition: transform 0.2s ease;">
+                    <!-- Cabecera de la versión -->
+                    <div class="card-header border-0 d-flex flex-wrap justify-content-between align-items-center gap-2"
+                         style="background: transparent; padding: 1.25rem 1.5rem 0 1.5rem;">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-3 p-2" style="background: var(--primary-light); color: var(--primary);">
+                                <i class="fas fa-file-upload"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-0" style="color: var(--text-main); font-size: 1rem;">
+                                    Entrega v{{ v.numero_version }}
+                                </h5>
+                                <small style="color: var(--text-muted); font-size: 0.75rem;">
+                                    <i class="far fa-calendar-alt me-1"></i> {{ v.fecha_subida|date:"d M, Y" }}
+                                    <span class="mx-1">·</span>
+                                    <i class="far fa-clock me-1"></i> {{ v.fecha_subida|date:"H:i" }}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        {% if v.estado %}
+                        <span class="badge rounded-pill px-3 py-1" 
+                              style="font-size: 0.65rem;
+                              {% if v.estado == 'Aprobado' %}
+                                  background: rgba(16, 185, 129, 0.15); color: #10b981;
+                              {% elif v.estado == 'Observado' %}
+                                  background: rgba(245, 158, 11, 0.15); color: #f59e0b;
+                              {% else %}
+                                  background: rgba(59, 130, 246, 0.15); color: #3b82f6;
+                              {% endif %}">
+                            {{ v.estado|upper }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-body" style="padding: 1.25rem 1.5rem;">
+                        <!-- Resumen de cambios -->
+                        {% if v.resumen_cambios %}
+                        <div class="p-3 rounded-3 mb-3" style="background: var(--nav-active-bg);">
+                            <small class="fw-bold text-uppercase d-block mb-1" style="color: var(--text-muted); font-size: 0.65rem; letter-spacing: 0.5px;">
+                                <i class="fas fa-clipboard-list me-1"></i> Resumen de Cambios
+                            </small>
+                            <p class="mb-0" style="color: var(--text-main); font-size: 0.85rem; line-height: 1.6;">
+                                "{{ v.resumen_cambios }}"
+                            </p>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Documento -->
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <a href="{{ v.archivo.url }}" class="btn btn-sm rounded-3 px-3 py-2 d-flex align-items-center gap-1"
+                               style="background: var(--primary); color: #fff; font-size: 0.8rem;"
+                               target="_blank">
+                                <i class="fas fa-file-pdf"></i> Ver Documento
+                            </a>
+                            <a href="{{ v.archivo.url }}" class="btn btn-sm rounded-3 px-3 py-2 d-flex align-items-center gap-1"
+                               style="background: var(--nav-active-bg); color: var(--text-main); font-size: 0.8rem;"
+                               download>
+                                <i class="fas fa-download"></i> Descargar
+                            </a>
+                        </div>
+                        
+                        <!-- Revisiones -->
+                        {% if v.revisiones.all %}
+                        <div class="mt-3">
+                            <h6 class="fw-bold mb-3 d-flex align-items-center gap-2" style="color: var(--text-main); font-size: 0.85rem;">
+                                <i class="fas fa-clipboard-check" style="color: var(--primary);"></i> 
+                                Revisiones ({{ v.revisiones.all|length }})
+                            </h6>
+                            
+                            {% for r in v.revisiones.all %}
+                            <div class="p-3 rounded-3 mb-3" 
+                                 style="background: var(--nav-active-bg); border-left: 3px solid {% if r.estado == 'Aprobado' %}#10b981{% else %}#f59e0b{% endif %};">
+                                
+                                <!-- Header de revisión -->
+                                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                                    <div>
+                                        <span class="badge rounded-pill px-2 py-1 me-2" 
+                                              style="font-size: 0.6rem;
+                                              {% if r.estado == 'Aprobado' %}
+                                                  background: rgba(16, 185, 129, 0.15); color: #10b981;
+                                              {% else %}
+                                                  background: rgba(245, 158, 11, 0.15); color: #f59e0b;
+                                              {% endif %}">
+                                            {% if r.estado == 'Aprobado' %}✅{% else %}⚠️{% endif %} {{ r.estado|upper }}
+                                        </span>
+                                        <small style="color: var(--text-muted); font-size: 0.75rem;">
+                                            <i class="fas fa-user-tie me-1"></i>
+                                            {{ r.profesor.get_full_name|default:r.profesor.last_name }}
+                                        </small>
+                                    </div>
+                                    {% if r.fecha_revision %}
+                                    <small style="color: var(--text-muted); font-size: 0.7rem;">
+                                        <i class="far fa-calendar-alt me-1"></i> {{ r.fecha_revision|date:"d/m/Y" }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Observaciones generales -->
+                                {% if r.observaciones_generales %}
+                                <div class="p-2 rounded-2 mb-2" style="background: rgba(245, 158, 11, 0.05);">
+                                    <small class="fst-italic" style="color: var(--text-main); font-size: 0.8rem;">
+                                        <i class="fas fa-quote-left me-1 opacity-25"></i>
+                                        "{{ r.observaciones_generales }}"
+                                        <i class="fas fa-quote-right ms-1 opacity-25"></i>
+                                    </small>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Comentarios detallados -->
+                                {% if r.comentarios.all %}
+                                <div class="mt-2">
+                                    <small class="fw-bold text-uppercase d-block mb-2" style="color: var(--text-muted); font-size: 0.6rem; letter-spacing: 0.5px;">
+                                        <i class="fas fa-comments me-1"></i> Correcciones Específicas
+                                    </small>
+                                    
+                                    {% for c in r.comentarios.all %}
+                                    <div class="p-2 rounded-3 mb-2" 
+                                         style="background: var(--bg-card); border: 1px solid var(--border);">
+                                        
+                                        <!-- Header del comentario -->
+                                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-1">
+                                            <div class="d-flex gap-1">
+                                                <span class="badge rounded-pill px-2 py-0" 
+                                                      style="background: var(--primary-light); color: var(--primary); font-size: 0.55rem;">
+                                                    {{ c.seccion|upper }}
+                                                </span>
+                                                <span class="badge rounded-pill px-2 py-0" 
+                                                      style="font-size: 0.55rem;
+                                                      {% if c.prioridad == 'Alta' %}
+                                                          background: rgba(239, 68, 68, 0.1); color: #ef4444;
+                                                      {% elif c.prioridad == 'Media' %}
+                                                          background: rgba(245, 158, 11, 0.1); color: #f59e0b;
+                                                      {% else %}
+                                                          background: rgba(59, 130, 246, 0.1); color: #3b82f6;
+                                                      {% endif %}">
+                                                    {{ c.prioridad|upper }}
+                                                </span>
+                                            </div>
+                                            <small style="color: var(--text-muted); font-size: 0.6rem;">
+                                                {% if c.estado == 'Corregido' %}
+                                                    ✅ Corregido
+                                                {% elif c.estado == 'Pendiente' %}
+                                                    ⏳ Pendiente
+                                                {% else %}
+                                                    📌 {{ c.estado|default:"Pendiente" }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        
+                                        <!-- Texto del comentario -->
+                                        <p class="small mb-2" style="color: var(--text-main); font-size: 0.8rem;">
+                                            {{ c.texto }}
+                                        </p>
+                                        
+                                        <!-- Respuesta del estudiante -->
+                                        {% if c.correccion %}
+                                        <div class="p-2 rounded-2" style="background: rgba(16, 185, 129, 0.05); border-left: 2px solid #10b981;">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <small class="fw-bold" style="color: #0f766e; font-size: 0.7rem;">
+                                                    <i class="fas fa-reply me-1"></i> Respuesta
+                                                </small>
+                                                <small style="color: var(--text-muted); font-size: 0.6rem;">
+                                                    {{ c.correccion.fecha_respuesta|date:"d/m/Y H:i"|default:"" }}
+                                                </small>
+                                            </div>
+                                            <p class="small mb-0" style="color: var(--text-main); font-size: 0.75rem; white-space: pre-wrap;">
+                                                {{ c.correccion.descripcion }}
+                                            </p>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <!-- Sin revisiones -->
+                        <div class="text-center py-3">
+                            <i class="fas fa-hourglass-half fa-2x mb-2 d-block" style="color: var(--text-muted); opacity: 0.3;"></i>
+                            <small style="color: var(--text-muted);">Aún no hay revisiones para esta entrega</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Estado vacío -->
+    <div class="text-center py-5">
+        <div class="d-inline-flex p-4 rounded-circle mb-4" style="background: var(--nav-active-bg);">
+            <i class="fas fa-timeline fa-3x" style="color: var(--text-muted); opacity: 0.4;"></i>
+        </div>
+        <h4 class="fw-bold mb-2" style="color: var(--text-main);">No hay versiones registradas</h4>
+        <p class="mb-4" style="color: var(--text-muted); max-width: 400px; margin: 0 auto;">
+            El proyecto aún no tiene entregas. Las versiones aparecerán aquí una vez que se suban documentos.
+        </p>
+        <a href="{% url 'home' %}" class="btn rounded-pill px-4 py-2 fw-bold"
+           style="background: var(--primary); color: #fff; border: none;">
+            <i class="fas fa-arrow-left me-2"></i> Volver
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

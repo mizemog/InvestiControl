@@ -1,0 +1,570 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+  .card-proyecto {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 16px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    overflow: hidden;
+  }
+  .card-proyecto:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  }
+
+  /* Borde lateral según estado */
+  .card-proyecto.border-enprogreso { border-left: 5px solid var(--primary); }
+  .card-proyecto.border-observado  { border-left: 5px solid #f59e0b; }
+  .card-proyecto.border-aprobado   { border-left: 5px solid #10b981; }
+  .card-proyecto.border-cancelado  { border-left: 5px solid #ef4444; }
+
+  /* ===== Badges de estado ===== */
+  .badge-estado {
+    font-weight: 600;
+    font-size: 0.65rem;
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .badge-estado.enprogreso { background: rgba(99,102,241,0.15); color: var(--primary); }
+  .badge-estado.observado  { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .badge-estado.aprobado   { background: rgba(16,185,129,0.15); color: #10b981; }
+  .badge-estado.cancelado  { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+  /* ===== Inputs y selects ===== */
+  .form-control-dark,
+  .form-select-dark {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-main) !important;
+    border-radius: 12px !important;
+    padding: 0.6rem 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-control-dark:focus,
+  .form-select-dark:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+  }
+  .form-control-dark::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+  }
+
+  /* ===== Botones ===== */
+  .btn-primary-custom {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 1.4rem;
+    font-weight: 600;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-primary-custom:hover {
+    background: #818cf8;
+    transform: translateY(-1px);
+    color: #fff;
+  }
+  .btn-outline-custom {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+  }
+  .btn-outline-custom:hover {
+    background: var(--border);
+    color: var(--text-main);
+  }
+
+  /* Botón deshabilitado (bloqueado) */
+  .btn-disabled-custom {
+    background: var(--bg-card) !important;
+    color: var(--text-muted) !important;
+    border: 1px solid var(--border) !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    font-size: 0.8rem;
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+  }
+  .btn-disabled-custom:hover {
+    background: var(--bg-card) !important;
+    color: var(--text-muted) !important;
+  }
+
+  /* ===== Barra de progreso ===== */
+  .progress-custom {
+    height: 8px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  [data-theme="dark"] .progress-custom {
+    background: rgba(255,255,255,0.08);
+  }
+  .progress-custom .progress-bar {
+    border-radius: 10px;
+    background: linear-gradient(90deg, #10b981, #059669);
+    transition: width 0.6s ease;
+    box-shadow: 0 0 12px rgba(16,185,129,0.3);
+  }
+
+  /* ===== Contenedor de tareas ===== */
+  .tareas-container {
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid var(--border) !important;
+  }
+  [data-theme="light"] .tareas-container {
+    background: rgba(15,23,42,0.02);
+  }
+  .tarea-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tarea-item:last-child {
+    border-bottom: none;
+  }
+  .tarea-icono {
+    font-size: 1.1rem;
+    margin-top: 0.15rem;
+  }
+  .tarea-texto {
+    flex: 1;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text-main);
+  }
+  .tarea-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 767px) {
+    .card-proyecto { border-left-width: 4px !important; }
+    .tarea-item { flex-wrap: wrap; }
+    .tarea-accion { width: 100%; margin-top: 0.5rem; }
+  }
+</style>
+
+<!-- ===== HEADER ===== -->
+<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4 mb-md-5 gap-3">
+  <div class="d-flex align-items-center">
+    <div class="p-3 rounded-4 me-3 flex-shrink-0" style="background: rgba(99,102,241,0.12); color: var(--primary);">
+      <i class="fas fa-book fa-2x"></i>
+    </div>
+    <div>
+      <h2 class="fw-bold h3 mb-1" style="color: var(--text-main);">Mis Entregas</h2>
+      <p class="mb-0" style="color: var(--text-muted);">
+        <span id="contadorProyectos">{{ proyectos.count }}</span> investigación(es)
+      </p>
+    </div>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2">
+    <span class="badge border border-primary-subtle text-primary px-3 py-2 rounded-pill d-flex align-items-center gap-1" style="background: transparent;">
+      <i class="fas fa-clock"></i> En progreso: <span id="countProgreso">0</span>
+    </span>
+    <span class="badge border border-success-subtle text-success px-3 py-2 rounded-pill d-flex align-items-center gap-1" style="background: transparent;">
+      <i class="fas fa-check-circle"></i> Aprobadas: <span id="countAprobado">0</span>
+    </span>
+    <span class="badge border border-danger-subtle text-danger px-3 py-2 rounded-pill d-flex align-items-center gap-1" style="background: transparent;">
+      <i class="fas fa-ban"></i> Canceladas: <span id="countCancelado">0</span>
+    </span>
+  </div>
+</div>
+
+<!-- ===== FILTROS ===== -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-md-7 col-lg-8">
+    <div class="input-group">
+      <span class="input-group-text bg-transparent border-end-0" style="border-color: var(--border); border-radius: 12px 0 0 12px; color: var(--text-muted);">
+        <i class="fas fa-search"></i>
+      </span>
+      <input type="text" id="buscarTesis" class="form-control form-control-dark border-start-0"
+             placeholder="Buscar por título de proyecto o asesor..."
+             onkeyup="filtrarTesis()" style="border-radius: 0;">
+      <button class="btn btn-outline-custom" type="button" onclick="document.getElementById('buscarTesis').value=''; filtrarTesis();" style="border-radius: 0 12px 12px 0; margin-left: -1px;">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+  <div class="col-6 col-md-2 col-lg-2">
+    <select id="filtroEstado" class="form-select form-select-dark" onchange="filtrarTesis()">
+      <option value="todos">Todos</option>
+      <option value="en progreso">En Progreso</option>
+      <option value="observado">Observado</option>
+      <option value="aprobado">Aprobado</option>
+      <option value="cancelado">Cancelado</option>
+    </select>
+  </div>
+  <div class="col-6 col-md-3 col-lg-2">
+    <select id="ordenarPor" class="form-select form-select-dark" onchange="filtrarTesis()">
+      <option value="recientes">Más recientes</option>
+      <option value="antiguos">Más antiguos</option>
+      <option value="progreso">Mayor progreso</option>
+      <option value="alfabetico">Alfabético</option>
+    </select>
+  </div>
+</div>
+
+<!-- ===== LISTA DE PROYECTOS ===== -->
+<div id="listaProyectos">
+  {% for p in proyectos %}
+  <div class="proyecto-item mb-3"
+       data-titulo="{{ p.titulo|lower }}"
+       data-asesor="{% if p.tutores_incognito %}identidad reservada{% else %}{% for prof in p.profesores.all %}{{ prof.get_full_name|lower }}{% endfor %}{% endif %}"
+       data-estado="{{ p.estado|lower }}"
+       data-fecha="{{ p.fecha_inicio|date:'Ymd' }}"
+       data-progreso="{{ p.porcentaje_avance }}">
+
+    <!-- ===== TARJETA DESKTOP ===== -->
+    <div class="card-proyecto d-none d-md-block p-4 border-{{ p.estado|lower|cut:' ' }}">
+      <div class="row align-items-center">
+        <!-- Columna izquierda: información principal -->
+        <div class="col-md-8">
+          <!-- Estado y fecha -->
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <span class="badge-estado {{ p.estado|lower|cut:' ' }}">
+              <i class="fas fa-circle" style="font-size: 0.4rem;"></i>
+              {{ p.estado|upper }}
+            </span>
+            <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 500;">
+              <i class="far fa-calendar-alt me-1"></i> Iniciado: {{ p.fecha_inicio|date:"d M, Y" }}
+            </span>
+          </div>
+
+          <!-- Título -->
+          <h4 class="fw-bold mb-2" style="color: var(--text-main); letter-spacing: -0.3px;">
+            {{ p.titulo }}
+          </h4>
+
+          <!-- Asesor -->
+          <p class="mb-3" style="color: var(--text-muted); font-size: 0.9rem;">
+            <i class="fas fa-user-tie me-1 opacity-50"></i> 
+            Asesor Académico: 
+            <span class="fw-bold" style="color: var(--text-main);">
+              {% if p.tutores_incognito %}
+                <span class="badge bg-dark border border-secondary text-muted px-2 py-1" style="font-size: 0.65rem;">
+                  <i class="fas fa-user-secret me-1"></i> IDENTIDAD RESERVADA
+                </span>
+              {% else %}
+                {% for prof in p.profesores.all %}
+                  {{ prof.get_full_name }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                  <span class="text-muted fst-italic">Sin asignar</span>
+                {% endfor %}
+              {% endif %}
+            </span>
+          </p>
+
+          <!-- Tareas pendientes (si existen) -->
+          {% if p.versiones.last.revisiones.last.comentarios.exists %}
+          <div class="tareas-container mb-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <i class="fas fa-list-check text-primary"></i>
+              <h6 class="fw-bold small text-uppercase mb-0" style="color: var(--text-main); letter-spacing: 0.5px;">
+                Tareas Pendientes - v{{ p.versiones.last.numero_version }}
+              </h6>
+            </div>
+
+            {% for c in p.versiones.last.revisiones.last.comentarios.all %}
+            <div class="tarea-item">
+              <div class="tarea-icono">
+                {% if c.estado == 'Resuelto' %}
+                  <i class="fas fa-check-circle text-success"></i>
+                {% else %}
+                  <i class="fas fa-circle-notch fa-spin text-warning"></i>
+                {% endif %}
+              </div>
+              <div class="tarea-texto">
+                <div>{{ c.texto|linebreaksbr }}</div>
+                <div class="tarea-meta">
+                  <span class="badge rounded-pill" style="font-size: 0.55rem; background: rgba(99,102,241,0.1); color: var(--primary);">
+                    PRIORIDAD {{ c.prioridad|upper }}
+                  </span>
+                  {% if c.verificado_docente %}
+                    <span class="badge rounded-pill" style="font-size: 0.55rem; background: rgba(16,185,129,0.1); color: #10b981;">
+                      <i class="fas fa-user-check me-1"></i> VERIFICADO
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="tarea-accion">
+                {% if c.estado != 'Resuelto' %}
+                  <a href="{% url 'enviar_correccion' c.id %}" class="btn btn-primary-custom btn-sm rounded-pill px-4 fw-bold" style="font-size: 0.7rem;">
+                    RESOLVER
+                  </a>
+                {% else %}
+                  <span class="text-success small fw-bold" style="font-size: 0.7rem;">COMPLETADO</span>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Acciones -->
+          {% if p.estado == 'Cancelado' %}
+          <div class="alert border-0 rounded-4 p-3 mb-4 d-flex align-items-start gap-3" 
+               style="background: rgba(239,68,68,0.08); color: #ef4444; border: 1px solid rgba(239,68,68,0.2) !important;">
+            <i class="fas fa-exclamation-circle mt-1"></i>
+            <div>
+              <h6 class="fw-bold mb-1" style="font-size: 0.8rem;">INVESTIGACIÓN CANCELADA</h6>
+              <p class="small mb-0 opacity-75"><strong>Motivo:</strong> {{ p.motivo_cancelacion|default:"No especificado por el coordinador." }}</p>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="d-flex align-items-center gap-3 pt-3 border-top" style="border-color: var(--border) !important;">
+            {% if p.estado == 'Cancelado' or p.estado == 'Aprobado' or p.estado == 'PROYECTO_APROBADO' %}
+              <button class="btn btn-disabled-custom d-flex align-items-center gap-1" disabled>
+                <i class="fas fa-lock"></i> Nueva Entrega
+              </button>
+            {% else %}
+              <a href="{% url 'subir_version' p.id %}" class="btn btn-primary-custom btn-sm rounded-3 px-3 py-2 fw-bold d-flex align-items-center gap-1"
+                 style="font-size: 0.8rem;">
+                <i class="fas fa-upload"></i> Nueva Entrega
+              </a>
+            {% endif %}
+
+            <a href="{% url 'ver_historial' p.id %}" class="btn btn-outline-custom btn-sm rounded-3 px-3 py-2 fw-bold d-flex align-items-center gap-1"
+               style="font-size: 0.8rem; border: 1px solid var(--border);">
+              <i class="fas fa-history"></i> Historial
+            </a>
+
+            {% if p.estado == 'Aprobado' or p.estado == 'PROYECTO_APROBADO' %}
+            <a href="{% url 'generar_certificado' p.id %}" class="btn btn-sm rounded-3 px-3 py-2 fw-bold d-flex align-items-center gap-1"
+               style="background: rgba(16,185,129,0.1); color: #10b981; font-size: 0.8rem; border: 1px solid rgba(16,185,129,0.2);">
+              <i class="fas fa-certificate"></i> Certificado
+            </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Columna derecha: Progreso -->
+        <div class="col-md-4 text-end mt-4 mt-md-0 border-start ps-md-4" style="border-color: var(--border) !important;">
+          <div class="text-start">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="small fw-bold" style="color: var(--text-muted);">Progreso General</span>
+              <span class="fw-bold" style="color: var(--text-main);">{{ p.porcentaje_avance }}%</span>
+            </div>
+            <div class="progress-custom">
+              <div class="progress-bar" style="width: {{ p.porcentaje_avance }}%;"></div>
+            </div>
+            <div class="mt-3">
+              <small class="text-muted d-block" style="color: var(--text-muted) !important;">
+                <i class="fas fa-clock me-1 opacity-50"></i> Última actualización:
+              </small>
+              <small class="fw-bold" style="color: var(--text-main);">
+                {{ p.versiones.last.fecha_subida|date:"d/m/Y H:i"|default:"Sin entregas" }}
+              </small>
+            </div>
+            {% if p.versiones.last %}
+            <div class="mt-2">
+              <small style="color: var(--text-muted);">
+                <i class="fas fa-code-branch me-1 opacity-50"></i> 
+                Versión {{ p.versiones.last.numero_version|default:"1" }}
+              </small>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TARJETA MÓVIL ===== -->
+    <div class="card-proyecto d-md-none p-3 border-{{ p.estado|lower|cut:' ' }}">
+      <!-- Estado y fecha -->
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="badge-estado {{ p.estado|lower|cut:' ' }}">
+          <i class="fas fa-circle" style="font-size: 0.3rem;"></i>
+          {{ p.estado|upper }}
+        </span>
+        <small style="color: var(--text-muted); font-size: 0.7rem;">
+          {{ p.fecha_inicio|date:"d/m/Y" }}
+        </small>
+      </div>
+
+      <!-- Título -->
+      <h5 class="fw-bold mb-2" style="color: var(--text-main); font-size: 0.95rem;">
+        {{ p.titulo }}
+      </h5>
+
+      <!-- Asesor -->
+      <p class="mb-2" style="color: var(--text-muted); font-size: 0.8rem;">
+        <i class="fas fa-user-tie me-1"></i>
+        {% if p.tutores_incognito %}
+          <span class="fst-italic opacity-75">Identidad Reservada</span>
+        {% else %}
+          {% for prof in p.profesores.all %}
+            {{ prof.get_full_name|truncatechars:25 }}
+          {% empty %}
+            Sin asignar
+          {% endfor %}
+        {% endif %}
+      </p>
+
+      <!-- Tareas móvil -->
+      {% if p.versiones.last.revisiones.last.comentarios.exists %}
+      <div class="tareas-container mb-3 p-2">
+        <small class="fw-bold d-block mb-2 text-primary" style="font-size: 0.65rem;">
+          <i class="fas fa-tasks me-1"></i> TAREAS v{{ p.versiones.last.numero_version }}:
+        </small>
+        {% for c in p.versiones.last.revisiones.last.comentarios.all %}
+          <div class="d-flex justify-content-between align-items-center mb-2 pb-2 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: var(--border) !important;">
+            <small class="text-truncate me-2" style="max-width: 180px; color: var(--text-main);">{{ c.texto }}</small>
+            {% if c.estado != 'Resuelto' %}
+              <a href="{% url 'enviar_correccion' c.id %}" class="btn btn-primary-custom btn-sm rounded-pill px-3" style="font-size: 0.6rem;">RESOLVER</a>
+            {% else %}
+              <i class="fas fa-check-circle text-success" style="font-size: 0.8rem;"></i>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Progreso -->
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <small class="text-muted" style="color: var(--text-muted) !important; font-size: 0.7rem;">Progreso</small>
+        <small class="fw-bold" style="color: var(--text-main); font-size: 0.8rem;">{{ p.porcentaje_avance }}%</small>
+      </div>
+      <div class="progress-custom mb-3">
+        <div class="progress-bar" style="width: {{ p.porcentaje_avance }}%;"></div>
+      </div>
+
+      <!-- Acciones móvil -->
+      <div class="d-flex gap-1">
+        {% if p.estado == 'Cancelado' or p.estado == 'Aprobado' or p.estado == 'PROYECTO_APROBADO' %}
+          <button class="btn btn-disabled-custom flex-grow-1" disabled style="font-size: 0.7rem; padding: 0.4rem 0.6rem;">
+            <i class="fas fa-lock me-1"></i> Bloqueado
+          </button>
+        {% else %}
+          <a href="{% url 'subir_version' p.id %}" class="btn btn-primary-custom btn-sm flex-grow-1 rounded-3" style="font-size: 0.7rem;">
+            <i class="fas fa-upload me-1"></i> Entregar
+          </a>
+        {% endif %}
+        
+        <a href="{% url 'ver_historial' p.id %}" class="btn btn-outline-custom btn-sm flex-grow-1 rounded-3" style="font-size: 0.7rem; border: 1px solid var(--border);">
+          <i class="fas fa-history me-1"></i> Historial
+        </a>
+      </div>
+
+      {% if p.estado == 'Cancelado' %}
+        <small class="text-danger d-block mt-2 fw-bold" style="font-size: 0.6rem; color: #ef4444 !important;">
+          <i class="fas fa-info-circle me-1"></i> Cancelado: {{ p.motivo_cancelacion|truncatechars:40 }}
+        </small>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <!-- Estado vacío -->
+  <div class="col-12">
+    <div class="text-center py-5">
+      <div class="d-inline-flex p-4 rounded-circle mb-4" style="background: var(--nav-active-bg);">
+        <i class="fas fa-folder-open fa-3x" style="color: var(--text-muted); opacity: 0.4;"></i>
+      </div>
+      <h4 class="fw-bold mb-2" style="color: var(--text-main);">No tienes proyectos asignados</h4>
+      <p class="mb-4" style="color: var(--text-muted); max-width: 400px; margin: 0 auto;">
+        Contacta a tu coordinador académico para que te asigne a un proyecto de investigación.
+      </p>
+      <button class="btn btn-primary-custom rounded-pill px-4 py-2" onclick="window.location.reload();">
+        <i class="fas fa-sync-alt me-2"></i> Actualizar
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- ===== MENSAJE SIN RESULTADOS ===== -->
+<div id="sinResultados" class="text-center py-5" style="display: none;">
+  <i class="fas fa-search fa-3x mb-3 d-block" style="color: var(--text-muted); opacity: 0.3;"></i>
+  <p class="text-muted mb-3" style="color: var(--text-muted) !important;">No se encontraron proyectos con esos criterios.</p>
+  <button class="btn btn-outline-custom rounded-pill px-4" 
+          onclick="document.getElementById('buscarTesis').value = ''; document.getElementById('filtroEstado').value = 'todos'; document.getElementById('ordenarPor').value = 'recientes'; filtrarTesis();">
+    <i class="fas fa-sync me-2"></i> Limpiar Filtros
+  </button>
+</div>
+
+<!-- ===== SCRIPT DE FILTRADO Y ORDENAMIENTO ===== -->
+<script>
+function filtrarTesis() {
+    const busqueda = document.getElementById('buscarTesis').value.toLowerCase().trim();
+    const filtroEstado = document.getElementById('filtroEstado').value.toLowerCase();
+    const ordenarPor = document.getElementById('ordenarPor') ? document.getElementById('ordenarPor').value : 'recientes';
+    
+    const proyectos = document.querySelectorAll('.proyecto-item');
+    let contadorVisibles = 0;
+    let progs = 0, aprobs = 0, cancels = 0;
+
+    proyectos.forEach(proyecto => {
+        const titulo = proyecto.getAttribute('data-titulo') || '';
+        const asesor = proyecto.getAttribute('data-asesor') || '';
+        const estado = proyecto.getAttribute('data-estado') || '';
+        
+        const coincideBusqueda = busqueda === '' || titulo.includes(busqueda) || asesor.includes(busqueda);
+        const coincideEstado = filtroEstado === 'todos' || estado === filtroEstado;
+        
+        if (coincideBusqueda && coincideEstado) {
+            proyecto.style.display = '';
+            contadorVisibles++;
+            if (estado === 'aprobado' || estado === 'proyecto_aprobado') aprobs++;
+            else if (estado === 'cancelado') cancels++;
+            else progs++;
+        } else {
+            proyecto.style.display = 'none';
+        }
+    });
+
+    // Ordenar
+    const lista = document.getElementById('listaProyectos');
+    const proyectosVisibles = Array.from(proyectos).filter(p => p.style.display !== 'none');
+    proyectosVisibles.sort((a, b) => {
+        switch(ordenarPor) {
+            case 'recientes':
+                return b.getAttribute('data-fecha').localeCompare(a.getAttribute('data-fecha'));
+            case 'antiguos':
+                return a.getAttribute('data-fecha').localeCompare(b.getAttribute('data-fecha'));
+            case 'progreso':
+                return parseInt(b.getAttribute('data-progreso')) - parseInt(a.getAttribute('data-progreso'));
+            case 'alfabetico':
+                return a.getAttribute('data-titulo').localeCompare(b.getAttribute('data-titulo'));
+            default:
+                return 0;
+        }
+    });
+    proyectosVisibles.forEach(proyecto => lista.appendChild(proyecto));
+
+    // Actualizar contadores
+    document.getElementById('contadorProyectos').textContent = contadorVisibles;
+    document.getElementById('countProgreso').textContent = progs;
+    document.getElementById('countAprobado').textContent = aprobs;
+    document.getElementById('countCancelado').textContent = cancels;
+
+    const sinResultados = document.getElementById('sinResultados');
+    sinResultados.style.display = (contadorVisibles === 0 && proyectos.length > 0) ? 'block' : 'none';
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', filtrarTesis);
+</script>
+{% endblock %}

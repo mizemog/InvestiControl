@@ -1,0 +1,755 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL DASHBOARD ===== */
+    /* Esto asegura que cualquier texto herede nuestras variables */
+    .dashboard-wrapper,
+    .dashboard-wrapper * {
+        color: var(--text-main) !important;
+    }
+    /* Excepciones: elementos que deben ser de color muted o primario */
+    .dashboard-wrapper .text-muted,
+    .dashboard-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .dashboard-wrapper .text-primary,
+    .dashboard-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    .dashboard-wrapper .text-danger,
+    .dashboard-wrapper .text-danger * {
+        color: #ef4444 !important; /* rojo fijo para cancelado */
+    }
+    .dashboard-wrapper .text-success,
+    .dashboard-wrapper .text-success * {
+        color: #10b981 !important;
+    }
+    .dashboard-wrapper .text-warning,
+    .dashboard-wrapper .text-warning * {
+        color: #f59e0b !important;
+    }
+    /* Para los iconos de estadísticas, mantener opacidad pero con el color adecuado */
+    .dashboard-wrapper .opacity-50 {
+        opacity: 0.5 !important;
+    }
+
+    /* Tabla de proyectos */
+    #tablaProyectos,
+    #tablaProyectos th,
+    #tablaProyectos td,
+    #tablaProyectos tr,
+    #tablaProyectos thead,
+    #tablaProyectos tbody {
+        color: var(--text-main) !important;
+        background-color: transparent !important;
+    }
+    #tablaProyectos thead th {
+        color: var(--text-muted) !important;
+        background-color: var(--nav-active-bg) !important;
+    }
+    /* Hover de filas */
+    .table-hover tbody tr:hover {
+        background-color: var(--nav-active-bg) !important;
+    }
+    /* Forzar color de los badges de estado (los colores fijos se mantienen) */
+    .badge-estado {
+        font-size: 0.65rem !important;
+    }
+
+    /* Tarjetas de estadísticas */
+    .stat-card .card-body {
+        color: var(--text-main) !important;
+    }
+    .stat-card .stat-label {
+        color: var(--text-muted) !important;
+        font-size: 0.6rem !important;
+    }
+    .stat-card .stat-number {
+        color: var(--text-main) !important;
+    }
+
+    /* Inputs, selects y textareas del modal */
+    .modal-content select,
+    .modal-content textarea,
+    .modal-content input {
+        color: var(--text-main) !important;
+        background-color: var(--nav-active-bg) !important;
+        border-color: var(--border) !important;
+    }
+    .modal-content select option {
+        color: var(--text-main) !important;
+        background-color: var(--bg-card) !important;
+    }
+    .modal-content label {
+        color: var(--text-muted) !important;
+    }
+
+    /* Placeholders de inputs en el modal y en la búsqueda */
+    .form-control::placeholder,
+    .form-select::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7 !important;
+    }
+
+    /* Botones de acción */
+    .btn-action-tool {
+        background: var(--nav-active-bg) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text-muted) !important;
+    }
+    .btn-action-tool:hover {
+        background: var(--primary) !important;
+        color: #fff !important;
+    }
+    .btn-action-tool.text-primary {
+        color: var(--primary) !important;
+    }
+    .btn-action-tool.text-danger {
+        color: #ef4444 !important;
+    }
+    .btn-action-tool.text-success {
+        color: #10b981 !important;
+    }
+
+    /* Tarjetas móviles */
+    #cardsProyectos .card,
+    #cardsProyectos .card-body,
+    #cardsProyectos h6,
+    #cardsProyectos small {
+        color: var(--text-main) !important;
+        background-color: var(--bg-card) !important;
+    }
+    #cardsProyectos .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    /* Gráficos: títulos */
+    .chart-title {
+        color: var(--text-main) !important;
+    }
+
+    /* Ajustes de botones de período */
+    .btn-periodo {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-muted) !important;
+    }
+    .btn-periodo.active {
+        background: var(--primary) !important;
+        color: #fff !important;
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <!-- Header del Dashboard -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 mb-md-5 gap-3">
+        <div>
+            <h1 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Panel de Control</h1>
+            <p class="mb-0" style="color: var(--text-muted);">
+                Bienvenido de vuelta, 
+                <span class="fw-bold" style="color: var(--primary);">{{ user.get_full_name|default:user.username }}</span>
+                <span class="badge ms-2" style="background: var(--primary-light); color: var(--primary); font-size: 0.65rem;">
+                    {{ user.rol|upper }}
+                </span>
+            </p>
+        </div>
+        
+        <!-- Acciones rápidas -->
+        <div class="d-flex gap-2 flex-wrap w-100 w-md-auto">
+            {% if user.rol == 'coordinador' %}
+            <a href="{% url 'crear_proyecto' %}" class="btn rounded-pill px-4 shadow-sm fw-bold border-0 flex-grow-1 flex-md-grow-0"
+               style="background: var(--primary); border-color: var(--primary); color: #fff;">
+                <i class="fas fa-plus-circle me-2"></i> Nuevo Proyecto
+            </a>
+            {% endif %}
+            <button class="btn btn-light rounded-pill px-4 shadow-sm fw-bold border flex-grow-1 flex-md-grow-0"
+                    style="background: var(--nav-active-bg); color: var(--text-main); border-color: var(--border) !important;"
+                    onclick="window.location.reload()">
+                <i class="fas fa-sync-alt me-2"></i> Actualizar
+            </button>
+        </div>
+    </div>
+
+    <!-- Tarjetas de estadísticas -->
+    <div class="row g-3 g-md-4 mb-4 mb-md-5">
+        <div class="col-6 col-md-4 col-lg">
+            <div class="card h-100 border-0 shadow-sm stat-card" style="background: var(--bg-card); border-radius: 20px;">
+                <div class="card-body p-3 d-flex flex-column">
+                    <p class="small fw-bold text-uppercase mb-2 stat-label">Total Tesis</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h2 class="fw-bold mb-0 stat-number">{{ total_global }}</h2>
+                        <i class="fas fa-book-open text-primary opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-6 col-md-4 col-lg">
+            <div class="card h-100 border-0 shadow-sm stat-card" style="background: var(--bg-card); border-radius: 20px;">
+                <div class="card-body p-3 d-flex flex-column">
+                    <p class="small fw-bold text-uppercase mb-2 stat-label">En Progreso</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h2 class="fw-bold mb-0 stat-number">{{ en_progreso }}</h2>
+                        <i class="fas fa-clock text-info opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg">
+            <div class="card h-100 border-0 shadow-sm stat-card" style="background: var(--bg-card); border-radius: 20px;">
+                <div class="card-body p-3 d-flex flex-column">
+                    <p class="small fw-bold text-uppercase mb-2 stat-label">Aprobadas</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h2 class="fw-bold mb-0 stat-number">{{ aprobadas }}</h2>
+                        <i class="fas fa-check-circle text-success opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg">
+            <div class="card h-100 border-0 shadow-sm stat-card" style="background: var(--bg-card); border-radius: 20px;">
+                <div class="card-body p-3 d-flex flex-column">
+                    <p class="small fw-bold text-uppercase mb-2 stat-label">Observadas</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h2 class="fw-bold mb-0 stat-number">{{ observadas }}</h2>
+                        <i class="fas fa-exclamation-triangle text-warning opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg">
+            <div class="card h-100 border-0 shadow-sm stat-card" style="background: var(--bg-card); border: 1px solid rgba(239, 68, 68, 0.3) !important; border-radius: 20px;">
+                <div class="card-body p-3 d-flex flex-column">
+                    <p class="small fw-bold text-uppercase mb-2" style="color: #ef4444; font-size: 0.6rem;">Canceladas</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h2 class="fw-bold mb-0" style="color: #ef4444;">{{ cancelados }}</h2>
+                        <i class="fas fa-ban text-danger opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLA DE GESTIÓN DE PROYECTOS -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
+        <h4 class="fw-bold mb-0" style="color: var(--text-main);">
+            <i class="fas fa-folder-tree me-2" style="color: var(--primary);"></i>Gestión de Investigaciones
+        </h4>
+        <div class="input-group" style="max-width: 300px;">
+            <span class="input-group-text border-0" style="background: var(--nav-active-bg); color: var(--text-muted); border-radius: 12px 0 0 12px;">
+                <i class="fas fa-search"></i>
+            </span>
+            <input type="text" id="buscarProyecto" class="form-control border-0 py-2" 
+                   placeholder="Buscar proyecto..." 
+                   style="background: var(--nav-active-bg); color: var(--text-main); border-radius: 0 12px 12px 0;"
+                   onkeyup="filtrarProyectos()">
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm overflow-hidden mb-4 mb-md-5" 
+         style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
+        
+        <!-- Vista Desktop: Tabla -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover mb-0" id="tablaProyectos" style="--bs-table-bg: transparent !important;">
+                <thead style="background: var(--nav-active-bg);">
+                    <tr class="small text-uppercase fw-bold" style="border-bottom: 2px solid var(--border);">
+                        <th class="px-4 py-4 border-0" style="min-width: 250px; color: var(--text-muted) !important;">
+                            <i class="fas fa-book me-1"></i> Proyecto / Facultad
+                        </th>
+                        <th class="px-4 py-4 border-0" style="min-width: 120px; color: var(--text-muted) !important;">
+                            <i class="fas fa-flag me-1"></i> Estado
+                        </th>
+                        <th class="px-4 py-4 border-0" style="min-width: 120px; color: var(--text-muted) !important;">
+                            <i class="fas fa-chart-line me-1"></i> Progreso
+                        </th>
+                        <th class="px-4 py-4 border-0 text-end" style="min-width: 150px; color: var(--text-muted) !important;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in proyectos_lista %}
+                    <tr style="border-bottom: 1px solid var(--border);" 
+                        data-search="{{ p.titulo|lower }} {{ p.carrera.nombre|lower }} {{ p.estado|lower }}">
+                        <td class="px-4 py-3">
+                            <div class="fw-bold text-truncate" style="color: var(--text-main) !important; max-width: 300px;" title="{{ p.titulo }}">
+                                {{ p.titulo }}
+                            </div>
+                            <div class="small" style="color: var(--text-muted) !important;">
+                                <i class="fas fa-university me-1 opacity-50"></i> {{ p.carrera.nombre }}
+                            </div>
+                        </td>
+                        <td class="px-4 py-3">
+                            {% if p.estado == 'PROYECTO_APROBADO' or p.estado == 'Aprobado' %}
+                                <span class="badge rounded-pill px-3 py-2 badge-estado" style="background: rgba(16, 185, 129, 0.15); color: #10b981 !important;">
+                                    🟢 FINALIZADO
+                                </span>
+                            {% elif p.estado == 'Cancelado' %}
+                                <div class="d-flex flex-column">
+                                    <span class="badge rounded-pill px-3 py-2 mb-1 badge-estado" style="background: rgba(239, 68, 68, 0.15); color: #ef4444 !important;">
+                                        🔴 CANCELADO
+                                    </span>
+                                    {% if p.motivo_cancelacion %}
+                                    <small class="text-muted fw-bold d-flex align-items-center" style="font-size: 0.55rem; cursor: help;" 
+                                        data-bs-toggle="tooltip" title="{{ p.motivo_cancelacion }}">
+                                        <i class="fas fa-info-circle me-1 text-danger"></i> MOTIVO DEL CIERRE
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            {% elif p.estado == 'Observado' %}
+                                <span class="badge rounded-pill px-3 py-2 badge-estado" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b !important;">
+                                    🟠 OBSERVADO
+                                </span>
+                            {% else %}
+                                <span class="badge rounded-pill px-3 py-2 badge-estado" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6 !important;">
+                                    🟡 EN PROGRESO
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height: 6px; background: var(--nav-active-bg);">
+                                    <div class="progress-bar bg-primary" style="width: {{ p.porcentaje_avance }}%; transition: width 0.6s ease;"></div>
+                                </div>
+                                <small class="fw-bold" style="color: var(--text-main) !important; min-width: 35px;">{{ p.porcentaje_avance }}%</small>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-end">
+                            <div class="d-flex gap-1 justify-content-end">
+                                <a href="{% url 'reporte_avance' p.id %}" class="btn-action-tool" title="Generar Reporte" data-bs-toggle="tooltip">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                                {% if p.estado == 'Aprobado' %}
+                                <a href="{% url 'generar_certificado' p.id %}" class="btn-action-tool text-success" title="Certificado Final" data-bs-toggle="tooltip">
+                                    <i class="fas fa-certificate"></i>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'proyecto_editar' p.id %}" class="btn-action-tool text-primary" title="Editar Proyecto" data-bs-toggle="tooltip">
+                                    <i class="fas fa-cog"></i>
+                                </a>
+
+                                {% if p.estado != 'Cancelado' %}
+                                <button type="button" class="btn-action-tool text-danger border-0" title="Cancelar Proyecto" data-bs-toggle="tooltip" 
+                                        onclick="abrirModalCancelacion('{% url 'cancelar_proyecto' p.id %}', '{{ p.titulo|escapejs }}')">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5" style="color: var(--text-muted) !important;">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block opacity-25"></i>
+                            No hay proyectos registrados aún
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Vista Móvil: Cards -->
+        <div class="d-md-none p-3" id="cardsProyectos">
+            {% for p in proyectos_lista %}
+            <div class="card border-0 shadow-sm mb-3" 
+                 style="background: var(--bg-card); border-radius: 16px;"
+                 data-search="{{ p.titulo|lower }} {{ p.carrera.nombre|lower }} {{ p.estado|lower }}">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="fw-bold mb-0 text-truncate" style="color: var(--text-main) !important; max-width: 200px;" title="{{ p.titulo }}">
+                            {{ p.titulo }}
+                        </h6>
+                        {% if p.estado == 'Aprobado' %}
+                            <span class="badge rounded-pill" style="background: rgba(16, 185, 129, 0.15); color: #10b981 !important; font-size: 0.6rem;">🟢</span>
+                        {% elif p.estado == 'Observado' %}
+                            <span class="badge rounded-pill" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b !important; font-size: 0.6rem;">🟠</span>
+                        {% else %}
+                            <span class="badge rounded-pill" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6 !important; font-size: 0.6rem;">🟡</span>
+                        {% endif %}
+                    </div>
+                    <small class="d-block mb-2" style="color: var(--text-muted) !important;">
+                        <i class="fas fa-university me-1"></i> {{ p.carrera.nombre }}
+                    </small>
+                    <div class="progress mb-2" style="height: 4px; background: var(--nav-active-bg);">
+                        <div class="progress-bar bg-primary" style="width: {{ p.porcentaje_avance }}%;"></div>
+                    </div>
+                    <div class="d-flex gap-1">
+                        <a href="{% url 'reporte_avance' p.id %}" class="btn btn-sm flex-grow-1 rounded-3" 
+                           style="background: var(--nav-active-bg); color: var(--text-main) !important; font-size: 0.7rem;">
+                            <i class="fas fa-file-pdf me-1"></i> Reporte
+                        </a>
+                        {% if p.estado == 'Aprobado' %}
+                        <a href="{% url 'generar_certificado' p.id %}" class="btn btn-sm flex-grow-1 rounded-3" 
+                           style="background: rgba(16, 185, 129, 0.1); color: #10b981 !important; font-size: 0.7rem;">
+                            <i class="fas fa-certificate me-1"></i> Certificado
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'proyecto_editar' p.id %}" class="btn btn-sm rounded-3 px-3" 
+                           style="background: var(--nav-active-bg); color: var(--primary) !important; font-size: 0.7rem;">
+                            <i class="fas fa-cog"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4" style="color: var(--text-muted) !important;">
+                <i class="fas fa-inbox fa-2x mb-2 d-block opacity-25"></i>
+                No hay proyectos registrados
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Gráficos y Estadísticas -->
+    <div class="row g-3 g-md-4">
+        <div class="col-12 col-lg-8">
+            <div class="card border-0 shadow-sm h-100" style="background: var(--bg-card); border-radius: 24px;">
+                <div class="card-body p-3 p-md-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0 chart-title">
+                            <i class="fas fa-chart-bar me-2" style="color: var(--primary);"></i>Actividad Mensual
+                        </h5>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-sm active btn-periodo" onclick="cambiarPeriodo('mes')">Mes</button>
+                            <button class="btn btn-sm btn-periodo" onclick="cambiarPeriodo('trimestre')">Trimestre</button>
+                        </div>
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="graficoMensual"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 col-lg-4">
+            <div class="card border-0 shadow-sm h-100" style="background: var(--bg-card); border-radius: 24px;">
+                <div class="card-body p-3 p-md-4">
+                    <h5 class="fw-bold mb-4 chart-title">
+                        <i class="fas fa-building me-2" style="color: var(--primary);"></i>Por Facultad
+                    </h5>
+                    {% for c in nombres %}
+                    <div class="mb-3 mb-md-4">
+                        <div class="d-flex justify-content-between align-items-center small mb-2">
+                            <span class="text-truncate me-2" style="color: var(--text-main) !important; max-width: 150px;" title="{{ c.nombre }}">
+                                {{ c.nombre }}
+                            </span>
+                            <span class="fw-bold flex-shrink-0" style="color: var(--primary) !important; font-size: 0.75rem;">
+                                {{ c.total_proyectos }} tesis
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 8px; border-radius: 10px; background: var(--nav-active-bg);">
+                            <div class="progress-bar" style="width: {{ c.promedio_avance }}%; background: linear-gradient(90deg, #6366f1, #8b5cf6); border-radius: 10px; transition: width 0.6s ease;"></div>
+                        </div>
+                        <small class="mt-1 d-block" style="color: var(--text-muted) !important; font-size: 0.6rem;">Avance promedio: {{ c.promedio_avance }}%</small>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4" style="color: var(--text-muted) !important;">
+                        <i class="fas fa-building fa-2x mb-2 d-block opacity-25"></i>
+                        Sin datos de facultades
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CANCELACIÓN PRO -->
+    <div class="modal fade" id="modalCancelar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg" style="background: var(--bg-card); color: var(--text-main);">
+                <div class="modal-header border-0 p-4 pb-0">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-exclamation-circle text-danger me-2"></i>Justificar Cancelación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formCancelar" method="post">
+                    {% csrf_token %}
+                    <div class="modal-body p-4">
+                        <p class="small mb-4" style="color: var(--text-muted) !important;">Investigación: <strong style="color: var(--text-main) !important;" id="cancelarTitulo"></strong></p>
+                        
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-uppercase" style="color: var(--text-muted) !important;">Motivo del Cierre</label>
+                            <select name="motivo" id="selectMotivo" class="form-select border-0 py-3 px-3 shadow-sm" 
+                                    style="background-color: var(--nav-active-bg); color: var(--text-main); border-radius: 12px; border: 1px solid var(--border);" 
+                                    onchange="toggleOtroMotivo(this)" required>
+                                <option value="" selected disabled style="color: var(--text-muted);">Seleccione una razón oficial...</option>
+                                <option value="La investigación resultó no factible" style="color: var(--text-main);">La investigación resultó no factible</option>
+                                <option value="El aspirante cambió de tema" style="color: var(--text-main);">El aspirante cambió de tema</option>
+                                <option value="Abandono de estudios por parte del aspirante" style="color: var(--text-main);">Abandono de estudios</option>
+                                <option value="Vencimiento del tiempo máximo reglamentario" style="color: var(--text-main);">Vencimiento de tiempo</option>
+                                <option value="Infracción ética o incumplimiento de normativas" style="color: var(--text-main);">Infracción ética</option>
+                                <option value="Otro" style="color: var(--text-main);">Otro (Especifique)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4" id="divOtroMotivo" style="display: none;">
+                            <label class="form-label small fw-bold text-uppercase" style="color: var(--text-muted) !important;">Especifique el motivo</label>
+                            <textarea name="otro_motivo" id="textOtroMotivo" class="form-control border-0 py-3 shadow-sm" 
+                                      style="background-color: var(--nav-active-bg); color: var(--text-main); border-radius: 12px; border: 1px solid var(--border);" 
+                                      placeholder="Describa el motivo detalladamente..." rows="3"></textarea>
+                        </div>
+                        
+                        <div class="alert bg-danger bg-opacity-10 border-0 rounded-4 p-3 mb-0">
+                            <div class="d-flex">
+                                <i class="fas fa-shield-alt text-danger me-3 mt-1"></i>
+                                <p class="small text-danger mb-0"><strong>Acción de Seguridad:</strong> Al confirmar, el proyecto pasará a modo "Solo Lectura" y se inhabilitarán futuras entregas.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="button" class="btn btn-link text-muted text-decoration-none" data-bs-dismiss="modal">Regresar</button>
+                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow">CONGELAR Y CANCELAR</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ===== ESTILOS ADICIONALES PARA COMPONENTES ===== */
+    .btn-action-tool {
+        background: var(--nav-active-bg);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        width: 38px; 
+        height: 38px;
+        border-radius: 12px;
+        display: inline-flex; 
+        align-items: center; 
+        justify-content: center;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .btn-action-tool:hover { 
+        background: var(--primary); 
+        color: #fff !important; 
+        transform: translateY(-2px); 
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    
+    .stat-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid var(--border) !important;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary) !important;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+    }
+    
+    .btn-periodo {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-muted) !important;
+        border-radius: 8px !important;
+    }
+    .btn-periodo.active {
+        background: var(--primary) !important;
+        color: #fff !important;
+    }
+    
+    @media (max-width: 767px) {
+        .display-6 { font-size: 1.8rem; }
+        .card { border-radius: 16px !important; }
+    }
+    @media (max-width: 575px) {
+        .display-6 { font-size: 1.5rem; }
+    }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .stat-card { animation: fadeInUp 0.5s ease forwards; }
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+    .stat-card:nth-child(5) { animation-delay: 0.5s; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Función para filtrar proyectos
+    function filtrarProyectos() {
+        const input = document.getElementById('buscarProyecto');
+        const filter = input.value.toLowerCase();
+        
+        const tabla = document.getElementById('tablaProyectos');
+        if (tabla) {
+            const filas = tabla.querySelectorAll('tbody tr');
+            filas.forEach(fila => {
+                const textoBusqueda = fila.getAttribute('data-search') || '';
+                fila.style.display = textoBusqueda.includes(filter) ? '' : 'none';
+            });
+        }
+        
+        const cards = document.getElementById('cardsProyectos');
+        if (cards) {
+            const cardsItems = cards.querySelectorAll('.card');
+            cardsItems.forEach(card => {
+                const textoBusqueda = card.getAttribute('data-search') || '';
+                card.style.display = textoBusqueda.includes(filter) ? '' : 'none';
+            });
+        }
+    }
+
+    async function cambiarPeriodo(periodo) {
+        const botones = document.querySelectorAll('.btn-periodo');
+        botones.forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const btnActivo = event.target;
+        btnActivo.classList.add('active');
+
+        try {
+            const resp = await fetch(`{% url "dashboard_coordinador_chart" %}?period=${encodeURIComponent(periodo)}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const payload = await resp.json();
+
+            chart.data.labels = payload.labels || [];
+            chart.data.datasets[0].data = (payload.datasets?.versiones || []);
+            chart.data.datasets[1].data = (payload.datasets?.aprobadas || []);
+            chart.data.datasets[2].data = (payload.datasets?.observadas || []);
+            chart.update();
+        } catch (e) {
+            console.error('Error cargando gráfico:', e);
+        }
+    }
+
+    const ctx = document.getElementById('graficoMensual').getContext('2d');
+    const getChartTheme = () => {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        return { 
+            text: isDark ? '#94a3b8' : '#64748b', 
+            grid: isDark ? '#262626' : '#f1f5f9' 
+        };
+    };
+    
+    let chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{ 
+                data: [],
+                backgroundColor: '#6366f1',
+                borderRadius: 12,
+                barThickness: 40,
+                hoverBackgroundColor: '#4f46e5'
+            },
+            {
+                label: 'Aprobadas',
+                data: [0, 0, 0, 0, 0, 0],
+                backgroundColor: '#10b981',
+                borderRadius: 12,
+                barThickness: 40,
+                hoverBackgroundColor: '#059669'
+            },
+            {
+                label: 'Observadas',
+                data: [0, 0, 0, 0, 0, 0],
+                backgroundColor: '#f59e0b',
+                borderRadius: 12,
+                barThickness: 40,
+                hoverBackgroundColor: '#d97706'
+            }]
+        },
+        options: {
+            responsive: true, 
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim(),
+                    titleColor: getComputedStyle(document.documentElement).getPropertyValue('--text-main').trim(),
+                    bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim(),
+                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--border').trim(),
+                    borderWidth: 1,
+                    padding: 12,
+                    cornerRadius: 12
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    grid: { 
+                        color: getChartTheme().grid, 
+                        drawBorder: false 
+                    }, 
+                    ticks: { 
+                        color: getChartTheme().text,
+                        font: { size: 11 }
+                    } 
+                },
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { 
+                        color: getChartTheme().text,
+                        font: { size: 11 }
+                    } 
+                }
+            }
+        }
+    });
+    
+    (async function initGrafico(){
+        try {
+            const resp = await fetch('{% url "dashboard_coordinador_chart" %}?period=mes', {headers: {'X-Requested-With':'XMLHttpRequest'}});
+            const payload = await resp.json();
+            chart.data.labels = payload.labels || [];
+            chart.data.datasets[0].data = (payload.datasets?.versiones || []);
+            chart.data.datasets[1].data = (payload.datasets?.aprobadas || []);
+            chart.data.datasets[2].data = (payload.datasets?.observadas || []);
+            chart.update();
+        }catch(e){
+            console.error('Error inicializando gráfico:', e);
+        }
+    })();
+
+    const observer = new MutationObserver(() => {
+        const theme = getChartTheme();
+        chart.options.scales.y.grid.color = theme.grid;
+        chart.options.scales.y.ticks.color = theme.text;
+        chart.options.scales.x.ticks.color = theme.text;
+        chart.options.plugins.tooltip.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim();
+        chart.options.plugins.tooltip.titleColor = getComputedStyle(document.documentElement).getPropertyValue('--text-main').trim();
+        chart.options.plugins.tooltip.bodyColor = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
+        chart.options.plugins.tooltip.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+        chart.update();
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+
+    function abrirModalCancelacion(url, titulo) {
+        const form = document.getElementById('formCancelar');
+        form.action = url; 
+        document.getElementById('cancelarTitulo').textContent = titulo;
+        new bootstrap.Modal(document.getElementById('modalCancelar')).show();
+    }
+
+    function toggleOtroMotivo(select) {
+        const divOtro = document.getElementById('divOtroMotivo');
+        const textOtro = document.getElementById('textOtroMotivo');
+        if (select.value === 'Otro') {
+            divOtro.style.display = 'block';
+            textOtro.setAttribute('required', 'required');
+        } else {
+            divOtro.style.display = 'none';
+            textOtro.removeAttribute('required');
+        }
+    }
+</script>
+{% endblock %}

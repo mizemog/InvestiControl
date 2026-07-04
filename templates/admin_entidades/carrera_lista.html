@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .carrera-list-wrapper,
+    .carrera-list-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .carrera-list-wrapper .text-muted,
+    .carrera-list-wrapper .text-muted * {
+        color: var(--text-muted) !important;
+    }
+    .carrera-list-wrapper .text-primary,
+    .carrera-list-wrapper .text-primary * {
+        color: var(--primary) !important;
+    }
+    /* Excepción para el color de peligro (semántico) */
+    .carrera-list-wrapper .text-danger {
+        color: #ef4444 !important;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-primary-custom {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+        border-radius: 50px !important;
+        padding: 0.5rem 1.5rem !important;
+        font-weight: 700 !important;
+    }
+    .btn-primary-custom:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+        color: #fff !important;
+    }
+
+    .btn-action-edit {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.85rem !important;
+        transition: all 0.2s ease !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.25rem !important;
+    }
+    .btn-action-edit:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+        transform: translateY(-1px);
+    }
+
+    .btn-action-delete {
+        background: var(--nav-active-bg) !important;
+        color: #ef4444 !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.85rem !important;
+        transition: all 0.2s ease !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.25rem !important;
+    }
+    .btn-action-delete:hover {
+        background: rgba(239, 68, 68, 0.1) !important;
+        color: #ef4444 !important;
+        transform: scale(1.02);
+    }
+
+    /* ===== TARJETAS ===== */
+    .carrera-card {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 20px !important;
+        padding: 1.25rem !important;
+        height: 100% !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    .carrera-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1) !important;
+    }
+
+    .carrera-card .icon-box {
+        background: rgba(99, 102, 241, 0.1) !important;
+        color: var(--primary) !important;
+        border-radius: 16px !important;
+        padding: 0.75rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* ===== ESTADO VACÍO ===== */
+    .empty-state-icon {
+        color: var(--text-muted) !important;
+        opacity: 0.3 !important;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 575px) {
+        .carrera-card { border-radius: 16px !important; }
+        .btn-action-edit, .btn-action-delete { font-size: 0.75rem !important; padding: 0.25rem 0.5rem !important; }
+        .btn-action-edit .d-none, .btn-action-delete .d-none { display: none !important; }
+    }
+
+    /* ===== ANIMACIONES ===== */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .carrera-card {
+        animation: fadeIn 0.3s ease;
+    }
+</style>
+
+<div class="carrera-list-wrapper">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 mb-md-5 gap-3">
+        <div>
+            <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Gestión de Carreras</h2>
+            <p class="mb-0" style="color: var(--text-muted);">Administra los programas académicos de la institución.</p>
+        </div>
+        <a href="{% url 'carrera_crear' %}" class="btn btn-primary-custom w-100 w-md-auto">
+            <i class="fas fa-plus me-2"></i> Nueva Carrera
+        </a>
+    </div>
+
+    {% if carreras %}
+    <div class="row g-3 g-md-4">
+        {% for c in carreras %}
+        <div class="col-12 col-sm-6 col-lg-4">
+            <div class="carrera-card">
+                <div class="d-flex align-items-start mb-3">
+                    <div class="icon-box me-3">
+                        <i class="fas fa-university fa-lg"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h5 class="fw-bold mb-1 text-truncate" style="color: var(--text-main);">{{ c.nombre }}</h5>
+                        <p class="small mb-0" style="color: var(--text-muted);">
+                            Facultad: <span style="color: var(--text-main) !important;">{{ c.facultad }}</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2 mt-auto pt-3 border-top" style="border-color: var(--border) !important;">
+                    <a href="{% url 'carrera_editar' c.id %}" class="btn-action-edit flex-grow-1">
+                        <i class="fas fa-edit"></i> <span class="d-none d-sm-inline">Editar</span>
+                    </a>
+                    <a href="{% url 'carrera_eliminar' c.id %}" class="btn-action-delete flex-grow-1">
+                        <i class="fas fa-trash-alt"></i> <span class="d-none d-sm-inline">Eliminar</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Estado vacío mejorado -->
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-university fa-3x empty-state-icon"></i>
+        </div>
+        <h4 class="fw-bold" style="color: var(--text-main);">No hay carreras registradas</h4>
+        <p style="color: var(--text-muted);">Comienza agregando tu primera carrera académica.</p>
+        <a href="{% url 'carrera_crear' %}" class="btn btn-primary-custom px-4 mt-2">
+            <i class="fas fa-plus me-2"></i> Crear Carrera
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
