@@ -726,3 +726,34 @@ def plantilla_configurar(req, plantilla_id=None):
             PlantillaReporte.objects.create(**datos)
         return redirect('plantilla_lista')
     return render(req, 'admin_entidades/plantilla_form.html', {'p': plantilla})
+
+# ... Copyleaks ...
+
+from .copyleaks_service import enviar_documento_a_escanear
+
+@login_required
+def disparar_analisis_ia(request, proyecto_id):
+    """
+    Vista que conecta el botón de la web con el motor de Copyleaks.
+    """
+    proyecto = get_object_or_404(Proyecto, id=proyecto_id)
+    
+    # 1. Obtenemos la última versión de la tesis
+    version_actual = proyecto.versiones.last()
+    if not version_actual or not version_actual.archivo_pdf:
+        messages.error(request, "No hay un archivo PDF válido para analizar.")
+        return redirect('detalle_proyecto', proyecto_id=proyecto.id)
+
+    # 2. Llamamos a nuestra función de IA (pasándole la ruta real del archivo)
+    resultado = enviar_documento_a_escanear(
+        id_tesis=f"proyecto_{proyecto.id}", 
+        ruta_archivo_pdf=version_actual.archivo_pdf.path
+    )
+
+    # 3. Informamos al usuario
+    if resultado.get("exito"):
+        messages.success(request, "¡La tesis ha sido enviada a Copyleaks correctamente!")
+    else:
+        messages.error(request, f"Error al enviar a IA: {resultado.get('error')}")
+
+    return redirect('detalle_proyecto', proyecto_id=proyecto.id)

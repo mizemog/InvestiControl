@@ -1,12 +1,10 @@
 from django.urls import path, include
 from . import views
-
+from .views import disparar_analisis_ia
 
 urlpatterns = [
-    # Endpoints auxiliares para gráficos/charts (usados por el dashboard del coordinador)
+    # Endpoints auxiliares para gráficos/charts
     path('', include('gestion.urls_chart_patch')),
-
-
 
     path('', views.home_redirect, name='home'),
     path('estudiante/', views.dashboard_estudiante, name='dashboard_estudiante'),
@@ -20,7 +18,12 @@ urlpatterns = [
     path('notificaciones/marcar-todas-leidas/', views.marcar_notificaciones_todas_leidas, name='marcar_todas_leidas'),
     path('nuevo-proyecto/', views.crear_proyecto, name='crear_proyecto'),
     path('corregir/<int:comentario_id>/', views.enviar_correccion, name='enviar_correccion'),
+    
+    # Análisis IA
+    path('proyecto/<int:proyecto_id>/analizar-ia/', disparar_analisis_ia, name='disparar_analisis_ia'),
     path('analisis-ia/<int:version_id>/', views.ver_analisis_ia, name='ver_analisis_ia'),
+    
+    # Perfil y Certificados
     path('perfil/', views.ver_perfil, name='ver_perfil'),
     path('certificado/<int:proyecto_id>/', views.generar_certificado, name='generar_certificado'),
     
@@ -40,7 +43,7 @@ urlpatterns = [
     path('proyecto/editar/<int:proyecto_id>/', views.proyecto_editar, name='proyecto_editar'),
     path('proyecto/reporte-avance/<int:proyecto_id>/', views.generar_reporte_avance, name='reporte_avance'),
     
-    # --- MÓDULO DE PLANTILLAS (ESTO ES LO QUE FALTABA) ---
+    # Módulo de Plantillas
     path('plantillas/', views.plantilla_lista, name='plantilla_lista'),
     path('plantillas/nueva/', views.plantilla_configurar, name='plantilla_crear'),
     path('plantillas/editar/<int:plantilla_id>/', views.plantilla_configurar, name='plantilla_editar'),
