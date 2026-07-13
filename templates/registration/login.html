@@ -136,14 +136,16 @@
 
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert 
-                            {% if message.tags == 'success' %}alert-success-custom
-                            {% elif message.tags == 'error' %}alert-danger-custom
-                            {% else %}alert-danger-custom{% endif %} 
-                            mb-4 d-flex align-items-center gap-2">
-                            <i class="fas fa-info-circle flex-shrink-0"></i>
-                            <span>{{ message }}</span>
-                        </div>
+                        {% if 'no_login' not in message.tags %}
+                            <div class="alert 
+                                {% if message.tags == 'success' %}alert-success-custom
+                                {% elif message.tags == 'error' %}alert-danger-custom
+                                {% else %}alert-danger-custom{% endif %} 
+                                mb-4 d-flex align-items-center gap-2">
+                                <i class="fas fa-info-circle flex-shrink-0"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endif %}
                     {% endfor %}
                 {% endif %}
 

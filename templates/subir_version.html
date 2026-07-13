@@ -205,6 +205,14 @@
         #dropzone { min-height: 140px; padding: 1.25rem !important; }
         .fa-3x { font-size: 2em; }
     }
+
+    /* ===== ALERTA DE ADVERTENCIA ===== */
+    .warning-alert {
+        background: rgba(245, 158, 11, 0.1) !important;
+        border-left: 4px solid #f59e0b !important;
+        border-radius: 16px !important;
+        padding: 1rem !important;
+    }
 </style>
 
 <div class="subir-wrapper">
@@ -250,6 +258,74 @@
                 </div>
             </div>
 
+            <!-- --- PUNTO 2: ALERTA DE ADVERTENCIA (MODAL) --- -->
+            {% if tiene_version_pendiente %}
+            <div class="warning-alert mb-4 d-flex align-items-start gap-3">
+                <i class="fas fa-exclamation-triangle mt-1" style="color: #f59e0b; font-size: 1.2rem;"></i>
+                <div>
+                    <h6 class="fw-bold mb-1" style="color: #f59e0b;">⚠️ Versión Pendiente de Revisión</h6>
+                    <p class="small mb-0" style="color: var(--text-muted);">
+                        La versión <strong>v{{ version_pendiente_numero }}</strong> aún no ha sido revisada por tu profesor.
+                        Si subes una nueva versión ahora, <strong>sobrescribirás el documento pendiente</strong>.
+                    </p>
+                    <button type="button" class="btn btn-sm btn-warning mt-2 rounded-pill px-3" 
+                            data-bs-toggle="modal" data-bs-target="#warningModal"
+                            style="background: #f59e0b; color: white; border: none;">
+                        <i class="fas fa-info-circle me-1"></i> Ver detalles
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal de Advertencia -->
+            <div class="modal fade" id="warningModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content modal-content-custom">
+                        <div class="modal-body p-4 p-md-5 text-center">
+                            <div class="mb-4">
+                                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg"
+                                     style="background: #f59e0b;">
+                                    <i class="fas fa-exclamation-triangle fa-2x text-white"></i>
+                                </div>
+                            </div>
+                            
+                            <h4 class="fw-bold mb-2" style="color: var(--text-main);">⚠️ Atención: Sobrescritura de Versión</h4>
+                            <p class="mb-3" style="color: var(--text-muted); font-size: 0.9rem;">
+                                La versión <strong>v{{ version_pendiente_numero }}</strong> de este proyecto
+                                <strong>aún no ha sido revisada</strong> por tu profesor.
+                            </p>
+                            <div class="p-3 rounded-3 mb-3 text-start" style="background: rgba(245, 158, 11, 0.05); border-left: 3px solid #f59e0b;">
+                                <p class="small mb-2" style="color: var(--text-main);">
+                                    <i class="fas fa-info-circle me-1" style="color: #f59e0b;"></i>
+                                    <strong>Consecuencias de subir una nueva versión:</strong>
+                                </p>
+                                <ul class="small mb-0" style="color: var(--text-muted); padding-left: 1.5rem;">
+                                    <li>El documento de la versión v{{ version_pendiente_numero }} <strong>será sobrescrito</strong>.</li>
+                                    <li>Tu profesor <strong>perderá acceso</strong> al documento anterior.</li>
+                                    <li>El historial de versiones <strong>no conservará</strong> el archivo anterior.</li>
+                                </ul>
+                            </div>
+                            <p class="mb-4" style="color: var(--text-muted); font-size: 0.85rem;">
+                                <i class="fas fa-lightbulb me-1" style="color: #f59e0b;"></i>
+                                <strong>Recomendación:</strong> Espera a que tu profesor revise la versión actual antes de subir una nueva.
+                            </p>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-modal-cancel flex-grow-1 py-2 rounded-3" 
+                                        data-bs-dismiss="modal">
+                                    <i class="fas fa-arrow-left me-2"></i> Volver
+                                </button>
+                                <button type="button" class="btn btn-modal-confirm flex-grow-1 py-2 rounded-3 fw-bold" 
+                                        id="continuarDeTodosModos"
+                                        style="background: #f59e0b; border: none; color: #fff;">
+                                    <i class="fas fa-upload me-2"></i> Subir de todos modos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Formulario de entrega -->
             <div class="card border-0 shadow-lg p-3 p-md-5 card-animated" 
                  style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
@@ -274,11 +350,14 @@
                             <label class="list-group-item task-item d-flex align-items-start gap-3">
                                 <input class="form-check-input form-check-input-custom flex-shrink-0 mt-1" type="checkbox" 
                                        name="tareas_completadas" value="{{ t.id }}" 
-                                       style="width: 1.2rem; height: 1.2rem;">
+                                       style="width: 1.2rem; height: 1.2rem;"
+                                       {% if t.estado == 'Resuelto' %}checked{% endif %}>
                                 <div class="task-content flex-grow-1">
                                     <span class="d-block small fw-bold" style="color: var(--text-main);">{{ t.texto|linebreaksbr }}</span>
                                     <div class="d-flex gap-2 mt-2">
-                                        <span class="badge bg-warning bg-opacity-10 text-warning" style="font-size: 0.55rem;">PENDIENTE</span>
+                                        <span class="badge {% if t.estado == 'Resuelto' %}bg-success bg-opacity-10 text-success{% else %}bg-warning bg-opacity-10 text-warning{% endif %}" style="font-size: 0.55rem;">
+                                            {% if t.estado == 'Resuelto' %}RESUELTO{% else %}PENDIENTE{% endif %}
+                                        </span>
                                         <span class="text-muted" style="color: var(--text-muted) !important; font-size: 0.6rem;">Prioridad: {{ t.prioridad }}</span>
                                     </div>
                                 </div>
@@ -540,6 +619,8 @@
     let archivoSeleccionado = null;
     let confirmModal = null;
     let alertModal = null;
+    let tieneVersionPendiente = {{ tiene_version_pendiente|yesno:"true,false" }};
+    let tareasPendientesTotal = {{ tareas_pendientes.count|default:0 }};
     
     // Función para mostrar alertas estilizadas
     function mostrarAlerta(titulo, mensaje, tipo = 'error') {
@@ -685,6 +766,14 @@
             mostrarAlerta('Checklist incompleta', 'Por favor verifica todos los puntos de la checklist antes de enviar.', 'warning');
             return false;
         }
+
+        if (tareasPendientesTotal > 0) {
+            const marcadas = document.querySelectorAll('input[name="tareas_completadas"]:checked').length;
+            if (marcadas !== tareasPendientesTotal) {
+                mostrarAlerta('Observaciones incompletas', 'Debes marcar todas las observaciones como resueltas antes de subir la nueva versión.', 'warning');
+                return false;
+            }
+        }
         
         document.getElementById('modalNombreArchivo').textContent = archivo.name;
         const previewResumen = resumen.length > 80 ? resumen.substring(0, 80) + '...' : resumen;
@@ -709,6 +798,17 @@
     // Interceptar submit del formulario
     document.getElementById('formEntrega').addEventListener('submit', function(e) {
         e.preventDefault();
+        
+        // --- PUNTO 2: VALIDACIÓN EN FRONTEND ---
+        // Si hay una versión pendiente, mostrar el modal de advertencia
+        if (tieneVersionPendiente) {
+            // Si el usuario confirma, enviamos el formulario
+            if (confirm('⚠️ ATENCIÓN: La versión v{{ version_pendiente_numero }} aún no ha sido revisada.\n\n¿Estás seguro de que quieres sobrescribir el documento pendiente?')) {
+                mostrarModalConfirmacion();
+            }
+            return;
+        }
+        
         mostrarModalConfirmacion();
     });
     
@@ -728,6 +828,20 @@
         const alertModalEl = document.getElementById('alertModal');
         if (alertModalEl) {
             alertModal = new bootstrap.Modal(alertModalEl);
+        }
+        
+        // --- PUNTO 2: BOTÓN "CONTINUAR DE TODOS MODOS" ---
+        const continuarBtn = document.getElementById('continuarDeTodosModos');
+        if (continuarBtn) {
+            continuarBtn.addEventListener('click', function() {
+                // Cerrar el modal de advertencia
+                const warningModal = bootstrap.Modal.getInstance(document.getElementById('warningModal'));
+                if (warningModal) {
+                    warningModal.hide();
+                }
+                // Mostrar confirmación de envío
+                mostrarModalConfirmacion();
+            });
         }
     });
 </script>

@@ -1,31 +1,78 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-    /* ===== FUERZA DE COLORES PARA TODO EL DASHBOARD ===== */
-    .dashboard-wrapper,
-    .dashboard-wrapper * {
+    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
+    .dashboard-profesor-wrapper,
+    .dashboard-profesor-wrapper * {
         color: var(--text-main) !important;
     }
-    .dashboard-wrapper .text-muted,
-    .dashboard-wrapper .text-muted * {
+    .dashboard-profesor-wrapper .text-muted,
+    .dashboard-profesor-wrapper .text-muted * {
         color: var(--text-muted) !important;
     }
-    .dashboard-wrapper .text-primary,
-    .dashboard-wrapper .text-primary * {
+    .dashboard-profesor-wrapper .text-primary,
+    .dashboard-profesor-wrapper .text-primary * {
         color: var(--primary) !important;
     }
-    /* Excepciones para badges de estado (colores semánticos fijos) */
-    .badge-estado-aprobado {
+    /* Excepciones para colores semánticos fijos */
+    .dashboard-profesor-wrapper .text-success {
         color: #10b981 !important;
     }
-    .badge-estado-observado {
+    .dashboard-profesor-wrapper .text-warning {
         color: #f59e0b !important;
     }
-    .badge-estado-enprogreso {
-        color: var(--primary) !important;
-    }
-    .badge-estado-cancelado {
+    .dashboard-profesor-wrapper .text-danger {
         color: #ef4444 !important;
+    }
+
+    /* ===== BOTONES ===== */
+    .btn-primary-custom {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+        border-radius: 12px !important;
+        padding: 0.4rem 1rem !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+    }
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(99,102,241,0.3) !important;
+        color: #fff !important;
+    }
+
+    .btn-outline-custom {
+        background: transparent !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text-main) !important;
+        border-radius: 12px !important;
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.85rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-outline-custom:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+    }
+
+    .btn-action-icon {
+        background: var(--bg-sidebar) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text-muted) !important;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .btn-action-icon:hover {
+        background: var(--nav-active-bg) !important;
+        color: var(--primary) !important;
     }
 
     /* ===== CARDS ===== */
@@ -33,11 +80,28 @@
         background: var(--bg-card) !important;
         border: 1px solid var(--border) !important;
         border-radius: 20px !important;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
     }
     .card-proyecto:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
+    }
+
+    /* ===== BARRAS DE PROGRESO ===== */
+    .progress-custom {
+        height: 6px !important;
+        background: var(--nav-active-bg) !important;
+        border-radius: 10px !important;
+        overflow: hidden !important;
+    }
+    .progress-custom .progress-bar {
+        background: var(--primary) !important;
+        border-radius: 10px !important;
+        transition: width 0.6s ease !important;
+    }
+    .progress-custom .progress-bar.pendiente {
+        background: #f59e0b !important;
+        opacity: 0.3 !important;
     }
 
     /* ===== INPUTS Y SELECTS ===== */
@@ -47,7 +111,7 @@
         border: 1px solid var(--border) !important;
         color: var(--text-main) !important;
         border-radius: 16px !important;
-        padding: 0.75rem 1rem;
+        padding: 0.75rem 1rem !important;
         transition: border-color 0.2s, box-shadow 0.2s;
     }
     .form-control-dark:focus,
@@ -56,49 +120,8 @@
         box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
     }
     .form-control-dark::placeholder {
-        color: var(--text-muted) !important;
-        opacity: 0.7 !important;
-    }
-
-    /* ===== BOTONES ===== */
-    .btn-primary-custom {
-        background: var(--primary) !important;
-        color: #fff !important;
-        border: none !important;
-        border-radius: 12px !important;
-        padding: 0.6rem 1.4rem;
-        font-weight: 600;
-        transition: background 0.2s, transform 0.1s;
-    }
-    .btn-primary-custom:hover {
-        background: #818cf8 !important;
-        transform: translateY(-1px);
-        color: #fff !important;
-    }
-    .btn-outline-custom {
-        background: transparent !important;
-        border: 1px solid var(--border) !important;
-        color: var(--text-muted) !important;
-        border-radius: 12px !important;
-        padding: 0.6rem 1rem;
-        transition: all 0.2s;
-    }
-    .btn-outline-custom:hover {
-        background: var(--border) !important;
-        color: var(--text-main) !important;
-    }
-
-    /* ===== PROGRESS BAR ===== */
-    .progress-custom {
-        height: 6px;
-        background: var(--nav-active-bg) !important;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    .progress-custom .progress-bar {
-        background: var(--primary) !important;
-        border-radius: 10px;
-        transition: width 0.6s ease;
+        color: var(--text-muted);
+        opacity: 0.7;
     }
 
     /* ===== BADGES DE CONTADORES ===== */
@@ -114,14 +137,14 @@
         gap: 0.4rem !important;
     }
     .badge-contador.pendiente {
-        background: rgba(245, 158, 11, 0.1) !important;
+        background: rgba(245,158,11,0.1) !important;
         color: #f59e0b !important;
-        border-color: rgba(245, 158, 11, 0.2) !important;
+        border-color: rgba(245,158,11,0.2) !important;
     }
     .badge-contador.revisado {
-        background: rgba(16, 185, 129, 0.1) !important;
+        background: rgba(16,185,129,0.1) !important;
         color: #10b981 !important;
-        border-color: rgba(16, 185, 129, 0.2) !important;
+        border-color: rgba(16,185,129,0.2) !important;
     }
 
     /* ===== RESPONSIVE ===== */
@@ -131,11 +154,11 @@
     }
 </style>
 
-<div class="dashboard-wrapper">
+<div class="dashboard-profesor-wrapper">
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center mb-4 mb-md-5 gap-3">
         <div class="d-flex align-items-center">
-            <div class="p-3 rounded-4 me-3 flex-shrink-0" style="background: rgba(99, 102, 241, 0.15); color: var(--primary);">
+            <div class="p-3 rounded-4 me-3 flex-shrink-0" style="background: rgba(99,102,241,0.15); color: var(--primary);">
                 <i class="fas fa-file-signature fa-2x"></i>
             </div>
             <div>
@@ -166,8 +189,8 @@
                 <span class="input-group-text border-0 ps-4" style="background: var(--bg-card); color: var(--text-muted);">
                     <i class="fas fa-search"></i>
                 </span>
-                <input type="text" id="buscarProyecto" class="form-control border-0 py-3" 
-                       style="background: var(--bg-card); color: var(--text-main);" 
+                <input type="text" id="buscarProyecto" class="form-control form-control-dark border-0" 
+                       style="border-left: none !important;" 
                        placeholder="Buscar por título, estudiante o estado..."
                        onkeyup="filtrarProyectos()">
                 <button class="btn border-0 pe-4" style="background: var(--bg-card); color: var(--text-muted);" 
@@ -219,13 +242,13 @@
                             <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
                                  style="width: 55px; height: 55px;
                                         {% if p.estado == 'Aprobado' or p.estado == 'PROYECTO_APROBADO' %}
-                                            background: rgba(16, 185, 129, 0.1); color: #10b981;
+                                            background: rgba(16,185,129,0.1); color: #10b981;
                                         {% elif p.estado == 'Observado' %}
-                                            background: rgba(245, 158, 11, 0.1); color: #f59e0b;
+                                            background: rgba(245,158,11,0.1); color: #f59e0b;
                                         {% elif p.estado == 'Cancelado' %}
-                                            background: rgba(239, 68, 68, 0.1); color: #ef4444;
+                                            background: rgba(239,68,68,0.1); color: #ef4444;
                                         {% else %}
-                                            background: rgba(99, 102, 241, 0.1); color: var(--primary);
+                                            background: rgba(99,102,241,0.1); color: var(--primary);
                                         {% endif %}">
                                 <i class="fas {% if p.estado == 'Aprobado' or p.estado == 'PROYECTO_APROBADO' %}fa-check-circle{% elif p.estado == 'Observado' %}fa-exclamation-circle{% elif p.estado == 'Cancelado' %}fa-ban{% else %}fa-clock{% endif %} fa-lg"></i>
                             </div>
@@ -240,13 +263,13 @@
                                     <span class="badge rounded-pill px-3 py-1 flex-shrink-0" 
                                           style="font-size: 0.65rem; font-weight: 600;
                                           {% if p.estado == 'Aprobado' or p.estado == 'PROYECTO_APROBADO' %}
-                                              background: rgba(16, 185, 129, 0.15); color: #10b981;
+                                              background: rgba(16,185,129,0.15); color: #10b981;
                                           {% elif p.estado == 'Observado' %}
-                                              background: rgba(245, 158, 11, 0.15); color: #f59e0b;
+                                              background: rgba(245,158,11,0.15); color: #f59e0b;
                                           {% elif p.estado == 'Cancelado' %}
-                                              background: rgba(239, 68, 68, 0.15); color: #ef4444;
+                                              background: rgba(239,68,68,0.15); color: #ef4444;
                                           {% else %}
-                                              background: rgba(99, 102, 241, 0.15); color: var(--primary);
+                                              background: rgba(99,102,241,0.15); color: var(--primary);
                                           {% endif %}">
                                         {{ p.estado|upper }}
                                     </span>
@@ -267,15 +290,33 @@
                                     {% endif %}
                                 </p>
 
-                                <!-- Progreso -->
+                                <!-- ===== PROGRESO (PUNTO 3) ===== -->
                                 <div class="mt-3" style="max-width: 300px;">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <small class="fw-bold text-uppercase" style="color: var(--text-muted) !important; font-size: 0.6rem; letter-spacing: 0.5px;">Progreso de Observaciones</small>
-                                        <small class="fw-bold" style="color: var(--primary); font-size: 0.7rem;">{{ p.porcentaje_avance }}%</small>
+                                        <!-- --- PUNTO 3: VISIBILIDAD CONDICIONAL DEL PROGRESO --- -->
+                                        {% if p.tiene_revisiones_previas or p.porcentaje_avance > 0 %}
+                                            <small class="fw-bold" style="color: var(--primary); font-size: 0.7rem;">{{ p.porcentaje_avance }}%</small>
+                                        {% else %}
+                                            <small class="fw-bold" style="color: #f59e0b; font-size: 0.7rem;">
+                                                <i class="fas fa-hourglass-half me-1"></i> Pendiente
+                                            </small>
+                                        {% endif %}
                                     </div>
                                     <div class="progress-custom">
-                                        <div class="progress-bar" style="width: {{ p.porcentaje_avance }}%;"></div>
+                                        {% if p.tiene_revisiones_previas or p.porcentaje_avance > 0 %}
+                                            <div class="progress-bar" style="width: {{ p.porcentaje_avance }}%;"></div>
+                                        {% else %}
+                                            <div class="progress-bar pendiente" style="width: 0%;"></div>
+                                        {% endif %}
                                     </div>
+                                    {% if not p.tiene_revisiones_previas and p.porcentaje_avance == 0 %}
+                                    <div class="mt-1">
+                                        <small class="text-muted d-block" style="color: var(--text-muted) !important; font-size: 0.6rem;">
+                                            <i class="fas fa-info-circle me-1"></i> Pendiente de evaluación inicial
+                                        </small>
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 
                                 <!-- Última entrega -->
@@ -317,11 +358,27 @@
                             {% else %}
                                 {% with ultima_v=p.versiones.last %}
                                     {% if ultima_v %}
-                                        <a href="{% url 'revisar_version' ultima_v.id %}" 
-                                           class="btn btn-primary-custom px-4 py-2 fw-bold d-flex align-items-center gap-2" 
-                                           style="font-size: 0.85rem;">
-                                            <i class="fas fa-clipboard-check"></i> Revisar
-                                        </a>
+                                        {% if p.tiene_correciones_enviadas %}
+                                            <span class="d-inline-block" data-bs-toggle="tooltip" title="Ya se han enviado correcciones; esperando que el estudiante cargue una nueva versión.">
+                                                <button class="btn btn-primary-custom px-4 py-2 fw-bold d-flex align-items-center gap-2" 
+                                                        style="font-size: 0.85rem; pointer-events: none;" disabled>
+                                                    <i class="fas fa-clipboard-check"></i> Revisar
+                                                </button>
+                                            </span>
+                                        {% elif p.porcentaje_avance == 100 and ultima_v.revisiones.exists %}
+                                            <span class="d-inline-block" data-bs-toggle="tooltip" title="El estudiante ha terminado las observaciones, sin embargo no ha cargado una nueva versión. Por favor espera a que suba una nueva versión del proyecto. ¡Gracias!">
+                                                <button class="btn btn-primary-custom px-4 py-2 fw-bold d-flex align-items-center gap-2" 
+                                                        style="font-size: 0.85rem; pointer-events: none;" disabled>
+                                                    <i class="fas fa-clipboard-check"></i> Revisar
+                                                </button>
+                                            </span>
+                                        {% else %}
+                                            <a href="{% url 'revisar_version' ultima_v.id %}" 
+                                               class="btn btn-primary-custom px-4 py-2 fw-bold d-flex align-items-center gap-2" 
+                                               style="font-size: 0.85rem;">
+                                                <i class="fas fa-clipboard-check"></i> Revisar
+                                            </a>
+                                        {% endif %}
                                     {% else %}
                                         <span class="text-muted small px-3 py-2" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;">
                                             <i class="fas fa-hourglass-start me-1"></i> Sin entregas
@@ -351,25 +408,39 @@
                         <span class="badge rounded-pill px-2 py-1" 
                               style="font-size: 0.65rem; border: 1px solid rgba(255,255,255,0.05);
                               {% if p.estado == 'Aprobado' or p.estado == 'PROYECTO_APROBADO' %}
-                                  background: rgba(16, 185, 129, 0.15); color: #10b981;
+                                  background: rgba(16,185,129,0.15); color: #10b981;
                               {% elif p.estado == 'Cancelado' %}
-                                  background: rgba(239, 68, 68, 0.15); color: #ef4444;
+                                  background: rgba(239,68,68,0.15); color: #ef4444;
                               {% elif p.estado == 'Observado' %}
-                                  background: rgba(245, 158, 11, 0.15); color: #f59e0b;
+                                  background: rgba(245,158,11,0.15); color: #f59e0b;
                               {% else %}
-                                  background: rgba(99, 102, 241, 0.15); color: var(--primary);
+                                  background: rgba(99,102,241,0.15); color: var(--primary);
                               {% endif %}">
                             {{ p.estado|upper }}
                         </span>
                         
-                        {% with ultima_v=p.versiones.last %}
-                            {% if ultima_v and p.estado != 'Cancelado' and p.estado != 'Aprobado' and p.estado != 'PROYECTO_APROBADO' %}
-                                <a href="{% url 'revisar_version' ultima_v.id %}" 
-                                   class="btn btn-primary-custom btn-sm px-3 py-1 fw-bold" style="font-size: 0.7rem;">
-                                    <i class="fas fa-clipboard-check me-1"></i> Revisar
-                                </a>
-                            {% endif %}
-                        {% endwith %}
+                            {% with ultima_v=p.versiones.last %}
+                                {% if ultima_v and p.estado != 'Cancelado' and p.estado != 'Aprobado' and p.estado != 'PROYECTO_APROBADO' %}
+                                    {% if p.tiene_correciones_enviadas %}
+                                        <span class="d-inline-block" data-bs-toggle="tooltip" title="Ya se han enviado correcciones; esperando que el estudiante cargue una nueva versión.">
+                                            <button class="btn btn-primary-custom btn-sm px-3 py-1 fw-bold" style="font-size: 0.7rem; pointer-events: none;" disabled>
+                                                <i class="fas fa-clipboard-check me-1"></i> Revisar
+                                            </button>
+                                        </span>
+                                    {% elif p.porcentaje_avance == 100 and ultima_v.revisiones.exists %}
+                                        <span class="d-inline-block" data-bs-toggle="tooltip" title="El estudiante ha terminado las observaciones, sin embargo no ha cargado una nueva versión. Por favor espera a que suba una nueva versión del proyecto. ¡Gracias!">
+                                            <button class="btn btn-primary-custom btn-sm px-3 py-1 fw-bold" style="font-size: 0.7rem; pointer-events: none;" disabled>
+                                                <i class="fas fa-clipboard-check me-1"></i> Revisar
+                                            </button>
+                                        </span>
+                                    {% else %}
+                                        <a href="{% url 'revisar_version' ultima_v.id %}" 
+                                           class="btn btn-primary-custom btn-sm px-3 py-1 fw-bold" style="font-size: 0.7rem;">
+                                            <i class="fas fa-clipboard-check me-1"></i> Revisar
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            {% endwith %}
                     </div>
 
                     <!-- Título -->
@@ -386,12 +457,31 @@
                     </p>
 
                     <!-- Progreso -->
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <div class="progress-custom flex-grow-1">
-                            <div class="progress-bar" style="width: {{ p.porcentaje_avance }}%;"></div>
-                        </div>
-                        <small class="fw-bold" style="color: var(--text-main) !important; font-size: 0.65rem;">{{ p.porcentaje_avance }}%</small>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted" style="color: var(--text-muted) !important; font-size: 0.7rem;">Progreso</small>
+                        <!-- --- PUNTO 3: VISIBILIDAD CONDICIONAL DEL PROGRESO (MÓVIL) --- -->
+                        {% if p.tiene_revisiones_previas or p.porcentaje_avance > 0 %}
+                            <small class="fw-bold" style="color: var(--text-main); font-size: 0.7rem;">{{ p.porcentaje_avance }}%</small>
+                        {% else %}
+                            <small class="fw-bold" style="color: #f59e0b; font-size: 0.7rem;">
+                                <i class="fas fa-hourglass-half me-1"></i> Pendiente
+                            </small>
+                        {% endif %}
                     </div>
+                    <div class="progress-custom mb-2">
+                        {% if p.tiene_revisiones_previas or p.porcentaje_avance > 0 %}
+                            <div class="progress-bar" style="width: {{ p.porcentaje_avance }}%;"></div>
+                        {% else %}
+                            <div class="progress-bar pendiente" style="width: 0%;"></div>
+                        {% endif %}
+                    </div>
+                    {% if not p.tiene_revisiones_previas and p.porcentaje_avance == 0 %}
+                    <div class="mb-2">
+                        <small class="text-muted d-block" style="color: var(--text-muted) !important; font-size: 0.6rem;">
+                            <i class="fas fa-info-circle me-1"></i> Pendiente de evaluación inicial
+                        </small>
+                    </div>
+                    {% endif %}
                     
                     <!-- Última entrega -->
                     {% with ultima_v=p.versiones.last %}

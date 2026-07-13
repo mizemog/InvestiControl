@@ -83,8 +83,8 @@ class VersionDocumento(models.Model):
 
 class AnalisisIA(models.Model):
     version = models.OneToOneField(VersionDocumento, on_delete=models.CASCADE, related_name='analisis_ia')
-    porcentaje_similitud = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
-    riesgo_texto_ia = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    porcentaje_similitud = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    riesgo_texto_ia = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     resultado = models.TextField(blank=True)
     fecha_analisis = models.DateTimeField(auto_now_add=True)
 

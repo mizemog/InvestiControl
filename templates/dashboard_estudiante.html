@@ -2,6 +2,23 @@
 {% load static %}
 
 {% block content %}
+
+<!-- ===== BLOQUE DE MENSAJES (consumir mensajes de Django) ===== -->
+{% if messages %}
+<div class="row mb-3">
+  <div class="col-12">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show d-flex align-items-center gap-2 shadow-sm" 
+         role="alert" style="border-radius: 12px;">
+      <i class="fas {% if message.tags == 'success' %}fa-check-circle text-success{% elif message.tags == 'error' %}fa-exclamation-triangle text-danger{% else %}fa-info-circle text-primary{% endif %}"></i>
+      <span>{{ message }}</span>
+      <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
 <style>
   .card-proyecto {
     background: var(--bg-card) !important;
@@ -119,6 +136,11 @@
     background: linear-gradient(90deg, #10b981, #059669);
     transition: width 0.6s ease;
     box-shadow: 0 0 12px rgba(16,185,129,0.3);
+  }
+  .progress-custom .progress-bar.pendiente {
+    background: #f59e0b;
+    opacity: 0.3;
+    box-shadow: none;
   }
 
   /* ===== Contenedor de tareas ===== */
@@ -303,7 +325,7 @@
                     PRIORIDAD {{ c.prioridad|upper }}
                   </span>
                   {% if c.verificado_docente %}
-                    <span class="badge rounded-pill" style="font-size: 0.55rem; background: rgba(16,185,129,0.1); color: #10b981;">
+                    <span class="badge rounded-pill" style="font-size: 0.55rem; background: rgba(16,185,129,0.1); color: var(--success);">
                       <i class="fas fa-user-check me-1"></i> VERIFICADO
                     </span>
                   {% endif %}
@@ -311,9 +333,15 @@
               </div>
               <div class="tarea-accion">
                 {% if c.estado != 'Resuelto' %}
-                  <a href="{% url 'enviar_correccion' c.id %}" class="btn btn-primary-custom btn-sm rounded-pill px-4 fw-bold" style="font-size: 0.7rem;">
-                    RESOLVER
-                  </a>
+                  {% if c.id == p.siguiente_comentario_id %}
+                    <a href="{% url 'enviar_correccion' c.id %}" class="btn btn-primary-custom btn-sm rounded-pill px-4 fw-bold" style="font-size: 0.7rem;">
+                      RESOLVER
+                    </a>
+                  {% else %}
+                    <button class="btn btn-secondary-custom btn-sm rounded-pill px-4 fw-bold" disabled style="font-size: 0.7rem;">
+                      ESPERANDO
+                    </button>
+                  {% endif %}
                 {% else %}
                   <span class="text-success small fw-bold" style="font-size: 0.7rem;">COMPLETADO</span>
                 {% endif %}
@@ -340,6 +368,12 @@
               <button class="btn btn-disabled-custom d-flex align-items-center gap-1" disabled>
                 <i class="fas fa-lock"></i> Nueva Entrega
               </button>
+            {% elif p.hay_observaciones_pendientes %}
+              <span class="d-inline-block" data-bs-toggle="tooltip" title="Debes corregir todas las observaciones antes de subir una nueva entrega.">
+                <button class="btn btn-disabled-custom d-flex align-items-center gap-1" disabled>
+                  <i class="fas fa-upload"></i> Nueva Entrega
+                </button>
+              </span>
             {% else %}
               <a href="{% url 'subir_version' p.id %}" class="btn btn-primary-custom btn-sm rounded-3 px-3 py-2 fw-bold d-flex align-items-center gap-1"
                  style="font-size: 0.8rem;">
@@ -361,16 +395,34 @@
           </div>
         </div>
 
-        <!-- Columna derecha: Progreso -->
+        <!-- ===== COLUMNA DERECHA: PROGRESO (PUNTO 3) ===== -->
         <div class="col-md-4 text-end mt-4 mt-md-0 border-start ps-md-4" style="border-color: var(--border) !important;">
           <div class="text-start">
             <div class="d-flex justify-content-between mb-2">
-              <span class="small fw-bold" style="color: var(--text-muted);">Progreso General</span>
-              <span class="fw-bold" style="color: var(--text-main);">{{ p.porcentaje_avance }}%</span>
+              <span class="small fw-bold" style="color: var(--text-muted);">{{ p.progreso_label }}</span>
+              <!-- --- PUNTO 3: VISIBILIDAD CONDICIONAL DEL PROGRESO --- -->
+              {% if p.tiene_revisiones_previas or p.porcentaje_avance > 0 %}
+                <span class="fw-bold" style="color: var(--text-main);">{{ p.porcentaje_avance }}%</span>
+              {% else %}
+                <span class="fw-bold" style="color: #f59e0b;">
+                  <i class="fas fa-hourglass-half me-1"></i> Pendiente
+                </span>
+              {% endif %}
             </div>
             <div class="progress-custom">
-              <div class="progress-bar" style="width: {{ p.porcentaje_avance }}%;"></div>
+              {% if p.tiene_revisiones_previas or p.porcentaje_avance > 0 %}
+                <div class="progress-bar" style="width: {{ p.porcentaje_avance }}%;"></div>
+              {% else %}
+                <div class="progress-bar pendiente" style="width: 0%;"></div>
+              {% endif %}
             </div>
+            {% if not p.tiene_revisiones_previas and p.porcentaje_avance == 0 %}
+            <div class="mt-2">
+              <small class="text-muted d-block" style="color: var(--text-muted) !important;">
+                <i class="fas fa-info-circle me-1"></i> Pendiente de evaluación inicial
+              </small>
+            </div>
+            {% endif %}
             <div class="mt-3">
               <small class="text-muted d-block" style="color: var(--text-muted) !important;">
                 <i class="fas fa-clock me-1 opacity-50"></i> Última actualización:
@@ -434,7 +486,11 @@
           <div class="d-flex justify-content-between align-items-center mb-2 pb-2 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: var(--border) !important;">
             <small class="text-truncate me-2" style="max-width: 180px; color: var(--text-main);">{{ c.texto }}</small>
             {% if c.estado != 'Resuelto' %}
-              <a href="{% url 'enviar_correccion' c.id %}" class="btn btn-primary-custom btn-sm rounded-pill px-3" style="font-size: 0.6rem;">RESOLVER</a>
+              {% if p.siguiente_comentario_id == c.id %}
+                <a href="{% url 'enviar_correccion' c.id %}" class="btn btn-primary-custom btn-sm rounded-pill px-3" style="font-size: 0.6rem;">RESOLVER</a>
+              {% else %}
+                <button class="btn btn-secondary-custom btn-sm rounded-pill px-3" disabled style="font-size: 0.6rem;">ESPERANDO</button>
+              {% endif %}
             {% else %}
               <i class="fas fa-check-circle text-success" style="font-size: 0.8rem;"></i>
             {% endif %}
@@ -445,12 +501,30 @@
 
       <!-- Progreso -->
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <small class="text-muted" style="color: var(--text-muted) !important; font-size: 0.7rem;">Progreso</small>
-        <small class="fw-bold" style="color: var(--text-main); font-size: 0.8rem;">{{ p.porcentaje_avance }}%</small>
+        <small class="text-muted" style="color: var(--text-muted) !important; font-size: 0.7rem;">{{ p.progreso_label }}</small>
+        <!-- --- PUNTO 3: VISIBILIDAD CONDICIONAL DEL PROGRESO (MÓVIL) --- -->
+        {% if p.tiene_revisiones_previas or p.porcentaje_avance > 0 %}
+          <small class="fw-bold" style="color: var(--text-main); font-size: 0.8rem;">{{ p.porcentaje_avance }}%</small>
+        {% else %}
+          <small class="fw-bold" style="color: #f59e0b; font-size: 0.7rem;">
+            <i class="fas fa-hourglass-half me-1"></i> Pendiente
+          </small>
+        {% endif %}
       </div>
       <div class="progress-custom mb-3">
-        <div class="progress-bar" style="width: {{ p.porcentaje_avance }}%;"></div>
+        {% if p.tiene_revisiones_previas or p.porcentaje_avance > 0 %}
+          <div class="progress-bar" style="width: {{ p.porcentaje_avance }}%;"></div>
+        {% else %}
+          <div class="progress-bar pendiente" style="width: 0%;"></div>
+        {% endif %}
       </div>
+      {% if not p.tiene_revisiones_previas and p.porcentaje_avance == 0 %}
+      <div class="mb-2">
+        <small class="text-muted d-block" style="color: var(--text-muted) !important; font-size: 0.6rem;">
+          <i class="fas fa-info-circle me-1"></i> Pendiente de evaluación inicial
+        </small>
+      </div>
+      {% endif %}
 
       <!-- Acciones móvil -->
       <div class="d-flex gap-1">
@@ -458,6 +532,12 @@
           <button class="btn btn-disabled-custom flex-grow-1" disabled style="font-size: 0.7rem; padding: 0.4rem 0.6rem;">
             <i class="fas fa-lock me-1"></i> Bloqueado
           </button>
+        {% elif p.hay_observaciones_pendientes %}
+          <span class="d-inline-block flex-grow-1" data-bs-toggle="tooltip" title="Debes corregir todas las observaciones antes de subir una nueva entrega.">
+            <button class="btn btn-disabled-custom flex-grow-1" disabled style="font-size: 0.7rem; padding: 0.4rem 0.6rem; width: 100%;">
+              <i class="fas fa-upload me-1"></i> Entregar
+            </button>
+          </span>
         {% else %}
           <a href="{% url 'subir_version' p.id %}" class="btn btn-primary-custom btn-sm flex-grow-1 rounded-3" style="font-size: 0.7rem;">
             <i class="fas fa-upload me-1"></i> Entregar

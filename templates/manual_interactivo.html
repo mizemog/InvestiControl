@@ -1,0 +1,2012 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* ===== ESTILOS GENERALES ===== */
+    .manual-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem;
+        position: relative;
+    }
+
+    .manual-wrapper * {
+        color: var(--text-main) !important;
+    }
+    .manual-wrapper .text-muted {
+        color: var(--text-muted) !important;
+    }
+    .manual-wrapper .text-primary {
+        color: var(--primary) !important;
+    }
+
+    /* ===== HEADER ===== */
+    .manual-header {
+        text-align: center;
+        padding: 2rem 0 1.5rem;
+        border-bottom: 2px solid var(--border);
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    .manual-header .icon-container {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--primary-light);
+        color: var(--primary);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        animation: pulse-icon 2s infinite;
+    }
+    @keyframes pulse-icon {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    .manual-header h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    .manual-header .subtitle {
+        font-size: 1rem;
+        color: var(--text-muted);
+    }
+    .manual-header .rol-badge {
+        display: inline-block;
+        padding: 0.4rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-top: 0.75rem;
+        background: var(--primary);
+        color: #fff !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* ===== CONTROLES DEL TOUR ===== */
+    .tour-controls {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin: 1.5rem 0;
+        flex-wrap: wrap;
+    }
+    .tour-controls .btn-tour {
+        padding: 0.5rem 1.25rem;
+        border-radius: 50px;
+        font-weight: 600;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-tour.active {
+        background: var(--primary);
+        color: #fff !important;
+        border-color: var(--primary);
+    }
+    .btn-tour:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    .btn-tour .badge-count {
+        background: rgba(255,255,255,0.2);
+        color: inherit;
+        padding: 0.1rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+    }
+    .btn-tour.active .badge-count {
+        background: rgba(255,255,255,0.25);
+    }
+
+    /* ===== PASOS DEL TOUR ===== */
+    .tour-step {
+        display: none;
+        animation: fadeSlide 0.5s ease;
+        padding: 1.5rem;
+        background: var(--bg-card);
+        border: 2px solid var(--border);
+        border-radius: 24px;
+        margin-bottom: 1.5rem;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    .tour-step.active {
+        display: block;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+    }
+    .tour-step .step-number {
+        position: absolute;
+        top: -14px;
+        left: 20px;
+        background: var(--primary);
+        color: #fff !important;
+        padding: 0.15rem 1rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    @keyframes fadeSlide {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== ELEMENTOS INTERACTIVOS ===== */
+    .demo-element {
+        border: 2px dashed var(--border);
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        margin: 0.75rem 0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+    .demo-element:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        transform: scale(1.01);
+    }
+    .demo-element .click-hint {
+        position: absolute;
+        top: -10px;
+        right: 10px;
+        background: var(--primary);
+        color: #fff !important;
+        padding: 0.1rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.6rem;
+        font-weight: 700;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+    .demo-element:hover .click-hint {
+        opacity: 1;
+    }
+    .demo-element .tooltip-content {
+        display: none;
+        margin-top: 0.75rem;
+        padding: 0.75rem 1rem;
+        background: var(--nav-active-bg);
+        border-radius: 12px;
+        font-size: 0.85rem;
+        border-left: 3px solid var(--primary);
+    }
+    .demo-element .tooltip-content.show {
+        display: block;
+        animation: fadeSlide 0.3s ease;
+    }
+
+    /* ===== SIMULACIÓN DE ACCIONES ===== */
+    .simulation-box {
+        background: var(--nav-active-bg);
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin: 1rem 0;
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+    }
+    .simulation-box .sim-title {
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    .simulation-box .sim-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .sim-status.success {
+        background: rgba(16,185,129,0.15);
+        color: #10b981 !important;
+    }
+    .sim-status.warning {
+        background: rgba(245,158,11,0.15);
+        color: #f59e0b !important;
+    }
+    .sim-status.info {
+        background: rgba(59,130,246,0.15);
+        color: #3b82f6 !important;
+    }
+
+    /* ===== PROGRESS BAR DEL TOUR ===== */
+    .tour-progress {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 1.5rem 0;
+    }
+    .tour-progress .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--border);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .tour-progress .dot.active {
+        background: var(--primary);
+        transform: scale(1.3);
+    }
+    .tour-progress .dot.done {
+        background: #10b981;
+    }
+
+    /* ===== NAVEGACIÓN ===== */
+    .nav-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .nav-buttons .btn-nav {
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-nav.prev {
+        background: var(--nav-active-bg);
+        color: var(--text-main);
+    }
+    .btn-nav.prev:hover {
+        background: var(--border);
+    }
+    .btn-nav.next {
+        background: var(--primary);
+        color: #fff !important;
+    }
+    .btn-nav.next:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+    }
+    .btn-nav .counter {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        font-weight: 400;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 767px) {
+        .manual-header h1 { font-size: 1.6rem; }
+        .tour-controls { gap: 0.5rem; }
+        .tour-controls .btn-tour { font-size: 0.7rem; padding: 0.3rem 0.8rem; }
+        .demo-element { padding: 0.75rem 1rem; }
+        .nav-buttons .btn-nav { padding: 0.4rem 1rem; font-size: 0.8rem; }
+    }
+    @media (max-width: 575px) {
+        .tour-step { padding: 1rem; }
+    }
+
+    /* ===== SIMULADOR DE PROGRESO (VISUAL) ===== */
+    .sim-progress-container {
+        background: var(--nav-active-bg);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin: 1rem 0;
+    }
+    .sim-progress-container .sim-bar {
+        height: 8px;
+        background: var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 0.5rem 0;
+    }
+    .sim-progress-container .sim-bar .sim-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 10px;
+        transition: width 0.8s ease;
+        width: 0%;
+    }
+    .sim-progress-container .sim-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    /* ===== SIMULADOR DE ENTREGA ===== */
+    .sim-upload-area {
+        border: 2px dashed var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: var(--bg-card);
+    }
+    .sim-upload-area:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+    }
+    .sim-upload-area .sim-file-name {
+        display: none;
+        margin-top: 0.5rem;
+        font-weight: 600;
+        color: var(--primary);
+    }
+    .sim-upload-area .sim-upload-status {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    /* ===== SIMULADOR DE REVISIÓN ===== */
+    .sim-revision-badge {
+        display: inline-block;
+        padding: 0.2rem 1rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .sim-revision-badge.pending {
+        background: rgba(245,158,11,0.15);
+        color: #f59e0b;
+    }
+    .sim-revision-badge.approved {
+        background: rgba(16,185,129,0.15);
+        color: #10b981;
+    }
+
+    /* ===== DEMO SANDBOX ===== */
+    .form-select-custom {
+        background-color: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    .form-select-custom:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 0.2rem rgba(99,102,241,0.25) !important;
+    }
+    .form-control-custom {
+        background-color: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    .form-control-custom:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 0.2rem rgba(99,102,241,0.25) !important;
+    }
+
+    .btn-primary-custom {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: 50px !important;
+        padding: 0.3rem 1.25rem !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-primary-custom:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 15px rgba(99,102,241,0.3) !important;
+        color: #fff !important;
+    }
+
+    /* ===== SECCIÓN FAQ ===== */
+    .faq-item {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 14px !important;
+        padding: 1rem !important;
+        cursor: pointer;
+        transition: all 0.2s ease !important;
+    }
+    .faq-item:hover {
+        border-color: var(--primary) !important;
+        background: var(--primary-light) !important;
+    }
+    .faq-item .faq-question {
+        font-weight: 600;
+        color: var(--text-main) !important;
+    }
+    .faq-item .faq-answer {
+        display: none;
+        margin-top: 0.75rem;
+        color: var(--text-muted) !important;
+        line-height: 1.5;
+    }
+    .faq-item.expanded .faq-answer {
+        display: block;
+    }
+
+    #faq-search {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        border: 1px solid var(--border) !important;
+        border-radius: 10px;
+        background: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        font-size: 0.95rem;
+        transition: border-color 0.2s;
+    }
+    #faq-search:focus {
+        border-color: var(--primary) !important;
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(99,102,241,0.25);
+    }
+    #faq-search::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7;
+    }
+
+    .btn-action-custom {
+        background: var(--nav-active-bg) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 10px !important;
+        padding: 0.4rem 1rem !important;
+        font-size: 0.85rem !important;
+        transition: all 0.2s ease !important;
+        text-decoration: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+    }
+    .btn-action-custom:hover {
+        background: var(--border) !important;
+        color: var(--text-main) !important;
+        transform: translateY(-2px);
+    }
+</style>
+
+<div class="manual-wrapper">
+
+    <!-- ===== HEADER ===== -->
+    <div class="manual-header">
+        <div class="icon-container">
+            <i class="fas fa-graduation-cap"></i>
+        </div>
+        <h1>🎯 Tour Interactivo</h1>
+        <p class="subtitle">Aprende a usar InvestiControl con experiencias prácticas y visuales</p>
+        <span class="rol-badge">
+            <i class="fas fa-user-check me-2"></i>
+            {% if user.rol == 'estudiante' %}🎓 Estudiante
+            {% elif user.rol == 'profesor' %}👨‍🏫 Profesor
+            {% elif user.rol == 'coordinador' %}👑 Coordinador
+            {% else %}👤 Usuario{% endif %}
+        </span>
+    </div>
+
+    <!-- ===== CONTROLES DEL TOUR ===== -->
+    <div class="tour-controls" id="tourControls">
+        <button class="btn-tour active" data-view="all" onclick="cambiarVista('all')">
+            <i class="fas fa-list"></i> Vista General
+        </button>
+        <button class="btn-tour" data-view="steps" onclick="cambiarVista('steps')">
+            <i class="fas fa-shoe-prints"></i> Tour Guiado
+            <span class="badge-count">{{ total_steps }}</span>
+        </button>
+        <button class="btn-tour" data-view="demo" onclick="cambiarVista('demo')">
+            <i class="fas fa-laptop"></i> Modo Demo
+        </button>
+        <button class="btn-tour" data-view="faq" onclick="cambiarVista('faq')">
+            <i class="fas fa-question-circle"></i> Preguntas Frecuentes
+        </button>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- VISTA 1: GENERAL (RESUMEN) -->
+    <!-- ============================================================ -->
+    <div id="view-all" class="tour-view">
+        <div class="tour-step active">
+            <div class="step-number">📋 RESUMEN</div>
+            <h4 style="margin-bottom: 0.5rem;">Bienvenido al Tour Interactivo de InvestiControl</h4>
+            <p style="color: var(--text-muted);">
+                Explora las funcionalidades clave del sistema según tu rol. 
+                Haz clic en los elementos interactivos para obtener más información.
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+                <div class="demo-element" onclick="toggleTooltip(this)">
+                    <i class="fas fa-rocket" style="color: var(--primary); font-size: 1.5rem;"></i>
+                    <h6 style="margin: 0.25rem 0;">¿Qué es esto?</h6>
+                    <small style="color: var(--text-muted);">Haz clic para saber más</small>
+                    <span class="click-hint">👆 CLIC</span>
+                    <div class="tooltip-content">
+                        InvestiControl es una plataforma que conecta a estudiantes, profesores y coordinadores 
+                        para gestionar proyectos de investigación de forma eficiente y transparente.
+                    </div>
+                </div>
+                <div class="demo-element" onclick="toggleTooltip(this)">
+                    <i class="fas fa-users" style="color: #10b981; font-size: 1.5rem;"></i>
+                    <h6 style="margin: 0.25rem 0;">¿Quién lo usa?</h6>
+                    <small style="color: var(--text-muted);">Haz clic para saber más</small>
+                    <span class="click-hint">👆 CLIC</span>
+                    <div class="tooltip-content">
+                        <strong>🎓 Estudiantes:</strong> Suben versiones y reciben feedback.<br>
+                        <strong>👨‍🏫 Profesores:</strong> Revisan y califican entregas.<br>
+                        <strong>👑 Coordinadores:</strong> Gestionan todo el sistema.
+                    </div>
+                </div>
+                <div class="demo-element" onclick="toggleTooltip(this)">
+                    <i class="fas fa-shield-alt" style="color: #f59e0b; font-size: 1.5rem;"></i>
+                    <h6 style="margin: 0.25rem 0;">¿Es seguro?</h6>
+                    <small style="color: var(--text-muted);">Haz clic para saber más</small>
+                    <span class="click-hint">👆 CLIC</span>
+                    <div class="tooltip-content">
+                        Sí. InvestiControl cuenta con autenticación segura, trazabilidad de acciones 
+                        y permisos basados en roles para garantizar la integridad de los datos.
+                    </div>
+                </div>
+                <div class="demo-element" onclick="toggleTooltip(this)">
+                    <i class="fas fa-chart-line" style="color: #3b82f6; font-size: 1.5rem;"></i>
+                    <h6 style="margin: 0.25rem 0;">¿Qué logra?</h6>
+                    <small style="color: var(--text-muted);">Haz clic para saber más</small>
+                    <span class="click-hint">👆 CLIC</span>
+                    <div class="tooltip-content">
+                        Agiliza el proceso de revisión académica, reduce los tiempos de espera 
+                        y proporciona un seguimiento claro del progreso de cada investigación.
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="background: var(--primary-light); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 12px;">
+                <i class="fas fa-lightbulb me-2" style="color: var(--primary);"></i>
+                <strong>Tip:</strong> Usa los botones superiores para cambiar entre <strong>Vista General</strong>, 
+                <strong>Tour Guiado</strong> (paso a paso), <strong>Modo Demo</strong> (simulaciones) y 
+                <strong>Preguntas Frecuentes</strong>.
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- VISTA 2: TOUR GUIADO (PASO A PASO) -->
+    <!-- ============================================================ -->
+    <div id="view-steps" class="tour-view" style="display: none;">
+
+        <!-- ===== PASOS DEL TOUR ===== -->
+        <div id="tourSteps">
+            {% if user.rol == 'estudiante' %}
+                <!-- PASO 1: DASHBOARD ESTUDIANTE -->
+                <div class="tour-step active" data-step="0">
+                    <div class="step-number">PASO 1/5</div>
+                    <h4>🎯 Tu Dashboard Personal</h4>
+                    <p style="color: var(--text-muted);">
+                        Aquí ves un resumen de todos tus proyectos y su estado actual.
+                    </p>
+                    <div class="demo-element" onclick="toggleTooltip(this)">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-chart-pie" style="color: var(--primary); font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Indicadores clave:</strong>
+                                <span class="badge" style="background: var(--primary-light); color: var(--primary);">En Progreso</span>
+                                <span class="badge" style="background: rgba(16,185,129,0.15); color: #10b981;">Aprobadas</span>
+                                <span class="badge" style="background: rgba(239,68,68,0.15); color: #ef4444;">Canceladas</span>
+                            </div>
+                        </div>
+                        <span class="click-hint">👆 CLIC</span>
+                        <div class="tooltip-content">
+                            <strong>📊 En Progreso:</strong> Proyectos activos que estás desarrollando.<br>
+                            <strong>✅ Aprobadas:</strong> Investigaciones validadas por tu tutor.<br>
+                            <strong>❌ Canceladas:</strong> Proyectos cerrados oficialmente.
+                        </div>
+                    </div>
+                    <div class="simulation-box">
+                        <div class="sim-title">
+                            <i class="fas fa-play-circle" style="color: var(--primary);"></i>
+                            <span>Simulación: Navegación</span>
+                            <span class="sim-status info">DEMO</span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">
+                            Haz clic en el botón para ver cómo se ve tu dashboard.
+                        </p>
+                        <button class="btn btn-primary-custom" onclick="simularDashboardVisual()" style="font-size: 0.8rem;">
+                            <i class="fas fa-eye"></i> Ver demostración
+                        </button>
+                        <div id="simDashboardResult" style="margin-top: 0.75rem; display: none; padding: 0.75rem; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border);">
+                            <div style="display: flex; justify-content: space-around; text-align: center;">
+                                <div>
+                                    <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">3</span>
+                                    <small style="display: block; color: var(--text-muted);">En Progreso</small>
+                                </div>
+                                <div>
+                                    <span style="font-size: 1.5rem; font-weight: 700; color: #10b981;">2</span>
+                                    <small style="display: block; color: var(--text-muted);">Aprobadas</small>
+                                </div>
+                                <div>
+                                    <span style="font-size: 1.5rem; font-weight: 700; color: #ef4444;">0</span>
+                                    <small style="display: block; color: var(--text-muted);">Canceladas</small>
+                                </div>
+                            </div>
+                            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+                                <i class="fas fa-check-circle" style="color: #10b981;"></i> ¡Así se ve tu resumen!
+                            </div>
+                        </div>
+                    </div>
+                    <div class="highlight-box" style="background: rgba(99,102,241,0.05); border-left: 3px solid var(--primary); padding: 0.75rem 1rem; border-radius: 12px; margin-top: 0.75rem;">
+                        <i class="fas fa-info-circle me-2" style="color: var(--primary);"></i>
+                        <strong>¿Sabías que?</strong> El progreso se muestra como "Pendiente de evaluación inicial" 
+                        hasta que tu tutor revise tu primera entrega.
+                    </div>
+                </div>
+
+                <!-- PASO 2: SUBIR VERSIÓN -->
+                <div class="tour-step" data-step="1">
+                    <div class="step-number">PASO 2/5</div>
+                    <h4>📤 Subir una Nueva Versión</h4>
+                    <p style="color: var(--text-muted);">
+                        Aprende a entregar tus avances de forma correcta.
+                    </p>
+                    <!-- Simulador de subida de archivo -->
+                    <div class="sim-upload-area" id="simUploadArea" onclick="simularSubidaArchivo()">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary);"></i>
+                        <p style="margin: 0.5rem 0; font-weight: 600;">Arrastra o haz clic para seleccionar tu PDF</p>
+                        <span class="badge" style="background: var(--primary-light); color: var(--primary);">Solo PDF</span>
+                        <div class="sim-file-name" id="simFileName">📄 tesis_v2.pdf (2.4 MB)</div>
+                        <div class="sim-upload-status" id="simUploadStatus">Esperando archivo...</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-sm" style="background: var(--primary); color: #fff; border: none; border-radius: 50px; padding: 0.3rem 1rem;" onclick="simularSubidaArchivo()">
+                            <i class="fas fa-file-pdf"></i> Seleccionar PDF
+                        </button>
+                        <button class="btn btn-sm" style="background: var(--nav-active-bg); color: var(--text-main); border: none; border-radius: 50px; padding: 0.3rem 1rem;" onclick="simularEnvioEntrega()">
+                            <i class="fas fa-paper-plane"></i> Enviar
+                        </button>
+                    </div>
+                    <div class="highlight-box" style="background: rgba(245,158,11,0.08); border-left: 3px solid #f59e0b; padding: 0.75rem 1rem; border-radius: 12px; margin-top: 0.75rem;">
+                        <i class="fas fa-exclamation-triangle me-2" style="color: #f59e0b;"></i>
+                        <strong>⚠️ Importante:</strong> Si tu versión anterior no ha sido revisada, 
+                        el sistema te advertirá antes de sobrescribir.
+                    </div>
+                </div>
+
+                <!-- PASO 3: RESOLVER CORRECCIONES -->
+                <div class="tour-step" data-step="2">
+                    <div class="step-number">PASO 3/5</div>
+                    <h4>🔧 Resolver Observaciones</h4>
+                    <p style="color: var(--text-muted);">
+                        Aprende a responder al feedback de tu tutor.
+                    </p>
+                    <div class="demo-element" onclick="toggleTooltip(this)">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-comment-dots" style="color: #f59e0b; font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Ejemplo de observación:</strong>
+                                <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--text-muted);">
+                                    "Revisa la redacción de la introducción, hay errores de ortografía en la página 5."
+                                </p>
+                            </div>
+                        </div>
+                        <span class="click-hint">👆 CLIC</span>
+                        <div class="tooltip-content">
+                            <strong>📌 Sección:</strong> Introducción<br>
+                            <strong>⚠️ Prioridad:</strong> Alta<br>
+                            <strong>📝 Texto:</strong> Revisa la redacción de la introducción, hay errores de ortografía en la página 5.
+                        </div>
+                    </div>
+                    <div class="simulation-box" style="margin-top: 0.75rem;">
+                        <div class="sim-title">
+                            <i class="fas fa-reply" style="color: #10b981;"></i>
+                            <span>Simulación: Responder</span>
+                            <span class="sim-status warning">INTERACTIVO</span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">
+                            Haz clic en el botón para simular la respuesta a una observación.
+                        </p>
+                        <button class="btn btn-primary-custom" onclick="simularRespuestaVisual()" style="font-size: 0.8rem;">
+                            <i class="fas fa-pen"></i> Simular respuesta
+                        </button>
+                        <div id="simRespuestaResult" style="margin-top: 0.75rem; display: none; padding: 0.75rem; background: var(--bg-card); border-radius: 12px; border: 1px solid #10b981;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                                <span style="font-weight: 600;">Respuesta enviada:</span>
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">"He corregido los errores de ortografía en la introducción, páginas 5, 7 y 9."</span>
+                            </div>
+                            <div style="margin-top: 0.25rem; font-size: 0.75rem; color: var(--text-muted);">
+                                <i class="fas fa-bell"></i> Notificación enviada al profesor.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASO 4: PROGRESO -->
+                <div class="tour-step" data-step="3">
+                    <div class="step-number">PASO 4/5</div>
+                    <h4>📊 Entendiendo tu Progreso</h4>
+                    <p style="color: var(--text-muted);">
+                        El progreso se calcula de forma matemática y objetiva.
+                    </p>
+                    <div class="sim-progress-container">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span style="font-weight: 600;">Progreso General</span>
+                            <span style="font-weight: 700; color: var(--primary);" id="simProgress">60%</span>
+                        </div>
+                        <div class="sim-bar">
+                            <div class="sim-fill" id="simProgressBar" style="width: 60%;"></div>
+                        </div>
+                        <div class="sim-label">
+                            <span>0%</span>
+                            <span id="simProgressLabel">5 de 8 tareas resueltas</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-sm" style="background: var(--nav-active-bg); color: var(--text-main); border: none; border-radius: 50px; padding: 0.2rem 0.8rem;" onclick="simularProgresoVisual(25)">25%</button>
+                        <button class="btn btn-sm" style="background: var(--nav-active-bg); color: var(--text-main); border: none; border-radius: 50px; padding: 0.2rem 0.8rem;" onclick="simularProgresoVisual(50)">50%</button>
+                        <button class="btn btn-sm" style="background: var(--nav-active-bg); color: var(--text-main); border: none; border-radius: 50px; padding: 0.2rem 0.8rem;" onclick="simularProgresoVisual(75)">75%</button>
+                        <button class="btn btn-sm" style="background: var(--nav-active-bg); color: var(--text-main); border: none; border-radius: 50px; padding: 0.2rem 0.8rem;" onclick="simularProgresoVisual(100)">100% 🎉</button>
+                    </div>
+                    <div class="highlight-box" style="background: rgba(16,185,129,0.05); border-left: 3px solid #10b981; padding: 0.75rem 1rem; border-radius: 12px; margin-top: 0.75rem;">
+                        <i class="fas fa-trophy me-2" style="color: #10b981;"></i>
+                        <strong>¡Meta!</strong> Llegar al 100% significa que tu proyecto ha sido aprobado formalmente.
+                    </div>
+                </div>
+
+                <!-- PASO 5: CONSEJOS FINALES -->
+                <div class="tour-step" data-step="4">
+                    <div class="step-number">PASO 5/5</div>
+                    <h4>🎯 Consejos para el Éxito</h4>
+                    <p style="color: var(--text-muted);">
+                        Recomendaciones para aprovechar al máximo el sistema.
+                    </p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1rem 0;">
+                        <div style="background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem;">
+                            <i class="fas fa-clock" style="color: var(--primary);"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.85rem;">📅 Sé constante</h6>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Sube versiones regularmente para mantener el flujo del proyecto.</p>
+                        </div>
+                        <div style="background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem;">
+                            <i class="fas fa-comment" style="color: #f59e0b;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.85rem;">📝 Sé específico</h6>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Describe claramente los cambios en cada entrega.</p>
+                        </div>
+                        <div style="background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem;">
+                            <i class="fas fa-eye" style="color: #10b981;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.85rem;">🔍 Revisa siempre</h6>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Lee con atención las observaciones de tu tutor.</p>
+                        </div>
+                        <div style="background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem;">
+                            <i class="fas fa-flag" style="color: #3b82f6;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.85rem;">🚀 Pregunta</h6>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Si algo no queda claro, contacta a soporte.</p>
+                        </div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem;">
+                        <i class="fas fa-check-circle" style="color: #10b981; font-size: 2rem;"></i>
+                        <h5 style="margin: 0.5rem 0;">¡Listo para empezar!</h5>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">
+                            Ya conoces las bases. Ahora es momento de ponerlo en práctica.
+                        </p>
+                    </div>
+                </div>
+
+            {% elif user.rol == 'profesor' %}
+                <!-- PASOS PARA PROFESOR (Simplificados pero con simulaciones visuales) -->
+                <div class="tour-step active" data-step="0">
+                    <div class="step-number">PASO 1/4</div>
+                    <h4>👨‍🏫 Tu Panel de Revisiones</h4>
+                    <p style="color: var(--text-muted);">
+                        Aquí ves todos los proyectos asignados a ti como tutor.
+                    </p>
+                    <div class="demo-element" onclick="toggleTooltip(this)">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-clipboard-list" style="color: var(--primary); font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Proyectos pendientes:</strong>
+                                <span class="badge" style="background: rgba(245,158,11,0.15); color: #f59e0b;">Por revisar</span>
+                                <span class="badge" style="background: rgba(16,185,129,0.15); color: #10b981;">Revisados</span>
+                            </div>
+                        </div>
+                        <span class="click-hint">👆 CLIC</span>
+                        <div class="tooltip-content">
+                            <strong>🟡 Por revisar:</strong> Entregas que aún no has evaluado.<br>
+                            <strong>🟢 Revisados:</strong> Proyectos que ya calificaste.
+                        </div>
+                    </div>
+                    <div class="simulation-box">
+                        <div class="sim-title">
+                            <i class="fas fa-play-circle" style="color: var(--primary);"></i>
+                            <span>Simulación: Estado de Revisiones</span>
+                            <span class="sim-status info">DEMO</span>
+                        </div>
+                        <button class="btn btn-primary-custom" onclick="simularRevisionesVisual()" style="font-size: 0.8rem;">
+                            <i class="fas fa-eye"></i> Ver estado actual
+                        </button>
+                        <div id="simRevisionesResult" style="margin-top: 0.75rem; display: none; padding: 0.75rem; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border);">
+                            <div style="display: flex; justify-content: space-around; text-align: center;">
+                                <div>
+                                    <span style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">4</span>
+                                    <small style="display: block; color: var(--text-muted);">Pendientes</small>
+                                </div>
+                                <div>
+                                    <span style="font-size: 1.5rem; font-weight: 700; color: #10b981;">8</span>
+                                    <small style="display: block; color: var(--text-muted);">Revisados</small>
+                                </div>
+                            </div>
+                            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+                                <i class="fas fa-chart-line" style="color: var(--primary);"></i> 4 proyectos esperando tu revisión.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tour-step" data-step="1">
+                    <div class="step-number">PASO 2/4</div>
+                    <h4>📄 Revisar una Versión</h4>
+                    <p style="color: var(--text-muted);">
+                        El proceso de evaluación académica paso a paso.
+                    </p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem; margin: 1rem 0;">
+                        <div class="demo-element" onclick="toggleTooltip(this)" style="text-align: center;">
+                            <i class="fas fa-file-pdf" style="color: #ef4444; font-size: 1.5rem;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.8rem;">1. Leer PDF</h6>
+                            <span class="click-hint">👆</span>
+                            <div class="tooltip-content">El visor de PDF te permite leer el documento sin descargarlo.</div>
+                        </div>
+                        <div class="demo-element" onclick="toggleTooltip(this)" style="text-align: center;">
+                            <i class="fas fa-flag" style="color: #f59e0b; font-size: 1.5rem;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.8rem;">2. Dictaminar</h6>
+                            <span class="click-hint">👆</span>
+                            <div class="tooltip-content">Elige entre <strong>Aprobar</strong> o <strong>Observar</strong>.</div>
+                        </div>
+                        <div class="demo-element" onclick="toggleTooltip(this)" style="text-align: center;">
+                            <i class="fas fa-comment-dots" style="color: var(--primary); font-size: 1.5rem;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.8rem;">3. Feedback</h6>
+                            <span class="click-hint">👆</span>
+                            <div class="tooltip-content">Sé específico y constructivo en tus observaciones.</div>
+                        </div>
+                        <div class="demo-element" onclick="toggleTooltip(this)" style="text-align: center;">
+                            <i class="fas fa-paper-plane" style="color: #10b981; font-size: 1.5rem;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.8rem;">4. Enviar</h6>
+                            <span class="click-hint">👆</span>
+                            <div class="tooltip-content">El estudiante recibirá tu feedback automáticamente.</div>
+                        </div>
+                    </div>
+                    <div class="simulation-box">
+                        <div class="sim-title">
+                            <i class="fas fa-play-circle" style="color: var(--primary);"></i>
+                            <span>Simulación: Dictaminar</span>
+                            <span class="sim-status warning">INTERACTIVO</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="btn btn-sm" style="background: #10b981; color: #fff; border: none; border-radius: 50px; padding: 0.3rem 1rem;" onclick="simularDictamen('Aprobado')">
+                                ✅ Aprobar
+                            </button>
+                            <button class="btn btn-sm" style="background: #f59e0b; color: #fff; border: none; border-radius: 50px; padding: 0.3rem 1rem;" onclick="simularDictamen('Observado')">
+                                ⚠️ Observar
+                            </button>
+                        </div>
+                        <div id="simDictamenResult" style="margin-top: 0.75rem; display: none; padding: 0.75rem; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                                <span style="font-weight: 600;" id="simDictamenText">Dictamen: Aprobado</span>
+                            </div>
+                            <div style="margin-top: 0.25rem; font-size: 0.75rem; color: var(--text-muted);">
+                                <i class="fas fa-bell"></i> Notificación enviada al estudiante.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tour-step" data-step="2">
+                    <div class="step-number">PASO 3/4</div>
+                    <h4>✍️ Dar Feedback Efectivo</h4>
+                    <p style="color: var(--text-muted);">
+                        Cómo guiar a tus estudiantes hacia el éxito.
+                    </p>
+                    <div class="demo-element" onclick="toggleTooltip(this)">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-list-ul" style="color: var(--primary); font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Observaciones Específicas:</strong>
+                                <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--text-muted);">
+                                    "Revisa la redacción de la introducción, hay errores de ortografía en la página 5."
+                                </p>
+                            </div>
+                        </div>
+                        <span class="click-hint">👆 CLIC</span>
+                        <div class="tooltip-content">
+                            <strong>📌 Ejemplo concreto:</strong> "La sección 2.3 necesita más profundidad. 
+                            Agrega al menos 2 referencias adicionales sobre el tema."
+                        </div>
+                    </div>
+                    <div class="simulation-box">
+                        <div class="sim-title">
+                            <i class="fas fa-play-circle" style="color: var(--primary);"></i>
+                            <span>Simulación: Feedback</span>
+                            <span class="sim-status info">DEMO</span>
+                        </div>
+                        <button class="btn btn-primary-custom" onclick="simularFeedbackVisual()" style="font-size: 0.8rem;">
+                            <i class="fas fa-eye"></i> Ver ejemplo
+                        </button>
+                        <div id="simFeedbackResult" style="margin-top: 0.75rem; display: none; padding: 0.75rem; background: var(--bg-card); border-radius: 12px; border-left: 3px solid var(--primary);">
+                            <div style="font-weight: 600; font-size: 0.85rem;">📋 Ejemplo de feedback:</div>
+                            <div style="margin-top: 0.25rem; font-size: 0.8rem; color: var(--text-muted);">
+                                <strong>🔹 Observación Específica:</strong><br>
+                                "La sección 2.3 (Metodología) necesita más profundidad. Agrega al menos 2 referencias adicionales sobre el tema."<br><br>
+                                <strong>🔸 Observación General:</strong><br>
+                                "El trabajo tiene una buena estructura general, pero la metodología requiere más detalle. Recomiendo revisar la bibliografía actualizada."
+                            </div>
+                            <div style="margin-top: 0.25rem; font-size: 0.75rem; color: #10b981;">
+                                <i class="fas fa-check-circle"></i> Este feedback es claro, específico y accionable.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tour-step" data-step="3">
+                    <div class="step-number">PASO 4/4</div>
+                    <h4>🎯 Consejos para Profesores</h4>
+                    <p style="color: var(--text-muted);">
+                        Recomendaciones para optimizar tu trabajo.
+                    </p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1rem 0;">
+                        <div style="background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem;">
+                            <i class="fas fa-clock" style="color: var(--primary);"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.85rem;">📅 Revisa temprano</h6>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Da feedback rápido para que los estudiantes avancen.</p>
+                        </div>
+                        <div style="background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem;">
+                            <i class="fas fa-comment" style="color: #10b981;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.85rem;">📝 Sé específico</h6>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Los comentarios vagos no ayudan. Sé concreto.</p>
+                        </div>
+                        <div style="background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem;">
+                            <i class="fas fa-balance-scale" style="color: #f59e0b;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.85rem;">⚖️ Equilibrio</h6>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Señala errores, pero también destaca aciertos.</p>
+                        </div>
+                        <div style="background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem;">
+                            <i class="fas fa-flag" style="color: #3b82f6;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.85rem;">🚀 Motiva</h6>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Anima a tus estudiantes a seguir mejorando.</p>
+                        </div>
+                    </div>
+                </div>
+
+            {% elif user.rol == 'coordinador' %}
+                <!-- PASOS PARA COORDINADOR (Simplificados) -->
+                <div class="tour-step active" data-step="0">
+                    <div class="step-number">PASO 1/4</div>
+                    <h4>👑 Panel de Control</h4>
+                    <p style="color: var(--text-muted);">
+                        La vista panorámica de toda la institución.
+                    </p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.75rem; margin: 1rem 0;">
+                        <div style="text-align: center; background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem;">
+                            <h4 style="color: var(--primary); margin: 0;">{{ total_proyectos|default:0 }}</h4>
+                            <small style="color: var(--text-muted);">Total Entregas</small>
+                        </div>
+                        <div style="text-align: center; background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem;">
+                            <h4 style="color: #3b82f6; margin: 0;">{{ en_progreso|default:0 }}</h4>
+                            <small style="color: var(--text-muted);">En Progreso</small>
+                        </div>
+                        <div style="text-align: center; background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem;">
+                            <h4 style="color: #10b981; margin: 0;">{{ aprobadas|default:0 }}</h4>
+                            <small style="color: var(--text-muted);">Aprobadas</small>
+                        </div>
+                        <div style="text-align: center; background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem;">
+                            <h4 style="color: #f59e0b; margin: 0;">{{ observadas|default:0 }}</h4>
+                            <small style="color: var(--text-muted);">Observadas</small>
+                        </div>
+                    </div>
+                    <div class="highlight-box" style="background: rgba(99,102,241,0.05); border-left: 3px solid var(--primary); padding: 0.75rem 1rem; border-radius: 12px;">
+                        <i class="fas fa-lightbulb me-2" style="color: var(--primary);"></i>
+                        <strong>Tip:</strong> Usa estas métricas para identificar facultades con mayor o menor rendimiento académico.
+                    </div>
+                </div>
+
+                <div class="tour-step" data-step="1">
+                    <div class="step-number">PASO 2/4</div>
+                    <h4>📁 Gestión de Proyectos</h4>
+                    <p style="color: var(--text-muted);">
+                        Supervisión y control administrativo de todas las investigaciones.
+                    </p>
+                    <div class="demo-element" onclick="toggleTooltip(this)">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-folder-tree" style="color: var(--primary); font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Acciones disponibles:</strong>
+                                <span class="badge" style="background: rgba(99,102,241,0.15); color: var(--primary);">Editar</span>
+                                <span class="badge" style="background: rgba(245,158,11,0.15); color: #f59e0b;">Cancelar</span>
+                                <span class="badge" style="background: rgba(16,185,129,0.15); color: #10b981;">Reporte</span>
+                            </div>
+                        </div>
+                        <span class="click-hint">👆 CLIC</span>
+                        <div class="tooltip-content">
+                            <strong>✏️ Editar:</strong> Modifica información básica del proyecto.<br>
+                            <strong>❌ Cancelar:</strong> Cierra el proyecto con justificación.<br>
+                            <strong>📄 Reporte:</strong> Genera informes de avance.
+                        </div>
+                    </div>
+                    <div class="highlight-box" style="background: rgba(239,68,68,0.05); border-left: 3px solid #ef4444; padding: 0.75rem 1rem; border-radius: 12px; margin-top: 0.75rem;">
+                        <i class="fas fa-exclamation-triangle me-2" style="color: #ef4444;"></i>
+                        <strong>Importante:</strong> La cancelación de un proyecto es irreversible y requiere justificación.
+                    </div>
+                </div>
+
+                <div class="tour-step" data-step="2">
+                    <div class="step-number">PASO 3/4</div>
+                    <h4>📄 Plantillas de Reporte</h4>
+                    <p style="color: var(--text-muted);">
+                        Estandariza los documentos institucionales.
+                    </p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin: 1rem 0;">
+                        <div class="demo-element" onclick="toggleTooltip(this)" style="text-align: center;">
+                            <i class="fas fa-heading" style="color: var(--primary); font-size: 1.5rem;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.85rem;">Encabezado</h6>
+                            <span class="click-hint">👆</span>
+                            <div class="tooltip-content">Define el texto que aparecerá en la parte superior de cada página.</div>
+                        </div>
+                        <div class="demo-element" onclick="toggleTooltip(this)" style="text-align: center;">
+                            <i class="fas fa-arrows-alt" style="color: #f59e0b; font-size: 1.5rem;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.85rem;">Márgenes</h6>
+                            <span class="click-hint">👆</span>
+                            <div class="tooltip-content">Define los márgenes superior, inferior, izquierdo y derecho.</div>
+                        </div>
+                        <div class="demo-element" onclick="toggleTooltip(this)" style="text-align: center;">
+                            <i class="fas fa-level-down-alt" style="color: #3b82f6; font-size: 1.5rem;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.85rem;">Pie de página</h6>
+                            <span class="click-hint">👆</span>
+                            <div class="tooltip-content">Define el texto que aparecerá al final de cada reporte.</div>
+                        </div>
+                        <div class="demo-element" onclick="toggleTooltip(this)" style="text-align: center;">
+                            <i class="fas fa-star" style="color: #10b981; font-size: 1.5rem;"></i>
+                            <h6 style="margin: 0.25rem 0; font-size: 0.85rem;">Predeterminada</h6>
+                            <span class="click-hint">👆</span>
+                            <div class="tooltip-content">Marca esta opción para que la plantilla se use automáticamente.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tour-step" data-step="3">
+                    <div class="step-number">PASO 4/4</div>
+                    <h4>👥 Gestión de Usuarios</h4>
+                    <p style="color: var(--text-muted);">
+                        Administra el acceso al sistema por rol.
+                    </p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1rem 0;">
+                        <div style="background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem; border-left: 3px solid #10b981;">
+                            <h6 style="margin: 0; font-size: 0.85rem;">🎓 Estudiante</h6>
+                            <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0.25rem 0 0;">Sube versiones y recibe feedback.</p>
+                        </div>
+                        <div style="background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem; border-left: 3px solid #3b82f6;">
+                            <h6 style="margin: 0; font-size: 0.85rem;">👨‍🏫 Profesor</h6>
+                            <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0.25rem 0 0;">Revisa y califica entregas.</p>
+                        </div>
+                        <div style="background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem; border-left: 3px solid var(--primary); grid-column: 1 / -1;">
+                            <h6 style="margin: 0; font-size: 0.85rem;">👑 Coordinador</h6>
+                            <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0.25rem 0 0;">Control total: gestiona usuarios, carreras, plantillas y supervisa todos los proyectos.</p>
+                        </div>
+                    </div>
+                    <div class="highlight-box" style="background: rgba(239,68,68,0.05); border-left: 3px solid #ef4444; padding: 0.75rem 1rem; border-radius: 12px; margin-top: 0.75rem;">
+                        <i class="fas fa-shield-alt me-2" style="color: #ef4444;"></i>
+                        <strong>Seguridad:</strong> Asignar el rol de coordinador implica acceso total al sistema. 
+                        Esta acción debe realizarse con cuidado.
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- ===== PROGRESS DOTS ===== -->
+        <div class="tour-progress" id="tourProgress">
+            {% for i in total_steps_range %}
+                <div class="dot {% if forloop.first %}active{% endif %}" data-step="{{ i }}" onclick="irAlPaso({{ i }})"></div>
+            {% endfor %}
+        </div>
+
+        <!-- ===== NAVEGACIÓN ===== -->
+        <div class="nav-buttons">
+            <button class="btn-nav prev" onclick="cambiarPaso(-1)">
+                <i class="fas fa-arrow-left"></i> Anterior
+            </button>
+            <span style="color: var(--text-muted); font-size: 0.85rem;" id="stepCounter">Paso 1 de {{ total_steps }}</span>
+            <button class="btn-nav next" onclick="cambiarPaso(1)">
+                Siguiente <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- VISTA 3: MODO DEMO (SANDBOX INTERACTIVO) -->
+    <!-- ============================================================ -->
+    <div id="view-demo" class="tour-view" style="display: none;">
+        <div class="tour-step active">
+            <div class="step-number">🎮 MODO DEMO</div>
+            <h4>Sandbox Interactivo</h4>
+            <p style="color: var(--text-muted);">
+                Experimenta con el sistema en un entorno de prueba local. 
+                <strong>Todos los cambios son simulados y no afectan datos reales.</strong>
+            </p>
+
+            <!-- Panel de control de la demo -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0;">
+                <!-- Selección de proyecto -->
+                <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem;">
+                    <h6 style="margin-bottom: 0.75rem;"><i class="fas fa-folder-open" style="color: var(--primary);"></i> Proyecto de prueba</h6>
+                    <select id="demoProyectoSelect" class="form-select form-select-custom" style="width: 100%;">
+                        <option value="1">📄 Análisis de Redes Neuronales</option>
+                        <option value="2">📄 Estudio de Mercado Fintech</option>
+                        <option value="3">📄 Desarrollo de App Educativa</option>
+                    </select>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                        <i class="fas fa-info-circle"></i> Estado: <span id="demoEstadoProyecto" style="font-weight: 600; color: #f59e0b;">En Progreso</span>
+                    </div>
+                </div>
+
+                <!-- Estadísticas rápidas de la demo -->
+                <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem;">
+                    <h6 style="margin-bottom: 0.75rem;"><i class="fas fa-chart-simple" style="color: var(--primary);"></i> Estado de la Demo</h6>
+                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                        <div>
+                            <span style="font-size: 1.2rem; font-weight: 700; color: var(--primary);" id="demoVersionesCount">0</span>
+                            <small style="display: block; color: var(--text-muted);">Versiones</small>
+                        </div>
+                        <div>
+                            <span style="font-size: 1.2rem; font-weight: 700; color: #f59e0b;" id="demoObservacionesCount">0</span>
+                            <small style="display: block; color: var(--text-muted);">Observaciones</small>
+                        </div>
+                        <div>
+                            <span style="font-size: 1.2rem; font-weight: 700; color: #10b981;" id="demoCorreccionesCount">0</span>
+                            <small style="display: block; color: var(--text-muted);">Correcciones</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIMULADOR DE SUBIDA DE DOCUMENTO -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                <h6 style="margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-upload" style="color: var(--primary);"></i> Simular Subida de Versión
+                    <span class="badge" style="background: rgba(99,102,241,0.15); color: var(--primary); font-size: 0.6rem;">NUEVA VERSIÓN</span>
+                </h6>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted);">Selecciona un archivo (simulado):</label>
+                        <select id="demoArchivoSelect" class="form-select form-select-custom" style="width: 100%; margin-top: 0.25rem;">
+                            <option value="tesis_v2.pdf">📄 tesis_v2.pdf (2.4 MB)</option>
+                            <option value="tesis_v3.pdf">📄 tesis_v3.pdf (2.8 MB)</option>
+                            <option value="tesis_final.pdf">📄 tesis_final.pdf (3.1 MB)</option>
+                            <option value="articulo_v1.pdf">📄 articulo_v1.pdf (1.2 MB)</option>
+                        </select>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+                            <i class="fas fa-file-pdf" style="color: #ef4444;"></i> <span id="demoNombreArchivo">tesis_v2.pdf</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; justify-content: flex-end; gap: 0.5rem;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-primary-custom" onclick="demoSubirArchivo()" style="font-size: 0.8rem; flex: 1;">
+                                <i class="fas fa-cloud-upload-alt"></i> Subir
+                            </button>
+                            <button class="btn" style="background: var(--nav-active-bg); color: var(--text-main); border: none; border-radius: 50px; padding: 0.3rem 1rem; font-size: 0.8rem;" onclick="demoResetearProyecto()">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                        </div>
+                        <div id="demoUploadProgress" style="display: none; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                            <div id="demoUploadBar" style="width: 0%; height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.3s ease;"></div>
+                        </div>
+                        <div id="demoUploadStatus" style="font-size: 0.75rem; color: var(--text-muted);">Listo para subir</div>
+                    </div>
+                </div>
+                <!-- Resumen de cambios (simulado) -->
+                <div style="margin-top: 0.75rem;">
+                    <label style="font-size: 0.8rem; color: var(--text-muted);">Resumen de cambios (simulado):</label>
+                    <input type="text" id="demoResumenCambios" class="form-control form-control-custom" placeholder="Ej: Corregí errores de ortografía en la introducción..." style="width: 100%; margin-top: 0.25rem; font-size: 0.85rem;" value="Correcciones de estilo y formato.">
+                </div>
+            </div>
+
+            <!-- SIMULADOR DE REVISIÓN / FEEDBACK -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                <h6 style="margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-clipboard-check" style="color: #f59e0b;"></i> Simular Revisión
+                    <span class="badge" style="background: rgba(245,158,11,0.15); color: #f59e0b; font-size: 0.6rem;">FEEDBACK</span>
+                </h6>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted);">Dictamen:</label>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
+                            <button class="btn btn-sm" style="background: #10b981; color: #fff; border: none; border-radius: 50px; padding: 0.2rem 1rem;" onclick="demoDictaminar('Aprobado')">
+                                ✅ Aprobar
+                            </button>
+                            <button class="btn btn-sm" style="background: #f59e0b; color: #fff; border: none; border-radius: 50px; padding: 0.2rem 1rem;" onclick="demoDictaminar('Observado')">
+                                ⚠️ Observar
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-muted);">Observaciones específicas:</label>
+                        <input type="text" id="demoObsInput" class="form-control form-control-custom" placeholder="Ej: Revisar metodología..." style="width: 100%; margin-top: 0.25rem; font-size: 0.85rem;" value="Falta profundizar en el análisis de resultados.">
+                        <button class="btn btn-sm" style="background: var(--nav-active-bg); color: var(--text-main); border: none; border-radius: 50px; padding: 0.2rem 0.8rem; margin-top: 0.25rem; font-size: 0.7rem;" onclick="demoAgregarObservacion()">
+                            <i class="fas fa-plus"></i> Agregar observación
+                        </button>
+                    </div>
+                </div>
+                <div id="demoListaObservaciones" style="margin-top: 0.75rem; max-height: 100px; overflow-y: auto; font-size: 0.8rem; color: var(--text-muted);">
+                    <!-- Aquí se listarán las observaciones agregadas -->
+                    <div style="display: flex; gap: 0.5rem; align-items: center; border-bottom: 1px solid var(--border); padding: 0.25rem 0;">
+                        <i class="fas fa-comment" style="color: #f59e0b;"></i>
+                        <span>Falta profundizar en el análisis de resultados.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIMULADOR DE PROGRESO EN TIEMPO REAL -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem;">
+                <h6 style="margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-chart-line" style="color: #3b82f6;"></i> Progreso del Proyecto (Demo)
+                    <span class="badge" style="background: rgba(59,130,246,0.15); color: #3b82f6; font-size: 0.6rem;">ACTUALIZACIÓN AUTOMÁTICA</span>
+                </h6>
+                <div style="margin-bottom: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                        <span>Progreso general</span>
+                        <span><strong id="demoProgresoPorcentaje">0</strong>%</span>
+                    </div>
+                    <div style="height: 8px; background: var(--border); border-radius: 10px; overflow: hidden;">
+                        <div id="demoProgresoBar" style="width: 0%; height: 100%; background: var(--primary); border-radius: 10px; transition: width 0.6s ease;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">
+                        <span>0%</span>
+                        <span id="demoProgresoLabel">Sin entregas</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-sm" style="background: var(--nav-active-bg); color: var(--text-main); border: none; border-radius: 50px; padding: 0.2rem 0.8rem;" onclick="demoSimularCorreccion()">
+                        <i class="fas fa-check"></i> Simular corrección
+                    </button>
+                    <button class="btn btn-sm" style="background: var(--nav-active-bg); color: var(--text-main); border: none; border-radius: 50px; padding: 0.2rem 0.8rem;" onclick="demoResetearProgreso()">
+                        <i class="fas fa-undo"></i> Reiniciar progreso
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área de log de acciones -->
+            <div style="margin-top: 1.5rem; background: var(--nav-active-bg); border-radius: 12px; padding: 0.75rem 1rem; border: 1px solid var(--border); max-height: 120px; overflow-y: auto; font-size: 0.8rem;">
+                <div style="font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">📋 Registro de acciones</div>
+                <div id="demoLog">
+                    <div style="color: var(--text-muted);">➡️ Sistema listo. Comienza a interactuar con la demo.</div>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="background: rgba(99,102,241,0.05); border-left: 3px solid var(--primary); padding: 0.75rem 1rem; border-radius: 12px; margin-top: 1rem;">
+                <i class="fas fa-info-circle me-2" style="color: var(--primary);"></i>
+                <strong>Nota:</strong> Todas las acciones en este modo son <strong>simuladas localmente</strong> y no afectan la base de datos real. Puedes experimentar sin riesgos.
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- VISTA 4: PREGUNTAS FRECUENTES -->
+    <!-- ============================================================ -->
+    <div id="view-faq" class="tour-view" style="display: none;">
+        <div class="tour-step active">
+            <div class="step-number">❓ FAQ</div>
+            <h4>Preguntas Frecuentes</h4>
+            <p style="color: var(--text-muted);">
+                Respuestas rápidas a las dudas más comunes.
+            </p>
+
+            {% if user.rol == 'estudiante' %}
+                <div style="margin: 1rem 0;">
+                    <div class="demo-element" onclick="toggleTooltip(this)" style="border-style: solid;">
+                        <strong>❓ ¿Cómo sé si mi versión fue revisada?</strong>
+                        <span class="click-hint">👆</span>
+                        <div class="tooltip-content">
+                            Revisa tu dashboard. Si el estado del proyecto cambió a "Observado" o "Aprobado", 
+                            significa que tu tutor ya la revisó. También recibirás una notificación.
+                        </div>
+                    </div>
+                    <div class="demo-element" onclick="toggleTooltip(this)" style="border-style: solid;">
+                        <strong>❓ ¿Qué hago si mi tutor no revisa mi entrega?</strong>
+                        <span class="click-hint">👆</span>
+                        <div class="tooltip-content">
+                            Si han pasado varios días y no hay respuesta, contacta a tu tutor directamente 
+                            o al coordinador académico para dar seguimiento.
+                        </div>
+                    </div>
+                    <div class="demo-element" onclick="toggleTooltip(this)" style="border-style: solid;">
+                        <strong>❓ ¿Puedo subir una nueva versión si la anterior no fue revisada?</strong>
+                        <span class="click-hint">👆</span>
+                        <div class="tooltip-content">
+                            Sí, pero el sistema te mostrará una advertencia. Si decides subir, el documento 
+                            anterior será sobrescrito y tu tutor no podrá verlo.
+                        </div>
+                    </div>
+                    <div class="demo-element" onclick="toggleTooltip(this)" style="border-style: solid;">
+                        <strong>❓ ¿Cómo obtengo mi certificado de aprobación?</strong>
+                        <span class="click-hint">👆</span>
+                        <div class="tooltip-content">
+                            Cuando tu proyecto alcance el 100% de progreso y esté en estado "Aprobado", 
+                            aparecerá un botón "Certificado" en tu dashboard. Haz clic para generarlo.
+                        </div>
+                    </div>
+                </div>
+
+            {% elif user.rol == 'profesor' %}
+                <div style="margin: 1rem 0;">
+                    <div class="demo-element" onclick="toggleTooltip(this)" style="border-style: solid;">
+                        <strong>❓ ¿Cómo verifico las correcciones de un estudiante?</strong>
+                        <span class="click-hint">👆</span>
+                        <div class="tooltip-content">
+                            En la pantalla de revisión, marca las casillas de las observaciones 
+                            que el estudiante haya corregido correctamente en la nueva versión.
+                        </div>
+                    </div>
+                    <div class="demo-element" onclick="toggleTooltip(this)" style="border-style: solid;">
+                        <strong>❓ ¿Qué pasa si apruebo una versión?</strong>
+                        <span class="click-hint">👆</span>
+                        <div class="tooltip-content">
+                            El estado del proyecto se actualiza a "Aprobado" y el estudiante recibe 
+                            una notificación. Puede continuar con la siguiente fase o finalizar.
+                        </div>
+                    </div>
+                    <div class="demo-element" onclick="toggleTooltip(this)" style="border-style: solid;">
+                        <strong>❓ ¿Puedo editar mi feedback después de enviarlo?</strong>
+                        <span class="click-hint">👆</span>
+                        <div class="tooltip-content">
+                            No, una vez enviado el feedback queda registrado. Si necesitas hacer 
+                            una corrección, contacta al coordinador académico.
+                        </div>
+                    </div>
+                </div>
+
+            {% elif user.rol == 'coordinador' %}
+                <div style="margin: 1rem 0;">
+                    <div class="demo-element" onclick="toggleTooltip(this)" style="border-style: solid;">
+                        <strong>❓ ¿Cómo cancelo un proyecto correctamente?</strong>
+                        <span class="click-hint">👆</span>
+                        <div class="tooltip-content">
+                            Ve a "Gestión de entregas", busca el proyecto, haz clic en "Cancelar", 
+                            selecciona un motivo y confirma. Todos los involucrados recibirán 
+                            una notificación.
+                        </div>
+                    </div>
+                    <div class="demo-element" onclick="toggleTooltip(this)" style="border-style: solid;">
+                        <strong>❓ ¿Qué hace la opción "Modo Incógnito"?</strong>
+                        <span class="click-hint">👆</span>
+                        <div class="tooltip-content">
+                            Oculta los nombres de los tutores en las revisiones del estudiante. 
+                            Útil para evaluaciones doble ciego o anonimato.
+                        </div>
+                    </div>
+                    <div class="demo-element" onclick="toggleTooltip(this)" style="border-style: solid;">
+                        <strong>❓ ¿Cómo configuro una plantilla predeterminada?</strong>
+                        <span class="click-hint">👆</span>
+                        <div class="tooltip-content">
+                            En "Formatos de Reporte", edita una plantilla y marca la opción 
+                            "Establecer como predeterminada". Se usará automáticamente en nuevos reportes.
+                        </div>
+                    </div>
+                    <div class="demo-element" onclick="toggleTooltip(this)" style="border-style: solid;">
+                        <strong>❓ ¿Puedo eliminar un usuario?</strong>
+                        <span class="click-hint">👆</span>
+                        <div class="tooltip-content">
+                            Sí, desde "Gestionar Cuentas" puedes eliminar usuarios. Esta acción 
+                            es irreversible y elimina todos los datos asociados.
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="highlight-box" style="background: rgba(99,102,241,0.05); border-left: 3px solid var(--primary); padding: 0.75rem 1rem; border-radius: 12px; margin-top: 0.75rem;">
+                <i class="fas fa-question-circle me-2" style="color: var(--primary);"></i>
+                <strong>¿No encontraste tu pregunta?</strong>
+                <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-muted);">
+                    Usa el buscador para encontrar preguntas frecuentes o escribe directamente al equipo de soporte.
+                </p>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem;">
+                    <a href="mailto:{{ support_email }}?subject=Soporte%20Tesis%20Control" 
+                       class="btn-action-custom"
+                       style="text-decoration: none; white-space: nowrap;">
+                        <i class="fas fa-envelope"></i> Contactar soporte
+                    </a>
+                </div>
+
+                <div style="margin-top: 1.25rem;">
+                    <div id="faq-list" style="margin-top: 1rem; display: grid; gap: 0.85rem;">
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-question">¿Cómo ingreso una nueva versión de mi trabajo?</div>
+                            <div class="faq-answer">
+                                Ve a la sección “Subir versión”, selecciona tu proyecto y adjunta el documento. Asegúrate de que el proyecto no esté cerrado ni aprobado.
+                            </div>
+                        </div>
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-question">¿Cómo sé si mi proyecto fue observado?</div>
+                            <div class="faq-answer">
+                                Revisa el estado del proyecto en tu tablero. Si está en “Observado”, abre la versión revisada y consulta los comentarios del docente.
+                            </div>
+                        </div>
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-question">¿Puedo reactivar un proyecto cancelado?</div>
+                            <div class="faq-answer">
+                                Los proyectos cancelados no se reactivan automáticamente. Escribe a soporte técnico para evaluar tu caso.
+                            </div>
+                        </div>
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-question">¿Cómo puedo cambiar mi contraseña?</div>
+                            <div class="faq-answer">
+                                Ve a tu perfil y selecciona “Cambiar contraseña”. Si no recibes el correo, contacta al soporte.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ================================================================
+    // VARIABLES GLOBALES
+    // ================================================================
+    let currentStep = 0;
+    let totalSteps = {{ total_steps|default:1 }};
+    let currentView = 'all';
+    let fileSelected = false;
+
+    // ================================================================
+    // CAMBIAR VISTA
+    // ================================================================
+    function cambiarVista(vista) {
+        document.querySelectorAll('.tour-view').forEach(v => v.style.display = 'none');
+        document.getElementById('view-' + vista).style.display = 'block';
+        currentView = vista;
+        
+        document.querySelectorAll('.btn-tour').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.view === vista) {
+                btn.classList.add('active');
+            }
+        });
+    }
+
+    function toggleFaq(element) {
+        const answer = element.querySelector('.faq-answer');
+        const shouldShow = answer.style.display === 'none' || !answer.style.display;
+        document.querySelectorAll('#faq-list .faq-answer').forEach(a => a.style.display = 'none');
+        document.querySelectorAll('#faq-list .faq-item').forEach(item => item.classList.remove('expanded'));
+        if (shouldShow) {
+            answer.style.display = 'block';
+            element.classList.add('expanded');
+        }
+    }
+
+    function buscarFaq() {
+        const query = document.getElementById('faq-search').value.toLowerCase().trim();
+        document.querySelectorAll('#faq-list .faq-item').forEach(item => {
+            const question = item.querySelector('.faq-question').textContent.toLowerCase();
+            const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+            const visible = query.length === 0 || question.includes(query) || answer.includes(query);
+            item.style.display = visible ? 'block' : 'none';
+        });
+    }
+
+    // ================================================================
+    // NAVEGACIÓN DEL TOUR (PASOS)
+    // ================================================================
+    function cambiarPaso(direccion) {
+        const steps = document.querySelectorAll('#tourSteps .tour-step');
+        const nuevaPosicion = currentStep + direccion;
+        if (nuevaPosicion < 0 || nuevaPosicion >= steps.length) return;
+        
+        steps[currentStep].classList.remove('active');
+        document.querySelectorAll('.tour-progress .dot')[currentStep].classList.remove('active');
+        document.querySelectorAll('.tour-progress .dot')[currentStep].classList.remove('done');
+        
+        currentStep = nuevaPosicion;
+        steps[currentStep].classList.add('active');
+        document.querySelectorAll('.tour-progress .dot')[currentStep].classList.add('active');
+        document.querySelectorAll('.tour-progress .dot').forEach((dot, i) => {
+            if (i < currentStep) dot.classList.add('done');
+        });
+        
+        document.getElementById('stepCounter').textContent = `Paso ${currentStep + 1} de ${steps.length}`;
+        document.querySelector('.manual-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function irAlPaso(step) {
+        const steps = document.querySelectorAll('#tourSteps .tour-step');
+        if (step < 0 || step >= steps.length) return;
+        
+        steps.forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tour-progress .dot').forEach(d => d.classList.remove('active', 'done'));
+        
+        currentStep = step;
+        steps[step].classList.add('active');
+        document.querySelectorAll('.tour-progress .dot').forEach((dot, i) => {
+            if (i === step) dot.classList.add('active');
+            if (i < step) dot.classList.add('done');
+        });
+        
+        document.getElementById('stepCounter').textContent = `Paso ${step + 1} de ${steps.length}`;
+        document.querySelector('.manual-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ================================================================
+    // TOOLTIP INTERACTIVO
+    // ================================================================
+    function toggleTooltip(element) {
+        const tooltip = element.querySelector('.tooltip-content');
+        if (tooltip) {
+            tooltip.classList.toggle('show');
+            document.querySelectorAll('.tooltip-content.show').forEach(t => {
+                if (t !== tooltip) t.classList.remove('show');
+            });
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.demo-element')) {
+            document.querySelectorAll('.tooltip-content.show').forEach(t => t.classList.remove('show'));
+        }
+    });
+
+    // ================================================================
+    // SIMULACIONES VISUALES (ESTUDIANTE)
+    // ================================================================
+
+    // Simular Dashboard Visual
+    function simularDashboardVisual() {
+        const result = document.getElementById('simDashboardResult');
+        if (result) {
+            result.style.display = 'block';
+            setTimeout(() => {
+                result.style.opacity = '0';
+                setTimeout(() => {
+                    result.style.display = 'none';
+                    result.style.opacity = '1';
+                }, 500);
+            }, 4000);
+        }
+    }
+
+    // Simular Subida de Archivo
+    function simularSubidaArchivo() {
+        const area = document.getElementById('simUploadArea');
+        const fileName = document.getElementById('simFileName');
+        const status = document.getElementById('simUploadStatus');
+        
+        if (!fileSelected) {
+            // Simular selección de archivo
+            area.style.borderColor = 'var(--primary)';
+            area.style.background = 'var(--primary-light)';
+            fileName.style.display = 'block';
+            status.textContent = '✅ Archivo seleccionado: tesis_v2.pdf (2.4 MB)';
+            status.style.color = '#10b981';
+            fileSelected = true;
+        } else {
+            // Simular envio
+            status.textContent = '📤 Subiendo archivo...';
+            status.style.color = '#f59e0b';
+            setTimeout(() => {
+                status.textContent = '✅ ¡Archivo subido correctamente!';
+                status.style.color = '#10b981';
+                area.style.borderColor = '#10b981';
+            }, 1500);
+        }
+    }
+
+    // Simular Envío de Entrega
+    function simularEnvioEntrega() {
+        const status = document.getElementById('simUploadStatus');
+        if (!fileSelected) {
+            status.textContent = '⚠️ Primero selecciona un archivo.';
+            status.style.color = '#ef4444';
+            return;
+        }
+        status.textContent = '📤 Enviando versión...';
+        status.style.color = '#f59e0b';
+        setTimeout(() => {
+            status.textContent = '✅ ¡Versión v2 enviada exitosamente!';
+            status.style.color = '#10b981';
+            // Mostrar notificación visual adicional
+            const area = document.getElementById('simUploadArea');
+            area.style.borderColor = '#10b981';
+            area.style.background = 'rgba(16,185,129,0.05)';
+        }, 2000);
+    }
+
+    // Simular Respuesta Visual
+    function simularRespuestaVisual() {
+        const result = document.getElementById('simRespuestaResult');
+        if (result) {
+            result.style.display = 'block';
+            setTimeout(() => {
+                result.style.opacity = '0';
+                setTimeout(() => {
+                    result.style.display = 'none';
+                    result.style.opacity = '1';
+                }, 500);
+            }, 4000);
+        }
+    }
+
+    // Simular Progreso Visual
+    function simularProgresoVisual(valor) {
+        const bar = document.getElementById('simProgressBar');
+        const label = document.getElementById('simProgressLabel');
+        const text = document.getElementById('simProgress');
+        
+        if (bar) {
+            bar.style.width = valor + '%';
+            text.textContent = valor + '%';
+            
+            const tareas = Math.round((valor / 100) * 8);
+            label.textContent = `${tareas} de 8 tareas resueltas`;
+            
+            if (valor === 100) {
+                label.textContent = '🎉 ¡Todas las tareas resueltas! Proyecto aprobado';
+                bar.style.background = '#10b981';
+            } else {
+                bar.style.background = 'var(--primary)';
+            }
+        }
+    }
+
+    // ================================================================
+    // SIMULACIONES VISUALES (PROFESOR)
+    // ================================================================
+
+    function simularRevisionesVisual() {
+        const result = document.getElementById('simRevisionesResult');
+        if (result) {
+            result.style.display = 'block';
+            setTimeout(() => {
+                result.style.opacity = '0';
+                setTimeout(() => {
+                    result.style.display = 'none';
+                    result.style.opacity = '1';
+                }, 500);
+            }, 4000);
+        }
+    }
+
+    function simularDictamen(estado) {
+        const result = document.getElementById('simDictamenResult');
+        const text = document.getElementById('simDictamenText');
+        if (result && text) {
+            result.style.display = 'block';
+            text.textContent = `Dictamen: ${estado}`;
+            if (estado === 'Aprobado') {
+                text.style.color = '#10b981';
+                result.style.borderColor = '#10b981';
+            } else {
+                text.style.color = '#f59e0b';
+                result.style.borderColor = '#f59e0b';
+            }
+            setTimeout(() => {
+                result.style.opacity = '0';
+                setTimeout(() => {
+                    result.style.display = 'none';
+                    result.style.opacity = '1';
+                }, 500);
+            }, 4000);
+        }
+    }
+
+    function simularFeedbackVisual() {
+        const result = document.getElementById('simFeedbackResult');
+        if (result) {
+            result.style.display = 'block';
+            setTimeout(() => {
+                result.style.opacity = '0';
+                setTimeout(() => {
+                    result.style.display = 'none';
+                    result.style.opacity = '1';
+                }, 500);
+            }, 5000);
+        }
+    }
+
+    // ================================================================
+    // DEMO: SANDBOX INTERACTIVO (TODAS LAS FUNCIONES)
+    // ================================================================
+
+    // Estado de la demo (usando localStorage para persistencia)
+    let demoState = {
+        proyecto: 1,
+        versiones: 0,
+        observaciones: [],
+        correcciones: 0,
+        progreso: 0,
+        archivos: [],
+        estadoProyecto: 'En Progreso'
+    };
+
+    // Cargar estado desde localStorage
+    function cargarDemoState() {
+        const saved = localStorage.getItem('demoState');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                demoState = { ...demoState, ...parsed };
+            } catch(e) {}
+        }
+        actualizarUI();
+    }
+
+    // Guardar estado en localStorage
+    function guardarDemoState() {
+        localStorage.setItem('demoState', JSON.stringify(demoState));
+    }
+
+    // Actualizar toda la UI de la demo
+    function actualizarUI() {
+        // Progreso
+        const bar = document.getElementById('demoProgresoBar');
+        const porcentaje = document.getElementById('demoProgresoPorcentaje');
+        const label = document.getElementById('demoProgresoLabel');
+        const progreso = Math.min(demoState.progreso, 100);
+        if (bar) bar.style.width = progreso + '%';
+        if (porcentaje) porcentaje.textContent = progreso;
+        if (label) {
+            if (progreso === 0) label.textContent = 'Sin entregas';
+            else if (progreso < 25) label.textContent = 'Etapa inicial';
+            else if (progreso < 50) label.textContent = 'Avanzando';
+            else if (progreso < 75) label.textContent = 'Buen progreso';
+            else if (progreso < 100) label.textContent = 'Casi listo';
+            else label.textContent = '🎉 Completado';
+        }
+
+        // Versiones
+        const vCount = document.getElementById('demoVersionesCount');
+        if (vCount) vCount.textContent = demoState.versiones;
+
+        // Observaciones
+        const oCount = document.getElementById('demoObservacionesCount');
+        if (oCount) oCount.textContent = demoState.observaciones.length;
+
+        // Correcciones
+        const cCount = document.getElementById('demoCorreccionesCount');
+        if (cCount) cCount.textContent = demoState.correcciones;
+
+        // Estado del proyecto
+        const estadoSpan = document.getElementById('demoEstadoProyecto');
+        if (estadoSpan) {
+            estadoSpan.textContent = demoState.estadoProyecto;
+            if (demoState.estadoProyecto === 'Aprobado') {
+                estadoSpan.style.color = '#10b981';
+            } else if (demoState.estadoProyecto === 'Observado') {
+                estadoSpan.style.color = '#f59e0b';
+            } else {
+                estadoSpan.style.color = '#3b82f6';
+            }
+        }
+
+        // Lista de observaciones
+        const lista = document.getElementById('demoListaObservaciones');
+        if (lista) {
+            lista.innerHTML = '';
+            if (demoState.observaciones.length === 0) {
+                lista.innerHTML = '<div style="color: var(--text-muted); font-size: 0.75rem;">No hay observaciones aún.</div>';
+            } else {
+                demoState.observaciones.forEach((obs, index) => {
+                    const div = document.createElement('div');
+                    div.style.cssText = 'display: flex; gap: 0.5rem; align-items: center; border-bottom: 1px solid var(--border); padding: 0.25rem 0; font-size: 0.8rem;';
+                    div.innerHTML = `
+                        <i class="fas fa-comment" style="color: #f59e0b;"></i>
+                        <span style="flex: 1;">${obs}</span>
+                        <button class="btn btn-sm" style="background: rgba(16,185,129,0.1); color: #10b981; border: none; border-radius: 50px; padding: 0.1rem 0.5rem; font-size: 0.6rem;" onclick="demoResolverObservacion(${index})">
+                            <i class="fas fa-check"></i> Resolver
+                        </button>
+                    `;
+                    lista.appendChild(div);
+                });
+            }
+        }
+
+        // Nombre del archivo seleccionado
+        const selectArchivo = document.getElementById('demoArchivoSelect');
+        const nombreArchivo = document.getElementById('demoNombreArchivo');
+        if (selectArchivo && nombreArchivo) {
+            nombreArchivo.textContent = selectArchivo.value;
+        }
+
+        guardarDemoState();
+    }
+
+    // Subir archivo (simulación)
+    function demoSubirArchivo() {
+        const select = document.getElementById('demoArchivoSelect');
+        const status = document.getElementById('demoUploadStatus');
+        const progress = document.getElementById('demoUploadProgress');
+        const bar = document.getElementById('demoUploadBar');
+        const resumen = document.getElementById('demoResumenCambios').value || 'Sin descripción';
+
+        if (!select) return;
+
+        const nombreArchivo = select.value;
+        status.textContent = '📤 Subiendo archivo...';
+        status.style.color = '#f59e0b';
+        progress.style.display = 'block';
+        bar.style.width = '0%';
+
+        // Simular progreso de subida
+        let p = 0;
+        const interval = setInterval(() => {
+            p += Math.random() * 15 + 5;
+            if (p >= 100) {
+                p = 100;
+                clearInterval(interval);
+                // Subida completada
+                demoState.versiones += 1;
+                demoState.archivos.push(nombreArchivo);
+                // Actualizar progreso automáticamente (si hay observaciones, se incrementa)
+                if (demoState.observaciones.length > 0) {
+                    // Si hay observaciones, el progreso aumenta según las resueltas
+                    const resueltas = demoState.correcciones;
+                    const total = demoState.observaciones.length;
+                    if (total > 0) {
+                        demoState.progreso = Math.round((resueltas / total) * 100);
+                    }
+                } else {
+                    // Sin observaciones, la subida da un pequeño progreso
+                    demoState.progreso = Math.min(demoState.progreso + 10, 100);
+                }
+                // Cambiar estado a En Progreso si estaba en 0
+                if (demoState.progreso > 0 && demoState.estadoProyecto === 'En Progreso') {
+                    demoState.estadoProyecto = 'En Progreso';
+                }
+                actualizarUI();
+                status.textContent = '✅ ¡Archivo subido correctamente!';
+                status.style.color = '#10b981';
+                progress.style.display = 'none';
+                bar.style.width = '0%';
+                demoAgregarLog(`📄 Subida: ${nombreArchivo} (v${demoState.versiones}) - Resumen: "${resumen}"`);
+            }
+            bar.style.width = p + '%';
+        }, 200);
+    }
+
+    // Dictaminar (Aprobar/Observar)
+    function demoDictaminar(estado) {
+        if (demoState.versiones === 0) {
+            alert('Primero debes subir al menos una versión.');
+            return;
+        }
+        demoState.estadoProyecto = estado;
+        if (estado === 'Aprobado') {
+            demoState.progreso = 100;
+            demoAgregarLog('✅ Proyecto APROBADO. ¡Felicidades!');
+        } else {
+            demoState.progreso = Math.max(0, demoState.progreso - 10);
+            demoAgregarLog('⚠️ Proyecto OBSERVADO. Se requieren correcciones.');
+        }
+        actualizarUI();
+    }
+
+    // Agregar observación
+    function demoAgregarObservacion() {
+        const input = document.getElementById('demoObsInput');
+        if (!input) return;
+        const texto = input.value.trim();
+        if (!texto) {
+            alert('Escribe una observación.');
+            return;
+        }
+        demoState.observaciones.push(texto);
+        input.value = '';
+        demoAgregarLog(`📝 Observación agregada: "${texto}"`);
+        actualizarUI();
+    }
+
+    // Resolver observación
+    function demoResolverObservacion(index) {
+        if (index >= 0 && index < demoState.observaciones.length) {
+            demoState.observaciones.splice(index, 1);
+            demoState.correcciones += 1;
+            // Recalcular progreso
+            const total = demoState.correcciones + demoState.observaciones.length;
+            if (total > 0) {
+                demoState.progreso = Math.round((demoState.correcciones / total) * 100);
+            }
+            demoAgregarLog(`✅ Corrección resuelta. Progreso actual: ${demoState.progreso}%`);
+            actualizarUI();
+        }
+    }
+
+    // Simular corrección (desde el botón)
+    function demoSimularCorreccion() {
+        if (demoState.observaciones.length === 0) {
+            alert('No hay observaciones pendientes. Agrega algunas primero.');
+            return;
+        }
+        // Resolver la primera observación pendiente
+        const index = 0;
+        demoResolverObservacion(index);
+    }
+
+    // Reiniciar progreso
+    function demoResetearProgreso() {
+        demoState.progreso = 0;
+        demoState.correcciones = 0;
+        demoState.observaciones = [];
+        demoState.estadoProyecto = 'En Progreso';
+        demoAgregarLog('🔄 Progreso reiniciado.');
+        actualizarUI();
+    }
+
+    // Resetear proyecto completo
+    function demoResetearProyecto() {
+        if (confirm('¿Reiniciar el proyecto demo? Se perderán todos los cambios locales.')) {
+            demoState = {
+                proyecto: 1,
+                versiones: 0,
+                observaciones: [],
+                correcciones: 0,
+                progreso: 0,
+                archivos: [],
+                estadoProyecto: 'En Progreso'
+            };
+            localStorage.removeItem('demoState');
+            document.getElementById('demoUploadStatus').textContent = 'Listo para subir';
+            document.getElementById('demoUploadStatus').style.color = '';
+            document.getElementById('demoUploadProgress').style.display = 'none';
+            document.getElementById('demoListaObservaciones').innerHTML = '<div style="color: var(--text-muted); font-size: 0.75rem;">No hay observaciones aún.</div>';
+            document.getElementById('demoLog').innerHTML = '<div style="color: var(--text-muted);">➡️ Sistema reiniciado.</div>';
+            actualizarUI();
+            demoAgregarLog('🔄 Proyecto demo reiniciado.');
+        }
+    }
+
+    // Agregar mensaje al log
+    function demoAgregarLog(mensaje) {
+        const log = document.getElementById('demoLog');
+        if (log) {
+            const div = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString();
+            div.textContent = `[${timestamp}] ${mensaje}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+            // Limitar a 20 mensajes
+            while (log.children.length > 20) {
+                log.removeChild(log.firstChild);
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        cargarDemoState();
+        const selectArchivo = document.getElementById('demoArchivoSelect');
+        if (selectArchivo) {
+            selectArchivo.addEventListener('change', function() {
+                const nombre = document.getElementById('demoNombreArchivo');
+                if (nombre) nombre.textContent = this.value;
+            });
+        }
+        const selectProyecto = document.getElementById('demoProyectoSelect');
+        if (selectProyecto) {
+            selectProyecto.addEventListener('change', function() {
+                demoState.proyecto = parseInt(this.value);
+                if (confirm('¿Cambiar de proyecto? Se reiniciará la demo.')) {
+                    demoResetearProyecto();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

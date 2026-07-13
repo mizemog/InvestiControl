@@ -325,7 +325,11 @@
                                                         <span class="badge bg-warning bg-opacity-10 text-warning" style="font-size: 0.55rem;">PENDIENTE</span>
                                                     {% endif %}
                                                 </div>
-                                                <small class="text-muted fst-italic d-block mt-1">{{ ca.correccion.descripcion|default:"(Sin descripción de cambios)" }}</small>
+                                                {% if ca.correccion.descripcion %}
+                                                <div class="correccion-texto text-muted fst-italic d-block mt-1" data-text="{{ ca.correccion.descripcion|escapejs }}"></div>
+                                                {% else %}
+                                                <small class="text-muted fst-italic d-block mt-1">(Sin descripción de cambios)</small>
+                                                {% endif %}
                                             </div>
                                         </label>
                                     </div>
@@ -376,7 +380,7 @@
                                                placeholder="Escribe un punto a corregir...">
                                     </div>
                                 </div>
-                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill mt-1 fw-bold" onclick="addObservationRow()" style="font-size: 0.7rem;">
+                                <button type="button" id="btn-add-observation" class="btn btn-sm btn-outline-primary rounded-pill mt-1 fw-bold" onclick="addObservationRow()" style="font-size: 0.7rem;">
                                     <i class="fas fa-plus-circle me-1"></i> AGREGAR OTRA OBSERVACIÓN
                                 </button>
                             </div>
@@ -550,6 +554,29 @@
     let alertModal = null;
     let estadoSeleccionado = '{{ version.revisiones.last.estado|default:"Observado" }}';
     
+    // Función para bloquear/desbloquear observaciones específicas
+    function toggleCamposEspecificos(bloquear) {
+        const container = document.getElementById('bulk-observations-container');
+        const inputs = container.querySelectorAll('input[name="comentarios_especificos_bulk"]');
+        const btnAdd = document.getElementById('btn-add-observation');
+        
+        inputs.forEach(input => {
+            input.disabled = bloquear;
+            if (bloquear) {
+                input.value = ''; // Limpiamos para evitar envíos accidentales
+                input.style.opacity = '0.5';
+                input.style.cursor = 'not-allowed';
+            } else {
+                input.style.opacity = '1';
+                input.style.cursor = 'text';
+            }
+        });
+        
+        if (btnAdd) {
+            btnAdd.style.display = bloquear ? 'none' : 'inline-block';
+        }
+    }
+    
     // Función unificada para mostrar alertas estilizadas
     function mostrarAlerta(titulo, mensaje, tipo = 'error') {
         const alertModalEl = document.getElementById('alertModal');
@@ -607,9 +634,11 @@
                 if (this.value === 'Aprobado') {
                     labelAprob.classList.add('active-aprobar');
                     btnEnviar.style.background = '#10b981';
+                    toggleCamposEspecificos(true); // <--- BLOQUEA
                 } else {
                     labelObs.classList.add('active-observar');
                     btnEnviar.style.background = '#f59e0b';
+                    toggleCamposEspecificos(false); // <--- DESBLOQUEA
                 }
             });
         });
@@ -634,6 +663,12 @@
             }
         }
         
+        // Inicializar estado de los campos al cargar
+        const radioAprobado = document.getElementById('aprob');
+        if (radioAprobado && radioAprobado.checked) {
+            toggleCamposEspecificos(true);
+        }
+        
         // Inicializar color del botón
         const checkedRadio = document.querySelector('input[name="estado"]:checked');
         if (checkedRadio) {
@@ -654,6 +689,26 @@
         
         const alertModalEl = document.getElementById('alertModal');
         if (alertModalEl) alertModal = new bootstrap.Modal(alertModalEl);
+
+        const escapeHtml = (text) => text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        const parseTextFormat = (text) => {
+            let html = escapeHtml(text);
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+            html = html.replace(/^[-*]\s+(.*)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*?<\/li>)(?=(\s*<li>|$))/gs, '<ul>$1</ul>');
+            html = html.replace(/\n/g, '<br>');
+            return html;
+        };
+
+        document.querySelectorAll('.correccion-texto').forEach((el) => {
+            const text = el.dataset.text || '';
+            el.innerHTML = text ? parseTextFormat(text) : '<small>(Sin descripción de cambios)</small>';
+        });
 
         const confirmBtn = document.getElementById('confirmarRevisionBtn');
         if (confirmBtn) {

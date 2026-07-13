@@ -1,6 +1,7 @@
 import random
 import re
 import pypdf
+from urllib3 import request
 
 from .models import PlantillaReporte, Proyecto, ReporteProgreso, Usuario, VersionDocumento, AnalisisIA, Revision, Notificacion,Comentario, Correccion,Carrera
 
@@ -27,10 +28,16 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 import logging
 
+#Se agregan las siguientes importaciones para manejar JSON y CSRF
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from gestion.copyleaks_service import enviar_documento_a_escanear
+from .models import VersionDocumento, AnalisisIA
+
 logger = logging.getLogger(__name__)
 
-
-# --- BLOQUE 1: CORREGIDO ---
+ 
 def calcular_progreso(proyecto, version_actual):
     version_anterior = proyecto.versiones.filter(numero_version__lt=version_actual.numero_version).last()
     if not version_anterior:
@@ -62,6 +69,40 @@ def dashboard_estudiante(req):
     aprobados = proyectos.filter(estado__in=['Aprobado', 'PROYECTO_APROBADO']).count()
     cancelados = proyectos.filter(estado='Cancelado').count()
     
+    for proyecto in proyectos:
+        proyecto.tiene_revisiones_previas = proyecto.versiones.filter(revisiones__isnull=False).exists()
+        proyecto.estado_actual = proyecto.estado
+
+        ultima_version = proyecto.versiones.last()
+        proyecto.siguiente_comentario_id = None
+        proyecto.hay_observaciones_pendientes = False
+        proyecto.progreso_label = 'Progreso de Observaciones'
+
+        def revision_comentarios_estado(revision):
+            comentarios = revision.comentarios.all()
+            return (comentarios.exists(), comentarios.exclude(estado='Resuelto').exists())
+
+        if ultima_version:
+            ultima_revision = ultima_version.revisiones.last()
+            if ultima_revision:
+                tiene_comentarios, pendientes = revision_comentarios_estado(ultima_revision)
+                proyecto.hay_observaciones_pendientes = pendientes
+                if tiene_comentarios:
+                    if pendientes:
+                        proyecto.progreso_label = 'Progreso de Observaciones'
+                    else:
+                        proyecto.progreso_label = 'Progreso de observaciones de la versión anterior'
+                siguiente = ultima_revision.comentarios.exclude(estado='Resuelto').order_by('id').first()
+                if siguiente:
+                    proyecto.siguiente_comentario_id = siguiente.id
+            else:
+                version_anterior = proyecto.versiones.filter(numero_version__lt=ultima_version.numero_version).last()
+                if version_anterior and version_anterior.revisiones.exists():
+                    anterior_revision = version_anterior.revisiones.last()
+                    tiene_comentarios, pendientes = revision_comentarios_estado(anterior_revision)
+                    if tiene_comentarios and not pendientes:
+                        proyecto.progreso_label = 'Progreso de observaciones de la versión anterior'
+    
     return render(
         req, 'dashboard_estudiante.html',
         {
@@ -81,21 +122,91 @@ def subir_version(req, proyecto_id):
         messages.error(req, "Este proyecto está cerrado y no admite nuevas entregas")
         return redirect("dashboard_estudiante")
     
+    # --- PUNTO 2: ALERTA DE SOBRESCRITURA ---
+    # Verificar si existe una versión anterior sin revisión
+    ultima_version = proyecto.versiones.last()
+    tiene_version_pendiente = False
+    version_pendiente_numero = None
+    
+    if ultima_version:
+        # Verificar si la última versión tiene revisiones
+        tiene_revisiones = ultima_version.revisiones.exists()
+        # Si no tiene revisiones, está pendiente de revisión
+        if not tiene_revisiones:
+            tiene_version_pendiente = True
+            version_pendiente_numero = ultima_version.numero_version
+        else:
+            # Si tiene revisiones, verificar si alguna está en estado 'Pendiente' o similar
+            ultima_revision = ultima_version.revisiones.last()
+            if ultima_revision and ultima_revision.estado in ['Pendiente', 'En Progreso']:
+                tiene_version_pendiente = True
+                version_pendiente_numero = ultima_version.numero_version
+    
     if req.method == 'POST':
+        # --- PUNTO 2: VALIDACIÓN EN BACKEND ---
+        # Verificar nuevamente en el POST para evitar bypass
+        ultima_version_post = proyecto.versiones.last()
+        if ultima_version_post:
+            tiene_revisiones_post = ultima_version_post.revisiones.exists()
+            if not tiene_revisiones_post:
+                # Si hay una versión pendiente, mostramos error y redirigimos
+                messages.warning(req, f"La versión v{ultima_version_post.numero_version} aún no ha sido revisada. Debes esperar a que tu profesor la revise antes de subir una nueva.")
+                return redirect('dashboard_estudiante')
+        
         archivo = req.FILES.get('archivo')
         resumen = req.POST.get('resumen')
         
         ids_resueltos = req.POST.getlist('tareas_completadas')
-        if ids_resueltos:
-            Comentario.objects.filter(id__in=ids_resueltos).update(estado='Resuelto')
-        ultima_version = proyecto.versiones.count() + 1
+        
+        # --- PUNTO 4: VALIDACIÓN DE OBSERVACIONES COMPLETAS ---
+        tareas_pendientes_post = Comentario.objects.none()
+        ultima_version_post = proyecto.versiones.last()
+        if ultima_version_post and ultima_version_post.revisiones.exists():
+            tareas_pendientes_post = ultima_version_post.revisiones.last().comentarios.filter(verificado_docente=False)
+        if tareas_pendientes_post.exists() and len(ids_resueltos) != tareas_pendientes_post.count():
+            messages.warning(req, 'Debes marcar todas las observaciones como resueltas antes de subir la nueva versión.')
+            return redirect('subir_version', proyecto_id=proyecto.id)
+
+        # --- PUNTO 4: SINCRONIZACIÓN DE PROGRESO CON EVIDENCIA ---
+        # El progreso se recalcula AQUÍ, basado en los checkboxes que el estudiante marcó
+        # al subir el nuevo documento
+        
+        nueva_version_numero = proyecto.versiones.count() + 1
+
+        # Crear la nueva versión
         nueva_v = VersionDocumento.objects.create(
             proyecto=proyecto,
-            numero_version=ultima_version,
+            numero_version=nueva_version_numero,
             archivo=archivo,
             resumen_cambios=resumen
         )
-        proyecto.porcentaje_avance = 0.00
+
+        # --- PUNTO 4: RECÁLCULO DEL PROGRESO ---
+        # Si el estudiante marcó tareas como completadas, actualizamos su estado
+        if ids_resueltos:
+            Comentario.objects.filter(id__in=ids_resueltos).update(estado='Resuelto')
+        
+        # Calcular el nuevo progreso basado en la versión ANTERIOR (la que se está corrigiendo)
+        # Buscar la versión anterior a la nueva
+        version_anterior = proyecto.versiones.filter(numero_version__lt=nueva_version_numero).last()
+        
+        if version_anterior:
+            ultima_revision_anterior = version_anterior.revisiones.last()
+            if ultima_revision_anterior:
+                total_comentarios = ultima_revision_anterior.comentarios.count()
+                if total_comentarios > 0:
+                    # Contar cuántos comentarios de la versión anterior están resueltos
+                    resueltos = ultima_revision_anterior.comentarios.filter(estado='Resuelto').count()
+                    proyecto.porcentaje_avance = round((resueltos / total_comentarios) * 100, 2)
+                else:
+                    proyecto.porcentaje_avance = 100.0
+            else:
+                proyecto.porcentaje_avance = 0.0
+        else:
+            # Primera versión, progreso base
+            proyecto.porcentaje_avance = 0.0
+        
+        # Actualizar estado del proyecto
         proyecto.estado = 'En Progreso'
         proyecto.save()
 
@@ -107,9 +218,14 @@ def subir_version(req, proyecto_id):
             print("--- TEXTO EXTRAIDO DEL PDF ---")
         except Exception as e:
             print(f"Error al leer PDF: {e}")
-        ejecutar_analisis_ia(texto_extraido, nueva_v.id)
+            
+        # --- SOLUCIÓN: Llamada directa al servicio de Copyleaks ---
+        identificador = f"proyecto_{proyecto.id}_v{nueva_v.id}"
+        enviar_documento_a_escanear(identificador, nueva_v.archivo.path)
+        
+        # --- PUNTO 1: TRAZABILIDAD EN NOTIFICACIONES ---
         nombre_estudiante = req.user.get_full_name() or req.user.username
-        mensaje_notif = f"{nombre_estudiante} subió el Documento de Entrega v{nueva_v.numero_version}."
+        mensaje_notif = f"{nombre_estudiante} subió v{nueva_v.numero_version} del proyecto: [{proyecto.titulo}]."
 
         for prof in proyecto.profesores.all():
             Notificacion.objects.create(usuario=prof, mensaje=mensaje_notif, estado='No leido')
@@ -121,6 +237,7 @@ def subir_version(req, proyecto_id):
             except Exception as e:
                 logger.exception("Error enviando email: %s", e)
 
+        messages.success(req, f"¡Versión v{nueva_version_numero} subida correctamente!", extra_tags='no_login')
         return redirect('dashboard_estudiante')
 
     tareas_pendientes = []
@@ -128,28 +245,53 @@ def subir_version(req, proyecto_id):
     if ultima_v and ultima_v.revisiones.exists():
         tareas_pendientes = ultima_v.revisiones.last().comentarios.filter(verificado_docente=False)
 
-    return render(req, 'subir_version.html', {'proyecto': proyecto, 'tareas_pendientes': tareas_pendientes})
+    return render(req, 'subir_version.html', {
+        'proyecto': proyecto,
+        'tareas_pendientes': tareas_pendientes,
+        'tiene_version_pendiente': tiene_version_pendiente,
+        'version_pendiente_numero': version_pendiente_numero
+    })
 
-def ejecutar_analisis_ia(texto, version_id):
-    version = VersionDocumento.objects.get(id=version_id)
+@login_required
+def disparar_analisis_ia(request, proyecto_id):
+    proyecto = get_object_or_404(Proyecto, id=proyecto_id)
+    version_actual = proyecto.versiones.last()
+
+    if not version_actual or not version_actual.archivo:
+        messages.error(request, "No hay archivo disponible.")
+        return redirect('ver_historial', proyecto_id=proyecto.id)
+
+    # Llamamos al servicio de Copyleaks
+    from gestion.copyleaks_service import enviar_documento_a_escanear
     
-    conteo_palabras = len(texto.split())
-    
-    AnalisisIA.objects.create(
-        version=version, 
-        resultado=texto,
-        porcentaje_similitud=0.0,
-        riesgo_texto_ia=0.0
+    resultado = enviar_documento_a_escanear(
+        id_tesis=f"proyecto_{proyecto.id}_v{version_actual.id}",
+        ruta_archivo_pdf=version_actual.archivo.path
     )
     
-    print(f"✅ Análisis preparado: {conteo_palabras} palabras guardadas para la Fase 2.")
-    
-@login_required
+    if resultado and resultado.get("exito"):
+        messages.success(request, "¡Enviado a Copyleaks correctamente!")
+    else:
+        messages.error(request, "Error al contactar con Copyleaks.")
+            
+    return redirect('ver_historial', proyecto_id=proyecto.id)
+
 def dashboard_profesor(req):
     if req.user.rol != 'profesor' and not req.user.is_staff:
         return redirect('dashboard_estudiante')
         
     proyectos = Proyecto.objects.filter(profesores=req.user)
+    
+    # --- PUNTO 3: VISIBILIDAD CONDICIONAL DEL PROGRESO ---
+    # Enriquecer cada proyecto con flags útiles para el template
+    for proyecto in proyectos:
+        proyecto.tiene_revisiones_previas = proyecto.versiones.filter(revisiones__isnull=False).exists()
+        proyecto.estado_actual = proyecto.estado
+        proyecto.tiene_correciones_enviadas = False
+        ultima_v = proyecto.versiones.last()
+        if ultima_v and ultima_v.revisiones.exists() and proyecto.estado == 'Observado':
+            proyecto.tiene_correciones_enviadas = True
+    
     return render(req, 'dashboard_profesor.html', {'proyectos': proyectos})
 
 
@@ -184,19 +326,24 @@ def revisar_version(req, version_id):
             version=version, profesor=req.user, estado=estado, observaciones_generales=obs_general
         )
 
+        nuevos_comentarios = 0
         for texto_obs in comentarios_lista:
             if texto_obs.strip():
                 Comentario.objects.create(revision=nueva_revision, seccion="Especifica", texto=texto_obs.strip(), prioridad="Alta")
+                nuevos_comentarios += 1
 
         # PUNTO 20.3: FÓRMULA DE PROGRESO MATEMÁTICO DE MIRI
-        # El progreso de esta versión se basa en lo verificado HOY sobre lo pedido AYER
-        if comentarios_anteriores:
+        # El progreso debe resetearse cuando el profesor crea nuevas observaciones.
+        if estado == 'Aprobado':
+            proyecto.porcentaje_avance = 100.0
+        elif nuevos_comentarios > 0:
+            proyecto.porcentaje_avance = 0.0
+        elif comentarios_anteriores:
             total_anterior = len(comentarios_anteriores)
             validados_hoy = len(ids_verificados)
             proyecto.porcentaje_avance = (validados_hoy / total_anterior) * 100
         else:
-            # Si es la primera versión, el progreso es 100% si se aprueba o 0% si se observa
-            proyecto.porcentaje_avance = 100.0 if estado == 'Aprobado' else 0.0
+            proyecto.porcentaje_avance = 0.0
 
         proyecto.estado = estado 
         # Punto 21: Aprobación definitiva
@@ -207,14 +354,15 @@ def revisar_version(req, version_id):
         
         proyecto.save()
 
+        # --- PUNTO 1: TRAZABILIDAD EN NOTIFICACIONES ---
         nombre_profe = req.user.get_full_name() or req.user.username
-        mensaje_notif = f"Tu Documento de Entrega v{version.numero_version} fue revisado. Resultado: {estado}."
+        mensaje_notif = f"Tu v{version.numero_version} del proyecto [{proyecto.titulo}] fue revisada. Resultado: {estado}."
 
         for estudiante in proyecto.estudiantes.all():
             Notificacion.objects.create(usuario=estudiante, mensaje=mensaje_notif, estado='No leido')
             if estudiante.email:
                 try:
-                    send_mail(f"[InvestiControl] Revisión v{version.numero_version}", mensaje_notif, settings.DEFAULT_FROM_EMAIL, [estudiante.email])
+                    send_mail(f"[InvestiControl] Revisión v{version.numero_version} - {proyecto.titulo}", mensaje_notif, settings.DEFAULT_FROM_EMAIL, [estudiante.email])
                 except Exception: pass
 
         return redirect('dashboard_profesor')
@@ -275,6 +423,7 @@ def ver_historial(req, proyecto_id):
         'es_anonimo': es_anonimo # El HTML usará esto para mostrar 'Tutor 1' en vez del nombre
     })
 
+
 @login_required
 @transaction.atomic
 def enviar_correccion(req, comentario_id):
@@ -286,39 +435,80 @@ def enviar_correccion(req, comentario_id):
     if req.user not in proyecto.estudiantes.all():
         return redirect('home')
 
+    # --- FIX 1: Si el comentario ya se resolvió (por acción del profe o clic previo), 
+    # en lugar de lanzar alerta y mandarlo al dashboard, lo llevamos al siguiente pendiente.
+    siguiente_pendiente = revision.comentarios.exclude(estado='Resuelto').order_by('id').first()
+    
+    if comentario.estado == 'Resuelto':
+        if siguiente_pendiente:
+            # Redirección silenciosa (sin mensaje de info/warning)
+            return redirect('enviar_correccion', comentario_id=siguiente_pendiente.id)
+        return redirect('subir_version', proyecto_id=proyecto.id)
+
+    # --- FIX 2: Si el usuario entró a uno que no es el "siguiente", lo redirigimos al correcto 
+    # pero SIN el messages.warning que dispara el modal molesto.
+    if siguiente_pendiente and siguiente_pendiente.id != comentario.id:
+        return redirect('enviar_correccion', comentario_id=siguiente_pendiente.id)
+
     if req.method == 'POST':
         descripcion = req.POST.get('descripcion')
-        # Registrar la corrección
+        
+        # --- ENFORCE: las observaciones deben cumplirse en orden ---
+        comentarios_ordenados = list(revision.comentarios.order_by('id'))
+        for c in comentarios_ordenados:
+            if c.id == comentario.id:
+                break
+            if c.estado != 'Resuelto':
+
+                return redirect('dashboard_estudiante')
+
+        # Registrar la corrección (Tu lógica original intacta)
         Correccion.objects.update_or_create(
             comentario=comentario,
             defaults={
                 'descripcion': descripcion,
                 'estado': 'Corregido',
-                'fecha_respuesta': timezone.now() # Punto 8: Trazabilidad horaria
+                'fecha_respuesta': timezone.now()
             }
         )
         comentario.estado = 'Resuelto'
         comentario.save()
 
-        # --- LÓGICA DE PROGRESO MATEMÁTICO (Punto 5 y 20.3) ---
-        # El progreso se basa en las tareas del CICLO ACTIVO (esta revisión)
-        total_tareas_ciclo = revision.comentarios.count()
-        tareas_resueltas = revision.comentarios.filter(estado='Resuelto').count()
-        
-        if total_tareas_ciclo > 0:
-            proyecto.porcentaje_avance = (tareas_resueltas / total_tareas_ciclo) * 100
-            proyecto.save()
-            
-            # Punto 13: Alimentar Reporte_Progreso
-            ReporteProgreso.objects.create(
-                proyecto=proyecto,
-                porcentaje_avance=proyecto.porcentaje_avance,
-                observacion=f"Avance de Observaciones: {tareas_resueltas}/{total_tareas_ciclo} resueltas."
-            )
+        logger.info(f"Corrección registrada para comentario {comentario_id}.")
 
-        # Notificación con Branding InvestiControl
+        # --- ACTUALIZAR PROGRESO (Tu lógica original intacta) ---
+        try:
+            total = revision.comentarios.count()
+            if total > 0:
+                resueltos = revision.comentarios.filter(estado='Resuelto').count()
+                proyecto.porcentaje_avance = round((resueltos / total) * 100, 2)
+            else:
+                proyecto.porcentaje_avance = 100.0
+            proyecto.save()
+        except Exception:
+            logger.exception('Error al recalcular porcentaje de avance tras corrección.')
+
+        siguiente_pendiente = revision.comentarios.exclude(estado='Resuelto').order_by('id').first()
+        if siguiente_pendiente:
+            return render(req, 'enviar_correccion.html', {
+                'comentario': comentario,
+                'mostrar_exito': True,
+                'mensaje_exito': 'Observación guardada. En breve volverás al listado de correcciones pendientes.'
+            })
+
+        # Forzar subida de nueva versión si todo está resuelto
+        try:
+            total = revision.comentarios.count()
+            resueltos = revision.comentarios.filter(estado='Resuelto').count()
+            if total > 0 and resueltos >= total:
+                Notificacion.objects.create(usuario=req.user, mensaje=f"Completaste todas las observaciones en '{proyecto.titulo}'. Sube una nueva versión.", estado='No leido')
+                return redirect('subir_version', proyecto_id=proyecto.id)
+        except Exception:
+            logger.exception('Error comprobando si todas las observaciones fueron resueltas.')
+
+        # Notificación con Branding y Envío de Mail (Tu lógica original intacta)
         nombre_estudiante = req.user.get_full_name() or req.user.username
-        mensaje_notif = f"{nombre_estudiante} resolvió una corrección en '{proyecto.titulo}'."
+        mensaje_notif = f"{nombre_estudiante} resolvió una corrección en el proyecto: [{proyecto.titulo}]."
 
         for prof in proyecto.profesores.all():
             Notificacion.objects.create(usuario=prof, mensaje=mensaje_notif, estado='No leido')
@@ -327,7 +517,7 @@ def enviar_correccion(req, comentario_id):
                     send_mail(f"[InvestiControl] Tarea Resuelta: {proyecto.titulo}", mensaje_notif, settings.DEFAULT_FROM_EMAIL, [prof.email])
                 except Exception: pass
 
-        return redirect('ver_historial', proyecto_id=proyecto.id)
+        return redirect('dashboard_estudiante')
     
     return render(req, 'enviar_correccion.html', {'comentario': comentario})
 
@@ -448,7 +638,7 @@ def ver_perfil(req):
         'entregas_count': VersionDocumento.objects.filter(proyecto__estudiantes=req.user).count(),
         'notificaciones_count': req.user.notificaciones.count(),
     }
-    
+
     return render(req, 'perfil.html', context)
 
 @login_required
@@ -727,33 +917,97 @@ def plantilla_configurar(req, plantilla_id=None):
         return redirect('plantilla_lista')
     return render(req, 'admin_entidades/plantilla_form.html', {'p': plantilla})
 
-# ... Copyleaks ...
-
-from .copyleaks_service import enviar_documento_a_escanear
-
 @login_required
-def disparar_analisis_ia(request, proyecto_id):
+def manual_interactivo(request):
     """
-    Vista que conecta el botón de la web con el motor de Copyleaks.
+    Manual interactivo que se adapta al rol del usuario.
     """
-    proyecto = get_object_or_404(Proyecto, id=proyecto_id)
+    context = {
+        'total_steps': 5,
+        'total_steps_range': range(5),
+        'support_email': settings.SUPPORT_EMAIL,
+        # Para coordinadores
+        'total_proyectos': Proyecto.objects.count(),
+        'en_progreso': Proyecto.objects.filter(estado='En Progreso').count(),
+        'aprobadas': Proyecto.objects.filter(estado__in=['Aprobado', 'PROYECTO_APROBADO']).count(),
+        'observadas': Proyecto.objects.filter(estado='Observado').count(),
+    }
     
-    # 1. Obtenemos la última versión de la tesis
-    version_actual = proyecto.versiones.last()
-    if not version_actual or not version_actual.archivo_pdf:
-        messages.error(request, "No hay un archivo PDF válido para analizar.")
-        return redirect('detalle_proyecto', proyecto_id=proyecto.id)
+    # Ajustar pasos según rol
+    if request.user.rol == 'estudiante':
+        context['total_steps'] = 5
+        context['total_steps_range'] = range(5)
+    elif request.user.rol == 'profesor':
+        context['total_steps'] = 4
+        context['total_steps_range'] = range(4)
+    elif request.user.rol == 'coordinador':
+        context['total_steps'] = 4
+        context['total_steps_range'] = range(4)
+    
+    return render(request, 'manual_interactivo.html', context)
 
-    # 2. Llamamos a nuestra función de IA (pasándole la ruta real del archivo)
-    resultado = enviar_documento_a_escanear(
-        id_tesis=f"proyecto_{proyecto.id}", 
-        ruta_archivo_pdf=version_actual.archivo_pdf.path
-    )
+# --- MÓDULO DE INTEGRACIÓN COPYLEAKS ---
 
-    # 3. Informamos al usuario
-    if resultado.get("exito"):
-        messages.success(request, "¡La tesis ha sido enviada a Copyleaks correctamente!")
-    else:
-        messages.error(request, f"Error al enviar a IA: {resultado.get('error')}")
+@csrf_exempt
+def webhook_copyleaks(request, id_tesis, status):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            # --- Imprimir para debug ---
+            print(f"WEBHOOK RECIBIDO para {id_tesis} con status: {status}")
 
-    return redirect('detalle_proyecto', proyecto_id=proyecto.id)
+            # Limpiar el ID. Por ejemplo: 'proyecto_4_v15-a1b2c3d4' -> 'proyecto_4_v15'
+            identificador_limpio = id_tesis.split('-')[0]
+
+            # Extraer el ID de la versión
+            version_id = identificador_limpio.split('_v')[-1] 
+            version = VersionDocumento.objects.get(id=version_id)
+
+            # 1. MANEJO DE ERRORES: Si Copyleaks envía un error
+            if 'error' in data:
+                error_msg = data.get('error', {}).get('message', 'Error desconocido')
+                AnalisisIA.objects.update_or_create(
+                    version=version,
+                    defaults={
+                        'porcentaje_similitud': 0.0,
+                        'riesgo_texto_ia': 0.0,
+                        'resultado': f"Error: {error_msg}" 
+                    }
+                )
+                return JsonResponse({'status': 'error guardado'}, status=200)
+
+            # 2. MANEJO DE ÉXITO: Extracción y cálculo matemático
+            results = data.get('results', {})
+            score = results.get('score', {})
+            
+            # Obtener cantidad de palabras idénticas
+            identical_words = score.get('identicalWords', 0)
+            
+            # Obtener el total de palabras (por defecto 1 para evitar error de división por cero)
+            total_words = data.get('scannedDocument', {}).get('totalWords', 1)
+            if total_words == 0:
+                total_words = 1
+                
+            # Calcular porcentaje real de similitud (0 a 100)
+            porcentaje_calculado = (identical_words / total_words) * 100
+            
+            # Score agregado (Copyleaks lo suele enviar como un número manejable)
+            riesgo = score.get('aggregatedScore', 0) 
+            
+            # Guardamos los resultados redondeados a 2 decimales para proteger la base de datos
+            AnalisisIA.objects.update_or_create(
+                version=version,
+                defaults={
+                    'porcentaje_similitud': round(porcentaje_calculado, 2),
+                    'riesgo_texto_ia': round(riesgo, 2),
+                    'resultado': "Análisis completado"
+                }
+            )
+            return JsonResponse({'status': 'ok'}, status=200)
+            
+        except Exception as e:
+            print(f"Error crítico en webhook: {e}")
+            return JsonResponse({'error': str(e)}, status=400)
+            
+    return JsonResponse({'error': 'Solo POST'}, status=405)

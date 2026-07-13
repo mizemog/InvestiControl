@@ -205,6 +205,17 @@
 </style>
 
 <div class="historial-wrapper">
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     <!-- Header -->
     <div class="mb-4 mb-md-5">
         <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3 mb-3">
@@ -305,21 +316,57 @@
                             </p>
                         </div>
                         {% endif %}
+
+                    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
                         
-                        <!-- Documento -->
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <a href="{{ v.archivo.url }}" class="btn btn-sm rounded-3 px-3 py-2 d-flex align-items-center gap-1"
-                               style="background: var(--primary); color: #fff; font-size: 0.8rem;"
-                               target="_blank">
-                                <i class="fas fa-file-pdf"></i> Ver Documento
-                            </a>
-                            <a href="{{ v.archivo.url }}" class="btn btn-sm rounded-3 px-3 py-2 d-flex align-items-center gap-1"
-                               style="background: var(--nav-active-bg); color: var(--text-main); font-size: 0.8rem;"
-                               download>
-                                <i class="fas fa-download"></i> Descargar
-                            </a>
-                        </div>
-                        
+                        <!-- Botón Ver Documento -->
+                        <a href="{{ v.archivo.url }}" class="btn btn-sm rounded-3 px-3 py-2 d-flex align-items-center gap-1"
+                        style="background: var(--primary); color: #fff; font-size: 0.8rem;" target="_blank">
+                            <i class="fas fa-file-pdf"></i> Ver Documento
+                        </a>
+
+                        <!-- LÓGICA DE ACCESO A DATOS (Usando el related_name exacto de tu models.py) -->
+                        {% with analisis=v.analisis_ia %}
+                            
+                            {% if analisis %}
+                                <!-- Botón DESHABILITADO (Ya existe un análisis) -->
+                                <button class="btn btn-sm rounded-3 px-3 py-2 d-flex align-items-center gap-1"
+                                        style="background: #f59e0b !important; color: #fff !important; font-size: 0.8rem; border: none; opacity: 0.6; cursor: not-allowed;" 
+                                        disabled>
+                                    <i class="fas fa-check-circle"></i> IA Ejecutada
+                                </button>
+
+                                <!-- Resultados -->
+                                <div class="d-flex flex-column ms-2 border-start border-2 ps-2" style="border-color: #e5e7eb !important;">
+                                    <span style="font-size: 0.8rem; color: var(--text-main); font-weight: 600;">
+                                        📝 Plagio idéntico: 
+                                        <span class="{% if analisis.porcentaje_similitud > 20 %}text-danger{% else %}text-warning{% endif %}">
+                                            {{ analisis.porcentaje_similitud }}%
+                                        </span>
+                                    </span>
+                                    <span style="font-size: 0.8rem; color: var(--text-main); font-weight: 600;">
+                                        🤖 Riesgo IA: 
+                                        <span class="{% if analisis.riesgo_texto_ia > 20 %}text-danger{% else %}text-warning{% endif %}">
+                                            {{ analisis.riesgo_texto_ia }}%
+                                        </span>
+                                    </span>
+                                </div>
+
+                            {% else %}
+                                <!-- Botón ACTIVO (No hay análisis previo) -->
+                                <a href="{% url 'disparar_analisis_ia' proyecto_id=proyecto.id %}" 
+                                class="btn btn-sm rounded-3 px-3 py-2 d-flex align-items-center gap-1"
+                                style="background: #f59e0b !important; color: #fff !important; font-size: 0.8rem; border: none;">
+                                    <i class="fas fa-robot"></i> Analizar IA
+                                </a>
+                                <span class="ms-2" style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">
+                                    (Sin análisis IA ejecutado)
+                                </span>
+                            {% endif %}
+
+                        {% endwith %}
+
+                    </div>
                         <!-- Revisiones -->
                         {% if v.revisiones.all %}
                         <div class="mt-3">

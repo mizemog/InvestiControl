@@ -14,7 +14,6 @@
     .correccion-wrapper .text-primary * {
         color: var(--primary) !important;
     }
-    /* Excepción: colores semánticos fijos para íconos y badges */
     .correccion-wrapper .text-warning {
         color: #f59e0b !important;
     }
@@ -215,17 +214,17 @@
                         
                         <!-- Barra de herramientas simulada -->
                         <div class="d-flex gap-1 mb-2 px-3 py-2 rounded-3" style="background: var(--nav-active-bg);">
-                            <button type="button" class="btn btn-sm border-0 rounded-2 px-2" style="color: var(--text-muted);" title="Negrita">
+                            <button id="btnBold" type="button" class="btn btn-sm border-0 rounded-2 px-2" style="color: var(--text-muted);" title="Negrita">
                                 <i class="fas fa-bold"></i>
                             </button>
-                            <button type="button" class="btn btn-sm border-0 rounded-2 px-2" style="color: var(--text-muted);" title="Cursiva">
+                            <button id="btnItalic" type="button" class="btn btn-sm border-0 rounded-2 px-2" style="color: var(--text-muted);" title="Cursiva">
                                 <i class="fas fa-italic"></i>
                             </button>
-                            <button type="button" class="btn btn-sm border-0 rounded-2 px-2" style="color: var(--text-muted);" title="Lista">
+                            <button id="btnList" type="button" class="btn btn-sm border-0 rounded-2 px-2" style="color: var(--text-muted);" title="Lista">
                                 <i class="fas fa-list-ul"></i>
                             </button>
                             <div class="vr mx-1 opacity-25"></div>
-                            <button type="button" class="btn btn-sm border-0 rounded-2 px-2" style="color: var(--text-muted);" title="Vista previa">
+                            <button id="btnPreview" type="button" class="btn btn-sm border-0 rounded-2 px-2" style="color: var(--text-muted);" title="Vista previa">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
@@ -236,6 +235,7 @@
                                   placeholder="Describe detalladamente los cambios realizados para resolver esta observación..."
                                   required
                                   oninput="contarCaracteres()"></textarea>
+                        <div id="previewContainer" class="p-3 mt-3 rounded-3" style="display:none; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); min-height: 150px; white-space: pre-wrap; overflow-wrap: break-word;"></div>
                         
                         <div class="d-flex justify-content-between align-items-center mt-2">
                             <small class="text-muted" style="font-size: 0.7rem;">
@@ -495,16 +495,75 @@
         // Inicializar contador
         contarCaracteres();
         document.getElementById('descripcion').focus();
-        
-        // Mostrar mensajes del backend
-        {% if messages %}
-            {% for message in messages %}
-                mostrarAlerta(
-                    '{{ message.tags|capfirst }}',
-                    '{{ message|escapejs }}',
-                    '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% else %}warning{% endif %}'
-                );
-            {% endfor %}
+
+        // Inicializar acciones del editor
+        const descripcionTextarea = document.getElementById('descripcion');
+        const previewContainer = document.getElementById('previewContainer');
+        let previewVisible = false;
+
+        const aplicarFormato = (tipo) => {
+            const start = descripcionTextarea.selectionStart;
+            const end = descripcionTextarea.selectionEnd;
+            const texto = descripcionTextarea.value;
+            const seleccionado = texto.slice(start, end);
+            let reemplazo = seleccionado;
+
+            if (tipo === 'bold') {
+                reemplazo = seleccionado ? `**${seleccionado}**` : `****`;
+            } else if (tipo === 'italic') {
+                reemplazo = seleccionado ? `_${seleccionado}_` : `__`;
+            } else if (tipo === 'list') {
+                if (seleccionado) {
+                    reemplazo = seleccionado.split('\n').map(line => line.trim() ? `- ${line.trim()}` : '').join('\n');
+                } else {
+                    reemplazo = '- ';
+                }
+            }
+
+            descripcionTextarea.value = texto.slice(0, start) + reemplazo + texto.slice(end);
+            const cursorPos = tipo === 'list' ? start + reemplazo.length : start + reemplazo.length - (tipo === 'bold' ? 2 : tipo === 'italic' ? 1 : 0);
+            descripcionTextarea.focus();
+            descripcionTextarea.setSelectionRange(cursorPos, cursorPos);
+            contarCaracteres();
+        };
+
+        const renderPreview = () => {
+            const markdown = descripcionTextarea.value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/_(.*?)_/g, '<em>$1</em>')
+                .replace(/^[-*]\s+(.*)$/gm, '<li>$1</li>')
+                .replace(/(<li>.*?<\/li>)(?!<\/ul>)/gs, '<ul>$1</ul>');
+            previewContainer.innerHTML = markdown;
+        };
+
+        document.getElementById('btnBold')?.addEventListener('click', () => aplicarFormato('bold'));
+        document.getElementById('btnItalic')?.addEventListener('click', () => aplicarFormato('italic'));
+        document.getElementById('btnList')?.addEventListener('click', () => aplicarFormato('list'));
+        document.getElementById('btnPreview')?.addEventListener('click', function() {
+            previewVisible = !previewVisible;
+            if (previewVisible) {
+                renderPreview();
+                previewContainer.style.display = 'block';
+                descripcionTextarea.style.display = 'none';
+                this.classList.add('active');
+            } else {
+                previewContainer.style.display = 'none';
+                descripcionTextarea.style.display = 'block';
+                this.classList.remove('active');
+            }
+        });
+
+        // SOLO mostramos mensaje de éxito si viene explícitamente del backend tras resolver
+        {% if mostrar_exito and mensaje_exito %}
+            mostrarAlerta('¡Correcto!', '{{ mensaje_exito|escapejs }}', 'success');
+            if (alertModal) {
+                alertModal._element.addEventListener('hidden.bs.modal', function () {
+                    window.location.href = '{% url "dashboard_estudiante" %}';
+                }, { once: true });
+            }
         {% endif %}
     });
     
