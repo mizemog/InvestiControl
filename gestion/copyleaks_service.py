@@ -69,7 +69,7 @@ def enviar_documento_a_escanear(id_tesis, ruta_archivo_pdf):
     }
 
     # 3. Configuramos la petición
-    TUNEL_URL = "https://zesrr-38-183-115-69.free.pinggy.net"
+    TUNEL_URL = "https://kdnfx-38-183-114-107.free.pinggy.net"
     
     payload = {
         "base64": pdf_base64,
