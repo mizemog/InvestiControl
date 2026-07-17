@@ -720,7 +720,7 @@
         window.subirFirmaConfirmada = null;
     });
     
-    // Inicializar modales
+    // Inicializar modales y mostrar mensajes del perfil
     document.addEventListener('DOMContentLoaded', function() {
         // Inicializar modal de alerta
         const alertModalElement = document.getElementById('alertModal');
@@ -733,13 +733,17 @@
         if (confirmModalElement) {
             confirmModal = new bootstrap.Modal(confirmModalElement);
         }
+        
+        // Mostrar solo los mensajes con tag 'perfil'
         {% if messages %}
             {% for message in messages %}
-                mostrarAlerta(
-                    '{{ message.tags|capfirst }}',
-                    '{{ message|escapejs }}',
-                    '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% else %}warning{% endif %}'
-                );
+                {% if 'perfil' in message.tags %}
+                    mostrarAlerta(
+                        '{{ message.tags|capfirst }}',
+                        '{{ message|escapejs }}',
+                        '{% if "success" in message.tags %}success{% elif "error" in message.tags %}error{% else %}warning{% endif %}'
+                    );
+                {% endif %}
             {% endfor %}
         {% endif %}
 

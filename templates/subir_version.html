@@ -86,6 +86,32 @@
         background: rgba(239, 68, 68, 0.05) !important;
     }
 
+    /* --- PUNTO 2: ESTILOS PARA MODO SOBRESCRITURA --- */
+    #dropzone.modo-edicion {
+        border-color: #f59e0b !important;
+        background: rgba(245, 158, 11, 0.05) !important;
+        border-style: solid !important;
+        border-width: 3px !important;
+    }
+    #dropzone.modo-edicion:hover {
+        border-color: #d97706 !important;
+        background: rgba(245, 158, 11, 0.1) !important;
+    }
+
+    .badge-edicion {
+        background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+        color: #fff !important;
+        font-size: 0.7rem !important;
+        padding: 0.35rem 0.75rem !important;
+        border-radius: 20px !important;
+        animation: pulse-edicion 2s infinite;
+    }
+
+    @keyframes pulse-edicion {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
     /* Elementos internos del dropzone (no interfieren con eventos) */
     #dropzone-empty,
     #dropzone-filled,
@@ -221,14 +247,29 @@
             <!-- Header -->
             <div class="text-center mb-4 mb-md-5">
                 <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg mb-4"
-                     style="background: var(--primary);">
+                     style="background: {% if tiene_version_pendiente %}linear-gradient(135deg, #f59e0b, #d97706){% else %}var(--primary){% endif %};">
+                    {% if tiene_version_pendiente %}
+                    <i class="fas fa-sync-alt fa-2x text-white"></i>
+                    {% else %}
                     <i class="fas fa-cloud-upload-alt fa-2x text-white"></i>
+                    {% endif %}
                 </div>
-                <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Nueva Entrega</h2>
+                <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">
+                    {% if tiene_version_pendiente %}
+                    Actualizar Documento
+                    {% else %}
+                    Nueva Entrega
+                    {% endif %}
+                </h2>
                 <p class="mb-0" style="color: var(--text-muted);">
                     <i class="fas fa-book me-1"></i> 
                     Proyecto: <strong style="color: var(--text-main);">{{ proyecto.titulo }}</strong>
                 </p>
+                {% if tiene_version_pendiente %}
+                <span class="badge badge-edicion mt-2">
+                    <i class="fas fa-pen me-1"></i> MODO EDICIÓN - SOBRESCRIBIENDO v{{ version_pendiente_numero }}
+                </span>
+                {% endif %}
             </div>
 
             <!-- Información del proyecto -->
@@ -236,9 +277,15 @@
                  style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 16px;">
                 <div class="row g-3 text-center text-md-start">
                     <div class="col-6 col-md-3">
-                        <small class="text-muted d-block" style="font-size: 0.65rem;">Versión Actual</small>
-                        <strong style="color: var(--primary);">
+                        <small class="text-muted d-block" style="font-size: 0.65rem;">
+                            {% if tiene_version_pendiente %}Editando Versión{% else %}Versión Actual{% endif %}
+                        </small>
+                        <strong style="color: {% if tiene_version_pendiente %}#f59e0b{% else %}var(--primary){% endif %};">
+                            {% if tiene_version_pendiente %}
+                            v{{ version_pendiente_numero }} <i class="fas fa-pen fa-xs"></i>
+                            {% else %}
                             v{{ proyecto.versiones.count|add:"1" }}
+                            {% endif %}
                         </strong>
                     </div>
                     <div class="col-6 col-md-3">
@@ -263,15 +310,15 @@
             <div class="warning-alert mb-4 d-flex align-items-start gap-3">
                 <i class="fas fa-exclamation-triangle mt-1" style="color: #f59e0b; font-size: 1.2rem;"></i>
                 <div>
-                    <h6 class="fw-bold mb-1" style="color: #f59e0b;">⚠️ Versión Pendiente de Revisión</h6>
+                    <h6 class="fw-bold mb-1" style="color: #f59e0b;">⚠️ Modo Sobrescritura Activado</h6>
                     <p class="small mb-0" style="color: var(--text-muted);">
-                        La versión <strong>v{{ version_pendiente_numero }}</strong> aún no ha sido revisada por tu profesor.
-                        Si subes una nueva versión ahora, <strong>sobrescribirás el documento pendiente</strong>.
+                        Estás a punto de <strong>reemplazar el archivo de la v{{ version_pendiente_numero }}</strong> por uno nuevo.
+                        Los datos de tu proyecto se mantendrán intactos, solo cambiará el documento PDF.
                     </p>
                     <button type="button" class="btn btn-sm btn-warning mt-2 rounded-pill px-3" 
                             data-bs-toggle="modal" data-bs-target="#warningModal"
                             style="background: #f59e0b; color: white; border: none;">
-                        <i class="fas fa-info-circle me-1"></i> Ver detalles
+                        <i class="fas fa-info-circle me-1"></i> Entender consecuencias
                     </button>
                 </div>
             </div>
@@ -284,40 +331,49 @@
                             <div class="mb-4">
                                 <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg"
                                      style="background: #f59e0b;">
-                                    <i class="fas fa-exclamation-triangle fa-2x text-white"></i>
+                                    <i class="fas fa-sync-alt fa-2x text-white"></i>
                                 </div>
                             </div>
                             
-                            <h4 class="fw-bold mb-2" style="color: var(--text-main);">⚠️ Atención: Sobrescritura de Versión</h4>
+                            <h4 class="fw-bold mb-2" style="color: var(--text-main);">⚠️ Actualización de Documento</h4>
                             <p class="mb-3" style="color: var(--text-muted); font-size: 0.9rem;">
-                                La versión <strong>v{{ version_pendiente_numero }}</strong> de este proyecto
-                                <strong>aún no ha sido revisada</strong> por tu profesor.
+                                Vas a <strong>reemplazar el documento PDF</strong> de la 
+                                <strong>v{{ version_pendiente_numero }}</strong> que aún no ha sido revisada.
                             </p>
                             <div class="p-3 rounded-3 mb-3 text-start" style="background: rgba(245, 158, 11, 0.05); border-left: 3px solid #f59e0b;">
                                 <p class="small mb-2" style="color: var(--text-main);">
-                                    <i class="fas fa-info-circle me-1" style="color: #f59e0b;"></i>
-                                    <strong>Consecuencias de subir una nueva versión:</strong>
+                                    <i class="fas fa-check-circle me-1" style="color: #10b981;"></i>
+                                    <strong>Lo que SÍ se mantiene:</strong>
+                                </p>
+                                <ul class="small mb-3" style="color: var(--text-muted); padding-left: 1.5rem;">
+                                    <li>Tu porcentaje de avance actual ({{ proyecto.porcentaje_avance }}%)</li>
+                                    <li>El número de versión (v{{ version_pendiente_numero }})</li>
+                                    <li>El historial de revisiones anteriores</li>
+                                </ul>
+                                <p class="small mb-0" style="color: var(--text-main);">
+                                    <i class="fas fa-exclamation-circle me-1" style="color: #f59e0b;"></i>
+                                    <strong>Lo que cambiará:</strong>
                                 </p>
                                 <ul class="small mb-0" style="color: var(--text-muted); padding-left: 1.5rem;">
-                                    <li>El documento de la versión v{{ version_pendiente_numero }} <strong>será sobrescrito</strong>.</li>
-                                    <li>Tu profesor <strong>perderá acceso</strong> al documento anterior.</li>
-                                    <li>El historial de versiones <strong>no conservará</strong> el archivo anterior.</li>
+                                    <li>Se <strong>reemplazará el archivo PDF</strong> de la v{{ version_pendiente_numero }} por este nuevo</li>
+                                    <li>El profesor verá el nuevo documento cuando acceda a revisar</li>
+                                    <li>Se notificará al profesor que el documento fue <strong>actualizado</strong></li>
                                 </ul>
                             </div>
                             <p class="mb-4" style="color: var(--text-muted); font-size: 0.85rem;">
                                 <i class="fas fa-lightbulb me-1" style="color: #f59e0b;"></i>
-                                <strong>Recomendación:</strong> Espera a que tu profesor revise la versión actual antes de subir una nueva.
+                                <strong>Recomendación:</strong> Asegúrate de que este es el documento correcto antes de continuar.
                             </p>
                             
                             <div class="d-flex gap-2">
                                 <button type="button" class="btn btn-modal-cancel flex-grow-1 py-2 rounded-3" 
                                         data-bs-dismiss="modal">
-                                    <i class="fas fa-arrow-left me-2"></i> Volver
+                                    <i class="fas fa-arrow-left me-2"></i> Cancelar
                                 </button>
                                 <button type="button" class="btn btn-modal-confirm flex-grow-1 py-2 rounded-3 fw-bold" 
                                         id="continuarDeTodosModos"
                                         style="background: #f59e0b; border: none; color: #fff;">
-                                    <i class="fas fa-upload me-2"></i> Subir de todos modos
+                                    <i class="fas fa-sync-alt me-2"></i> Actualizar de todos modos
                                 </button>
                             </div>
                         </div>
@@ -372,11 +428,17 @@
                     <div class="mb-4">
                         <label class="form-label small fw-bold text-uppercase mb-2" 
                                style="color: var(--text-muted); letter-spacing: 0.5px;">
-                            <i class="fas fa-file-pdf me-1"></i> Archivo de Entrega
+                            <i class="fas fa-file-pdf me-1"></i> 
+                            {% if tiene_version_pendiente %}
+                            Nuevo Archivo para v{{ version_pendiente_numero }}
+                            {% else %}
+                            Archivo de Entrega
+                            {% endif %}
                         </label>
                         
-                        <!-- Dropzone -->
-                        <div id="dropzone" onclick="document.getElementById('archivoInput').click()"
+                        <!-- Dropzone con clase condicional para modo edición -->
+                        <div id="dropzone" class="{% if tiene_version_pendiente %}modo-edicion{% endif %}"
+                             onclick="document.getElementById('archivoInput').click()"
                              ondragover="handleDragOver(event)"
                              ondragleave="handleDragLeave(event)"
                              ondrop="handleDrop(event)">
@@ -384,17 +446,32 @@
                             <!-- Estado: Sin archivo -->
                             <div id="dropzone-empty" style="display: flex; flex-direction: column; align-items: center;">
                                 <div class="mb-3">
+                                    {% if tiene_version_pendiente %}
+                                    <i class="fas fa-sync-alt fa-3x" style="color: #f59e0b; opacity: 0.6;"></i>
+                                    {% else %}
                                     <i class="fas fa-cloud-upload-alt fa-3x" style="color: var(--primary); opacity: 0.6;"></i>
+                                    {% endif %}
                                 </div>
                                 <h5 class="fw-bold mb-1" style="color: var(--text-main); font-size: 1rem;">
+                                    {% if tiene_version_pendiente %}
+                                    Arrastra el nuevo PDF aquí
+                                    {% else %}
                                     Arrastra tu archivo aquí
+                                    {% endif %}
                                 </h5>
                                 <p class="mb-3" style="color: var(--text-muted); font-size: 0.85rem;">
                                     o haz clic para seleccionar
                                 </p>
-                                <span class="badge rounded-pill px-3 py-2" style="background: var(--primary-light); color: var(--primary); font-size: 0.7rem;">
+                                <span class="badge rounded-pill px-3 py-2" 
+                                      style="{% if tiene_version_pendiente %}background: rgba(245, 158, 11, 0.15); color: #f59e0b;{% else %}background: var(--primary-light); color: var(--primary);{% endif %} font-size: 0.7rem;">
                                     <i class="fas fa-check-circle me-1"></i> Solo archivos PDF
                                 </span>
+                                {% if tiene_version_pendiente %}
+                                <small class="text-muted mt-2" style="font-size: 0.7rem;">
+                                    <i class="fas fa-info-circle me-1"></i> 
+                                    Este archivo reemplazará al PDF actual de la v{{ version_pendiente_numero }}
+                                </small>
+                                {% endif %}
                             </div>
                             
                             <!-- Estado: Archivo seleccionado -->
@@ -440,12 +517,17 @@
                     <div class="mb-4">
                         <label for="resumen" class="form-label small fw-bold text-uppercase mb-2" 
                                style="color: var(--text-muted); letter-spacing: 0.5px;">
-                            <i class="fas fa-clipboard-list me-1"></i> Resumen de Cambios
+                            <i class="fas fa-clipboard-list me-1"></i> 
+                            {% if tiene_version_pendiente %}
+                            Resumen de Cambios (Actualización)
+                            {% else %}
+                            Resumen de Cambios
+                            {% endif %}
                         </label>
                         <textarea name="resumen" id="resumen"
                                   class="form-control form-control-custom" 
                                   rows="4" 
-                                  placeholder="Describe los cambios, avances o correcciones incluidos en esta versión..."
+                                  placeholder="{% if tiene_version_pendiente %}Describe qué cambios realizaste al documento de la v{{ version_pendiente_numero }}...{% else %}Describe los cambios, avances o correcciones incluidos en esta versión...{% endif %}"
                                   required
                                   oninput="contarPalabrasResumen()"></textarea>
                         <div class="d-flex justify-content-between align-items-center mt-1">
@@ -495,6 +577,14 @@
                                 El resumen describe claramente los cambios
                             </label>
                         </div>
+                        {% if tiene_version_pendiente %}
+                        <div class="form-check mt-2">
+                            <input class="form-check-input form-check-input-custom" type="checkbox" id="check4">
+                            <label class="form-check-label small" for="check4" style="color: #f59e0b; cursor: pointer; font-size: 0.75rem;">
+                                <strong>Entiendo que este archivo reemplazará al PDF actual de la v{{ version_pendiente_numero }}</strong>
+                            </label>
+                        </div>
+                        {% endif %}
                     </div>
 
                     <!-- Botones -->
@@ -503,8 +593,13 @@
                             <i class="fas fa-times me-2"></i> Cancelar
                         </a>
                         <button type="submit" class="btn btn-primary-custom flex-grow-1 py-3 rounded-4 shadow fw-bold" 
-                                id="btnEnviar">
+                                id="btnEnviar"
+                                style="{% if tiene_version_pendiente %}background: linear-gradient(135deg, #f59e0b, #d97706) !important;{% endif %}">
+                            {% if tiene_version_pendiente %}
+                            <i class="fas fa-sync-alt me-2"></i> ACTUALIZAR v{{ version_pendiente_numero }}
+                            {% else %}
                             <i class="fas fa-paper-plane me-2"></i> ENVIAR VERSIÓN
+                            {% endif %}
                         </button>
                     </div>
                 </form>
@@ -554,17 +649,31 @@
                 <!-- Icono animado -->
                 <div class="mb-4">
                     <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg"
-                         style="background: linear-gradient(135deg, #f59e0b, #f97316);">
+                         id="confirmIcon" style="background: {% if tiene_version_pendiente %}linear-gradient(135deg, #f59e0b, #d97706){% else %}linear-gradient(135deg, #f59e0b, #f97316){% endif %};">
+                        {% if tiene_version_pendiente %}
+                        <i class="fas fa-sync-alt fa-2x text-white"></i>
+                        {% else %}
                         <i class="fas fa-paper-plane fa-2x text-white"></i>
+                        {% endif %}
                     </div>
                 </div>
                 
-                <h4 class="fw-bold mb-2" style="color: var(--text-main);">¿Estás seguro de enviar esta versión?</h4>
-                <p class="mb-4" style="color: var(--text-muted); font-size: 0.9rem;">
+                <h4 class="fw-bold mb-2" id="confirmTitle" style="color: var(--text-main);">
+                    {% if tiene_version_pendiente %}
+                    ¿Estás seguro de actualizar el documento?
+                    {% else %}
+                    ¿Estás seguro de enviar esta versión?
+                    {% endif %}
+                </h4>
+                <p class="mb-4" id="confirmMessage" style="color: var(--text-muted); font-size: 0.9rem;">
+                    {% if tiene_version_pendiente %}
+                    Se reemplazará el archivo de la v{{ version_pendiente_numero }} por este nuevo, manteniendo tus datos actuales.
+                    {% else %}
                     Una vez enviada, será revisada por tu tutor.
+                    {% endif %}
                 </p>
                 
-                <div class="rounded-3 p-3 mb-4 text-start" style="background: var(--nav-active-bg); border-left: 3px solid #f59e0b;">
+                <div class="rounded-3 p-3 mb-4 text-start" style="background: var(--nav-active-bg); border-left: 3px solid {% if tiene_version_pendiente %}#f59e0b{% else %}#f59e0b{% endif %};">
                     <div class="d-flex align-items-start gap-2 mb-2">
                         <i class="fas fa-file-pdf mt-1" style="color: #ef4444; font-size: 0.9rem;"></i>
                         <div>
@@ -605,8 +714,13 @@
                         Cancelar
                     </button>
                     <button type="button" class="btn btn-modal-confirm flex-grow-1 py-2 rounded-3 fw-bold" 
-                            id="confirmarEnvioBtn">
+                            id="confirmarEnvioBtn"
+                            style="{% if tiene_version_pendiente %}background: linear-gradient(135deg, #f59e0b, #d97706) !important;{% endif %}">
+                        {% if tiene_version_pendiente %}
+                        <i class="fas fa-sync-alt me-2"></i> ACTUALIZAR v{{ version_pendiente_numero }}
+                        {% else %}
                         <i class="fas fa-paper-plane me-2"></i> ENVIAR VERSIÓN
+                        {% endif %}
                     </button>
                 </div>
             </div>
@@ -615,28 +729,647 @@
 </div>
 
 <script>
-    // Variables globales
-    let archivoSeleccionado = null;
-    let confirmModal = null;
-    let alertModal = null;
-    let tieneVersionPendiente = {{ tiene_version_pendiente|yesno:"true,false" }};
-    let tareasPendientesTotal = {{ tareas_pendientes.count|default:0 }};
+/**
+ * ============================================
+ * InvestiControl - Subir Versión
+ * Sistema de Gestión de Entregas Académicas
+ * ============================================
+ * Maneja dos flujos:
+ * 1. Modo Normal: Crear nueva versión
+ * 2. Modo Edición: Actualizar versión existente
+ */
+
+// ===== VARIABLES GLOBALES =====
+let archivoSeleccionado = null;
+let confirmModal = null;
+let alertModal = null;
+let warningModal = null;
+let tieneVersionPendiente = {{ tiene_version_pendiente|yesno:"true,false" }};
+let tareasPendientesTotal = {{ tareas_pendientes.count|default:0 }};
+let versionPendienteNumero = {{ version_pendiente_numero|default:0 }};
+let formEnviado = false; // Prevenir doble envío
+
+// ===== INICIALIZACIÓN =====
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 InvestiControl - Subir Versión inicializado');
+    console.log('Modo:', tieneVersionPendiente ? 'EDICIÓN (Actualizando v' + versionPendienteNumero + ')' : 'NORMAL (Nueva versión)');
+    console.log('Tareas pendientes:', tareasPendientesTotal);
     
-    // Función para mostrar alertas estilizadas
-    function mostrarAlerta(titulo, mensaje, tipo = 'error') {
+    // Inicializar contador de palabras
+    contarPalabrasResumen();
+    
+    // Inicializar modales de Bootstrap
+    inicializarModales();
+    
+    // Configurar event listeners
+    configurarEventListeners();
+    
+    // Aplicar clase de modo edición al dropzone si corresponde
+    if (tieneVersionPendiente) {
+        aplicarModoEdicion();
+    }
+});
+
+// ===== INICIALIZAR MODALES =====
+function inicializarModales() {
+    try {
+        // Modal de confirmación de envío
+        const confirmModalEl = document.getElementById('confirmModal');
+        if (confirmModalEl) {
+            confirmModal = new bootstrap.Modal(confirmModalEl, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            console.log('✅ Modal de confirmación inicializado');
+        } else {
+            console.warn('⚠️ Modal de confirmación no encontrado');
+        }
+        
+        // Modal de alerta
+        const alertModalEl = document.getElementById('alertModal');
+        if (alertModalEl) {
+            alertModal = new bootstrap.Modal(alertModalEl, {
+                backdrop: 'static',
+                keyboard: true
+            });
+            console.log('✅ Modal de alerta inicializado');
+        } else {
+            console.warn('⚠️ Modal de alerta no encontrado');
+        }
+        
+        // Modal de advertencia (solo en modo edición)
+        const warningModalEl = document.getElementById('warningModal');
+        if (warningModalEl) {
+            warningModal = new bootstrap.Modal(warningModalEl, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            console.log('✅ Modal de advertencia inicializado');
+        }
+    } catch (error) {
+        console.error('❌ Error inicializando modales:', error);
+    }
+}
+
+// ===== CONFIGURAR EVENT LISTENERS =====
+function configurarEventListeners() {
+    // Botón de confirmación de envío
+    const confirmarEnvioBtn = document.getElementById('confirmarEnvioBtn');
+    if (confirmarEnvioBtn) {
+        confirmarEnvioBtn.addEventListener('click', function() {
+            console.log('🖱️ Click en botón confirmar envío');
+            if (confirmModal) {
+                confirmModal.hide();
+            }
+            // Pequeño delay para asegurar que el modal se cierre
+            setTimeout(function() {
+                enviarFormulario();
+            }, 300);
+        });
+    }
+    
+    // Botón "Actualizar de todos modos" (modo edición)
+    const continuarBtn = document.getElementById('continuarDeTodosModos');
+    if (continuarBtn) {
+        continuarBtn.addEventListener('click', function() {
+            console.log('🖱️ Click en botón "Actualizar de todos modos"');
+            if (warningModal) {
+                warningModal.hide();
+            }
+            // Delay para que el modal se cierre antes de mostrar el siguiente
+            setTimeout(function() {
+                mostrarModalConfirmacion();
+            }, 300);
+        });
+    }
+    
+    // Interceptar el submit del formulario
+    const form = document.getElementById('formEntrega');
+    if (form) {
+        // Remover listeners anteriores para evitar duplicados
+        form.removeEventListener('submit', handleFormSubmit);
+        form.addEventListener('submit', handleFormSubmit);
+        console.log('✅ Event listener de submit configurado');
+    } else {
+        console.error('❌ Formulario no encontrado');
+    }
+    
+    // Listener para cambios en el archivo
+    const archivoInput = document.getElementById('archivoInput');
+    if (archivoInput) {
+        archivoInput.addEventListener('change', function() {
+            manejarArchivo(this.files);
+        });
+    }
+    
+    // Listener para el textarea de resumen
+    const resumenTextarea = document.getElementById('resumen');
+    if (resumenTextarea) {
+        resumenTextarea.addEventListener('input', contarPalabrasResumen);
+    }
+    
+    // Listener para cerrar modales correctamente
+    document.querySelectorAll('.modal').forEach(function(modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', function() {
+            console.log('🔒 Modal cerrado:', modalEl.id);
+            // Limpiar backdrop si queda
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        });
+    });
+}
+
+// ===== HANDLER DEL FORMULARIO =====
+function handleFormSubmit(e) {
+    e.preventDefault();
+    console.log('📤 Intento de envío de formulario');
+    
+    // Prevenir doble envío
+    if (formEnviado) {
+        console.warn('⚠️ Formulario ya enviado, ignorando');
+        return false;
+    }
+    
+    try {
+        // Validar archivo
+        if (!archivoSeleccionado) {
+            mostrarAlerta(
+                'Archivo requerido', 
+                'Por favor selecciona un archivo PDF antes de continuar.',
+                'warning'
+            );
+            return false;
+        }
+        
+        // Validar resumen
+        const resumen = document.getElementById('resumen').value.trim();
+        if (!resumen || resumen.length < 10) {
+            mostrarAlerta(
+                'Resumen incompleto', 
+                'El resumen de cambios debe tener al menos 10 caracteres.',
+                'warning'
+            );
+            document.getElementById('resumen').focus();
+            return false;
+        }
+        
+        // Validar checklist básica
+        const check1 = document.getElementById('check1');
+        const check2 = document.getElementById('check2');
+        const check3 = document.getElementById('check3');
+        
+        if (check1 && check2 && check3) {
+            if (!check1.checked || !check2.checked || !check3.checked) {
+                mostrarAlerta(
+                    'Checklist incompleta', 
+                    'Por favor verifica todos los puntos de la checklist antes de continuar.',
+                    'warning'
+                );
+                return false;
+            }
+        }
+        
+        // Validar checkbox extra en modo edición
+        if (tieneVersionPendiente) {
+            const check4 = document.getElementById('check4');
+            if (check4 && !check4.checked) {
+                mostrarAlerta(
+                    'Confirmación requerida', 
+                    'Debes confirmar que entiendes que el archivo actual de la v' + versionPendienteNumero + ' será reemplazado.',
+                    'warning'
+                );
+                return false;
+            }
+        }
+        
+        // Validar tareas pendientes (solo si no estamos en modo edición)
+        if (!tieneVersionPendiente && tareasPendientesTotal > 0) {
+            const tareasMarcadas = document.querySelectorAll('input[name="tareas_completadas"]:checked');
+            if (tareasMarcadas.length !== tareasPendientesTotal) {
+                mostrarAlerta(
+                    'Observaciones incompletas', 
+                    'Debes marcar todas las observaciones como resueltas (' + tareasPendientesTotal + ' pendientes).',
+                    'warning'
+                );
+                return false;
+            }
+        }
+        
+        // Si hay versión pendiente, mostrar primero el warning
+        if (tieneVersionPendiente && warningModal) {
+            console.log('⚠️ Mostrando modal de advertencia');
+            warningModal.show();
+            return false;
+        }
+        
+        // Mostrar confirmación final
+        mostrarModalConfirmacion();
+        
+    } catch (error) {
+        console.error('❌ Error en handleFormSubmit:', error);
+        mostrarAlerta('Error', 'Ocurrió un error inesperado. Por favor intenta de nuevo.', 'error');
+    }
+    
+    return false;
+}
+
+// ===== MOSTRAR MODAL DE CONFIRMACIÓN =====
+function mostrarModalConfirmacion() {
+    console.log('📋 Preparando modal de confirmación');
+    
+    try {
+        if (!confirmModal) {
+            console.error('❌ Modal de confirmación no disponible');
+            // Si el modal no existe, enviar directamente
+            enviarFormulario();
+            return;
+        }
+        
+        // Actualizar información en el modal
+        const archivo = archivoSeleccionado;
+        if (archivo) {
+            const modalNombreArchivo = document.getElementById('modalNombreArchivo');
+            if (modalNombreArchivo) {
+                modalNombreArchivo.textContent = archivo.name + ' (' + formatearTamano(archivo.size) + ')';
+            }
+        }
+        
+        const resumen = document.getElementById('resumen').value.trim();
+        const modalResumenPreview = document.getElementById('modalResumenPreview');
+        if (modalResumenPreview) {
+            const preview = resumen.length > 80 ? resumen.substring(0, 80) + '...' : resumen;
+            modalResumenPreview.textContent = preview;
+        }
+        
+        // Actualizar textos según el modo
+        const confirmTitle = document.getElementById('confirmTitle');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const confirmarEnvioBtn = document.getElementById('confirmarEnvioBtn');
+        const confirmIcon = document.getElementById('confirmIcon');
+        
+        if (tieneVersionPendiente) {
+            if (confirmTitle) {
+                confirmTitle.textContent = '¿Confirmas la actualización del documento?';
+            }
+            if (confirmMessage) {
+                confirmMessage.textContent = 'Se reemplazará el archivo de la v' + versionPendienteNumero + ' por este nuevo, manteniendo tus datos actuales. El profesor será notificado del cambio.';
+            }
+            if (confirmarEnvioBtn) {
+                confirmarEnvioBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> ACTUALIZAR v' + versionPendienteNumero;
+                confirmarEnvioBtn.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            }
+            if (confirmIcon) {
+                confirmIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                confirmIcon.innerHTML = '<i class="fas fa-sync-alt fa-2x text-white"></i>';
+            }
+        } else {
+            if (confirmTitle) {
+                confirmTitle.textContent = '¿Estás seguro de enviar esta versión?';
+            }
+            if (confirmMessage) {
+                confirmMessage.textContent = 'Una vez enviada, será revisada por tu tutor. Asegúrate de que todo esté correcto.';
+            }
+            if (confirmarEnvioBtn) {
+                confirmarEnvioBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i> ENVIAR VERSIÓN';
+                confirmarEnvioBtn.style.background = 'var(--primary)';
+            }
+            if (confirmIcon) {
+                confirmIcon.style.background = 'linear-gradient(135deg, #f59e0b, #f97316)';
+                confirmIcon.innerHTML = '<i class="fas fa-paper-plane fa-2x text-white"></i>';
+            }
+        }
+        
+        // Mostrar el modal
+        confirmModal.show();
+        console.log('✅ Modal de confirmación mostrado');
+        
+    } catch (error) {
+        console.error('❌ Error mostrando modal de confirmación:', error);
+        // Si falla el modal, enviar directamente
+        enviarFormulario();
+    }
+}
+
+// ===== ENVIAR FORMULARIO =====
+function enviarFormulario() {
+    console.log('🚀 Enviando formulario...');
+    
+    // Prevenir doble envío
+    if (formEnviado) {
+        console.warn('⚠️ Formulario ya fue enviado');
+        return;
+    }
+    
+    formEnviado = true;
+    
+    try {
+        const btnEnviar = document.getElementById('btnEnviar');
+        const form = document.getElementById('formEntrega');
+        
+        // Deshabilitar botón y mostrar loading
+        if (btnEnviar) {
+            btnEnviar.disabled = true;
+            if (tieneVersionPendiente) {
+                btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> ACTUALIZANDO DOCUMENTO...';
+            } else {
+                btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> SUBIENDO DOCUMENTO...';
+            }
+            btnEnviar.style.opacity = '0.7';
+            btnEnviar.style.cursor = 'not-allowed';
+        }
+        
+        // Deshabilitar otros botones
+        const botones = document.querySelectorAll('button, a.btn');
+        botones.forEach(function(btn) {
+            if (btn !== btnEnviar) {
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.5';
+            }
+        });
+        
+        // Enviar el formulario
+        if (form) {
+            console.log('✅ Formulario enviado');
+            form.submit();
+        } else {
+            console.error('❌ Formulario no encontrado');
+            formEnviado = false;
+        }
+        
+    } catch (error) {
+        console.error('❌ Error enviando formulario:', error);
+        formEnviado = false;
+        mostrarAlerta('Error', 'No se pudo enviar el formulario. Por favor recarga la página e intenta de nuevo.', 'error');
+        
+        // Restaurar botón
+        const btnEnviar = document.getElementById('btnEnviar');
+        if (btnEnviar) {
+            btnEnviar.disabled = false;
+            btnEnviar.style.opacity = '1';
+            btnEnviar.style.cursor = 'pointer';
+            if (tieneVersionPendiente) {
+                btnEnviar.innerHTML = '<i class="fas fa-sync-alt me-2"></i> ACTUALIZAR v' + versionPendienteNumero;
+            } else {
+                btnEnviar.innerHTML = '<i class="fas fa-paper-plane me-2"></i> ENVIAR VERSIÓN';
+            }
+        }
+    }
+}
+
+// ===== MANEJAR ARCHIVO SELECCIONADO =====
+function manejarArchivo(files) {
+    console.log('📁 Archivo seleccionado');
+    
+    if (!files || files.length === 0) {
+        console.log('No hay archivos');
+        return;
+    }
+    
+    const file = files[0];
+    const dropzone = document.getElementById('dropzone');
+    const dropzoneEmpty = document.getElementById('dropzone-empty');
+    const dropzoneFilled = document.getElementById('dropzone-filled');
+    const dropzoneError = document.getElementById('dropzone-error');
+    const nombreArchivo = document.getElementById('nombreArchivo');
+    const tamanoArchivo = document.getElementById('tamanoArchivo');
+    
+    if (!dropzone || !dropzoneEmpty || !dropzoneFilled || !dropzoneError) {
+        console.error('❌ Elementos del dropzone no encontrados');
+        return;
+    }
+    
+    // Resetear clases
+    dropzone.classList.remove('has-file', 'has-error');
+    
+    // Mantener modo-edicion si aplica
+    if (tieneVersionPendiente) {
+        dropzone.classList.add('modo-edicion');
+    }
+    
+    // Validar tipo PDF
+    const esPDF = file.type === 'application/pdf' || 
+                  file.name.toLowerCase().endsWith('.pdf') ||
+                  (file.name.toLowerCase().endsWith('.pdf'));
+                                     
+    if (!esPDF) {
+        console.warn('⚠️ Archivo no es PDF:', file.type, file.name);
+        dropzoneEmpty.style.display = 'none';
+        dropzoneFilled.style.display = 'none';
+        dropzoneError.style.display = 'flex';
+        dropzone.classList.add('has-error');
+        archivoSeleccionado = null;
+        
+        mostrarAlerta(
+            'Formato no válido', 
+            'Solo se permiten archivos en formato PDF. Por favor selecciona un archivo .pdf',
+            'error'
+        );
+        return;
+    }
+    
+    // Validar tamaño (máximo 50MB)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+        console.warn('⚠️ Archivo demasiado grande:', formatearTamano(file.size));
+        dropzoneEmpty.style.display = 'none';
+        dropzoneFilled.style.display = 'none';
+        dropzoneError.style.display = 'flex';
+        dropzone.classList.add('has-error');
+        archivoSeleccionado = null;
+        
+        mostrarAlerta(
+            'Archivo demasiado grande', 
+            'El archivo excede el límite de 50MB. Por favor comprime el PDF e intenta de nuevo.',
+            'error'
+        );
+        return;
+    }
+    
+    // Archivo válido
+    archivoSeleccionado = file;
+    
+    dropzoneEmpty.style.display = 'none';
+    dropzoneError.style.display = 'none';
+    dropzoneFilled.style.display = 'flex';
+    dropzone.classList.add('has-file');
+    
+    if (nombreArchivo) {
+        nombreArchivo.textContent = file.name;
+    }
+    if (tamanoArchivo) {
+        tamanoArchivo.textContent = formatearTamano(file.size);
+    }
+    
+    console.log('✅ Archivo válido:', file.name, formatearTamano(file.size));
+    
+    // Feedback visual adicional
+    if (tieneVersionPendiente) {
+        console.log('⚠️ ATENCIÓN: Este archivo reemplazará al PDF actual de la v' + versionPendienteNumero);
+    }
+}
+
+// ===== ELIMINAR ARCHIVO =====
+function eliminarArchivo() {
+    console.log('🗑️ Eliminando archivo seleccionado');
+    
+    archivoSeleccionado = null;
+    
+    const archivoInput = document.getElementById('archivoInput');
+    if (archivoInput) {
+        archivoInput.value = '';
+    }
+    
+    const dropzone = document.getElementById('dropzone');
+    const dropzoneEmpty = document.getElementById('dropzone-empty');
+    const dropzoneFilled = document.getElementById('dropzone-filled');
+    const dropzoneError = document.getElementById('dropzone-error');
+    
+    if (dropzone && dropzoneEmpty && dropzoneFilled && dropzoneError) {
+        dropzone.classList.remove('has-file', 'has-error');
+        
+        if (tieneVersionPendiente) {
+            dropzone.classList.add('modo-edicion');
+        }
+        
+        dropzoneEmpty.style.display = 'flex';
+        dropzoneFilled.style.display = 'none';
+        dropzoneError.style.display = 'none';
+    }
+}
+
+// ===== FORMATAR TAMAÑO DE ARCHIVO =====
+function formatearTamano(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    if (!bytes) return '0 Bytes';
+    
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// ===== DRAG AND DROP HANDLERS =====
+function handleDragOver(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+        dropzone.classList.add('dragover');
+    }
+}
+
+function handleDragLeave(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+        dropzone.classList.remove('dragover');
+    }
+}
+
+function handleDrop(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+        dropzone.classList.remove('dragover');
+    }
+    
+    if (e.dataTransfer && e.dataTransfer.files) {
+        const files = e.dataTransfer.files;
+        const archivoInput = document.getElementById('archivoInput');
+        
+        // Asignar archivos al input file
+        if (archivoInput) {
+            // Crear un nuevo DataTransfer para asignar archivos
+            const dataTransfer = new DataTransfer();
+            for (let i = 0; i < files.length; i++) {
+                dataTransfer.items.add(files[i]);
+            }
+            archivoInput.files = dataTransfer.files;
+        }
+        
+        manejarArchivo(files);
+    }
+}
+
+// ===== CONTADOR DE PALABRAS DEL RESUMEN =====
+function contarPalabrasResumen() {
+    const resumen = document.getElementById('resumen');
+    const contador = document.getElementById('contadorResumen');
+    
+    if (!resumen || !contador) return;
+    
+    const texto = resumen.value.trim();
+    const palabras = texto ? texto.split(/\s+/).filter(function(word) { 
+        return word.length > 0; 
+    }).length : 0;
+    
+    contador.textContent = palabras + ' palabras';
+    
+    // Cambiar color según cantidad
+    if (texto.length === 0) {
+        contador.style.color = '';
+    } else if (palabras < 10) {
+        contador.style.color = '#f59e0b'; // Naranja - muy corto
+    } else if (palabras >= 10 && palabras < 30) {
+        contador.style.color = '#3b82f6'; // Azul - aceptable
+    } else {
+        contador.style.color = '#10b981'; // Verde - buen resumen
+    }
+}
+
+// ===== MOSTRAR ALERTA ESTILIZADA =====
+function mostrarAlerta(titulo, mensaje, tipo) {
+    console.log('🔔 Mostrando alerta:', tipo, titulo);
+    
+    tipo = tipo || 'error';
+    
+    try {
         const alertIcon = document.getElementById('alertIcon');
         const alertTitle = document.getElementById('alertTitle');
         const alertMessage = document.getElementById('alertMessage');
         
-        if (tipo === 'error') {
-            alertIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
-            alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle fa-2x text-white"></i>';
-        } else if (tipo === 'warning') {
-            alertIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
-            alertIcon.innerHTML = '<i class="fas fa-exclamation-circle fa-2x text-white"></i>';
-        } else if (tipo === 'success') {
-            alertIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            alertIcon.innerHTML = '<i class="fas fa-check-circle fa-2x text-white"></i>';
+        if (!alertIcon || !alertTitle || !alertMessage) {
+            console.warn('⚠️ Elementos de alerta no encontrados, usando alert nativo');
+            alert(titulo + '\n\n' + mensaje);
+            return;
+        }
+        
+        // Configurar icono según tipo
+        switch(tipo) {
+            case 'error':
+                alertIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle fa-2x text-white"></i>';
+                break;
+            case 'warning':
+                alertIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                alertIcon.innerHTML = '<i class="fas fa-exclamation-circle fa-2x text-white"></i>';
+                break;
+            case 'success':
+                alertIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                alertIcon.innerHTML = '<i class="fas fa-check-circle fa-2x text-white"></i>';
+                break;
+            case 'info':
+                alertIcon.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+                alertIcon.innerHTML = '<i class="fas fa-info-circle fa-2x text-white"></i>';
+                break;
+            default:
+                alertIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle fa-2x text-white"></i>';
         }
         
         alertTitle.textContent = titulo;
@@ -644,205 +1377,45 @@
         
         if (alertModal) {
             alertModal.show();
-        }
-    }
-    
-    // Manejar archivo seleccionado
-    function manejarArchivo(files) {
-        if (!files || files.length === 0) return;
-        
-        const file = files[0];
-        const dropzone = document.getElementById('dropzone');
-        const dropzoneEmpty = document.getElementById('dropzone-empty');
-        const dropzoneFilled = document.getElementById('dropzone-filled');
-        const dropzoneError = document.getElementById('dropzone-error');
-        const nombreArchivo = document.getElementById('nombreArchivo');
-        const tamanoArchivo = document.getElementById('tamanoArchivo');
-        
-        // Resetear clases
-        dropzone.classList.remove('has-file', 'has-error');
-        
-        // Validar tipo PDF
-        if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-            dropzoneEmpty.style.display = 'none';
-            dropzoneFilled.style.display = 'none';
-            dropzoneError.style.display = 'flex';
-            dropzone.classList.add('has-error');
-            archivoSeleccionado = null;
-            mostrarAlerta('Formato no válido', 'Solo se permiten archivos en formato PDF.', 'error');
-            return;
+        } else {
+            // Fallback si el modal no está disponible
+            console.warn('⚠️ Modal de alerta no disponible');
+            alert(titulo + '\n\n' + mensaje);
         }
         
-        // Archivo válido
-        archivoSeleccionado = file;
-        dropzoneEmpty.style.display = 'none';
-        dropzoneError.style.display = 'none';
-        dropzoneFilled.style.display = 'flex';
-        dropzone.classList.add('has-file');
-        
-        nombreArchivo.textContent = file.name;
-        tamanoArchivo.textContent = formatearTamano(file.size);
+    } catch (error) {
+        console.error('❌ Error mostrando alerta:', error);
+        alert(titulo + '\n\n' + mensaje);
     }
-    
-    // Eliminar archivo
-    function eliminarArchivo() {
-        archivoSeleccionado = null;
-        document.getElementById('archivoInput').value = '';
-        
-        const dropzone = document.getElementById('dropzone');
-        const dropzoneEmpty = document.getElementById('dropzone-empty');
-        const dropzoneFilled = document.getElementById('dropzone-filled');
-        const dropzoneError = document.getElementById('dropzone-error');
-        
-        dropzone.classList.remove('has-file', 'has-error');
-        dropzoneEmpty.style.display = 'flex';
-        dropzoneFilled.style.display = 'none';
-        dropzoneError.style.display = 'none';
-    }
-    
-    // Formatear tamaño de archivo
-    function formatearTamano(bytes) {
-        if (bytes === 0) return '0 B';
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-        if (bytes < 1073741824) return (bytes / 1048576).toFixed(2) + ' MB';
-        return (bytes / 1073741824).toFixed(2) + ' GB';
-    }
-    
-    // Drag and drop handlers
-    function handleDragOver(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        document.getElementById('dropzone').classList.add('dragover');
-    }
-    
-    function handleDragLeave(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        document.getElementById('dropzone').classList.remove('dragover');
-    }
-    
-    function handleDrop(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        document.getElementById('dropzone').classList.remove('dragover');
-        
-        const files = e.dataTransfer.files;
-        document.getElementById('archivoInput').files = files;
-        manejarArchivo(files);
-    }
-    
-    // Contador de palabras del resumen
-    function contarPalabrasResumen() {
-        const resumen = document.getElementById('resumen');
-        const contador = document.getElementById('contadorResumen');
-        const texto = resumen.value.trim();
-        const palabras = texto ? texto.split(/\s+/).length : 0;
-        
-        contador.textContent = palabras + ' palabras';
-        contador.style.color = (palabras < 10 && texto.length > 0) ? '#f59e0b' : (palabras >= 10 ? '#10b981' : '');
-    }
-    
-    // Mostrar modal de confirmación
-    function mostrarModalConfirmacion() {
-        const archivo = archivoSeleccionado;
-        const resumen = document.getElementById('resumen').value.trim();
-        const check1 = document.getElementById('check1').checked;
-        const check2 = document.getElementById('check2').checked;
-        const check3 = document.getElementById('check3').checked;
-        
-        if (!archivo) {
-            mostrarAlerta('Archivo requerido', 'Por favor selecciona un archivo PDF para subir.', 'warning');
-            return false;
-        }
-        
-        if (resumen.length < 10) {
-            mostrarAlerta('Resumen muy corto', 'El resumen de cambios debe tener al menos 10 caracteres.', 'warning');
-            document.getElementById('resumen').focus();
-            return false;
-        }
-        
-        if (!check1 || !check2 || !check3) {
-            mostrarAlerta('Checklist incompleta', 'Por favor verifica todos los puntos de la checklist antes de enviar.', 'warning');
-            return false;
-        }
+}
 
-        if (tareasPendientesTotal > 0) {
-            const marcadas = document.querySelectorAll('input[name="tareas_completadas"]:checked').length;
-            if (marcadas !== tareasPendientesTotal) {
-                mostrarAlerta('Observaciones incompletas', 'Debes marcar todas las observaciones como resueltas antes de subir la nueva versión.', 'warning');
-                return false;
-            }
-        }
-        
-        document.getElementById('modalNombreArchivo').textContent = archivo.name;
-        const previewResumen = resumen.length > 80 ? resumen.substring(0, 80) + '...' : resumen;
-        document.getElementById('modalResumenPreview').textContent = previewResumen;
-        
-        if (confirmModal) {
-            confirmModal.show();
-        }
-        return true;
+// ===== APLICAR MODO EDICIÓN =====
+function aplicarModoEdicion() {
+    console.log('🎨 Aplicando estilos de modo edición');
+    
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone && tieneVersionPendiente) {
+        dropzone.classList.add('modo-edicion');
     }
     
-    // Enviar formulario
-    function enviarFormulario() {
-        const btn = document.getElementById('btnEnviar');
-        const form = document.getElementById('formEntrega');
-        
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> SUBIENDO DOCUMENTO...';
-        form.submit();
+    // Actualizar el botón de envío
+    const btnEnviar = document.getElementById('btnEnviar');
+    if (btnEnviar && tieneVersionPendiente) {
+        btnEnviar.innerHTML = '<i class="fas fa-sync-alt me-2"></i> ACTUALIZAR v' + versionPendienteNumero;
+        btnEnviar.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
     }
-    
-    // Interceptar submit del formulario
-    document.getElementById('formEntrega').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // --- PUNTO 2: VALIDACIÓN EN FRONTEND ---
-        // Si hay una versión pendiente, mostrar el modal de advertencia
-        if (tieneVersionPendiente) {
-            // Si el usuario confirma, enviamos el formulario
-            if (confirm('⚠️ ATENCIÓN: La versión v{{ version_pendiente_numero }} aún no ha sido revisada.\n\n¿Estás seguro de que quieres sobrescribir el documento pendiente?')) {
-                mostrarModalConfirmacion();
-            }
-            return;
-        }
-        
-        mostrarModalConfirmacion();
-    });
-    
-    // Inicializar modales y contador
-    document.addEventListener('DOMContentLoaded', function() {
-        contarPalabrasResumen();
-        
-        const confirmModalEl = document.getElementById('confirmModal');
-        if (confirmModalEl) {
-            confirmModal = new bootstrap.Modal(confirmModalEl);
-            document.getElementById('confirmarEnvioBtn').addEventListener('click', function() {
-                confirmModal.hide();
-                enviarFormulario();
-            });
-        }
-        
-        const alertModalEl = document.getElementById('alertModal');
-        if (alertModalEl) {
-            alertModal = new bootstrap.Modal(alertModalEl);
-        }
-        
-        // --- PUNTO 2: BOTÓN "CONTINUAR DE TODOS MODOS" ---
-        const continuarBtn = document.getElementById('continuarDeTodosModos');
-        if (continuarBtn) {
-            continuarBtn.addEventListener('click', function() {
-                // Cerrar el modal de advertencia
-                const warningModal = bootstrap.Modal.getInstance(document.getElementById('warningModal'));
-                if (warningModal) {
-                    warningModal.hide();
-                }
-                // Mostrar confirmación de envío
-                mostrarModalConfirmacion();
-            });
-        }
-    });
+}
+
+// ===== EXPORTAR FUNCIONES GLOBALES =====
+// Estas funciones deben ser accesibles desde los atributos onclick en HTML
+window.manejarArchivo = manejarArchivo;
+window.eliminarArchivo = eliminarArchivo;
+window.handleDragOver = handleDragOver;
+window.handleDragLeave = handleDragLeave;
+window.handleDrop = handleDrop;
+window.contarPalabrasResumen = contarPalabrasResumen;
+
+console.log('✅ InvestiControl - Subir Versión: JavaScript cargado correctamente');
 </script>
+
 {% endblock %}

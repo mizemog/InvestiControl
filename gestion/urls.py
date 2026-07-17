@@ -1,12 +1,9 @@
 from django.urls import path, include
 from . import views
 
-
 urlpatterns = [
     # Endpoints auxiliares para gráficos/charts (usados por el dashboard del coordinador)
     path('', include('gestion.urls_chart_patch')),
-
-
 
     path('', views.home_redirect, name='home'),
     path('estudiante/', views.dashboard_estudiante, name='dashboard_estudiante'),
@@ -20,7 +17,12 @@ urlpatterns = [
     path('notificaciones/marcar-todas-leidas/', views.marcar_notificaciones_todas_leidas, name='marcar_todas_leidas'),
     path('nuevo-proyecto/', views.crear_proyecto, name='crear_proyecto'),
     path('corregir/<int:comentario_id>/', views.enviar_correccion, name='enviar_correccion'),
+    
+    # Detalle del análisis e inicio manual del análisis IA
     path('analisis-ia/<int:version_id>/', views.ver_analisis_ia, name='ver_analisis_ia'),
+    # === ESTA ES LA RUTA QUE FALTABA REGISTRAR ===
+    path('analizar-ia/<int:proyecto_id>/', views.disparar_analisis_ia, name='disparar_analisis_ia'),
+    
     path('perfil/', views.ver_perfil, name='ver_perfil'),
     path('certificado/<int:proyecto_id>/', views.generar_certificado, name='generar_certificado'),
     
@@ -40,7 +42,7 @@ urlpatterns = [
     path('proyecto/editar/<int:proyecto_id>/', views.proyecto_editar, name='proyecto_editar'),
     path('proyecto/reporte-avance/<int:proyecto_id>/', views.generar_reporte_avance, name='reporte_avance'),
     
-    # --- MÓDULO DE PLANTILLAS (ESTO ES LO QUE FALTABA) ---
+    # --- MÓDULO DE PLANTILLAS ---
     path('plantillas/', views.plantilla_lista, name='plantilla_lista'),
     path('plantillas/nueva/', views.plantilla_configurar, name='plantilla_crear'),
     path('plantillas/editar/<int:plantilla_id>/', views.plantilla_configurar, name='plantilla_editar'),
@@ -53,8 +55,5 @@ urlpatterns = [
     # Gestión de Tesis para Coordinador
     path('gestion-tesis-maestro/', views.gestion_tesis_completa, name='gestion_tesis_maestro'),
     path('cancelar/<int:proyecto_id>/', views.cancelar_proyecto, name='cancelar_proyecto'),
-
-    # CopyLeaks Webhook
     path('webhook/copyleaks/<str:id_tesis>/<str:status>/', views.webhook_copyleaks, name='webhook_copyleaks'),
-    path('analizar-ia/<int:proyecto_id>/', views.disparar_analisis_ia, name='disparar_analisis_ia'),
 ]

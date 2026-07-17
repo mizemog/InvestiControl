@@ -14,7 +14,6 @@
     .tesis-maestro-wrapper .text-primary * {
         color: var(--primary) !important;
     }
-    /* Excepciones para colores semánticos fijos */
     .tesis-maestro-wrapper .text-success {
         color: #10b981 !important;
     }
@@ -25,7 +24,6 @@
         color: #3b82f6 !important;
     }
 
-    /* ===== BOTONES DE ACCIÓN ===== */
     .btn-action-editar {
         background: var(--nav-active-bg) !important;
         color: var(--primary) !important;
@@ -84,7 +82,6 @@
         color: #fff !important;
     }
 
-    /* ===== FORMULARIO DE BÚSQUEDA ===== */
     .input-group-search {
         border-radius: 12px !important;
         overflow: hidden !important;
@@ -115,7 +112,6 @@
         opacity: 0.7 !important;
     }
 
-    /* ===== TABLA ===== */
     .table-proyectos {
         color: var(--text-main) !important;
         --bs-table-bg: transparent !important;
@@ -156,7 +152,6 @@
         transition: width 0.6s ease !important;
     }
 
-    /* ===== CARDS MÓVIL ===== */
     .card-proyecto-movil {
         background: var(--bg-card) !important;
         border: 1px solid var(--border) !important;
@@ -169,7 +164,6 @@
         box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
     }
 
-    /* ===== ESTADO VACÍO ===== */
     .empty-state-icon {
         background: var(--nav-active-bg) !important;
         padding: 1.5rem !important;
@@ -177,7 +171,6 @@
         display: inline-block !important;
     }
 
-    /* ===== ANIMACIONES ===== */
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
@@ -186,7 +179,6 @@
         animation: fadeIn 0.3s ease;
     }
 
-    /* ===== RESPONSIVE ===== */
     @media (max-width: 767px) {
         .card-proyecto-movil {
             border-radius: 12px !important;
@@ -298,11 +290,13 @@
                         </td>
                         <td class="text-end">
                             <div class="d-flex gap-1 justify-content-end">
+                                {% if user.rol == 'coordinador' %}
                                 <a href="{% url 'proyecto_editar' p.id %}" 
                                    class="btn btn-action-editar"
                                    title="Editar proyecto">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                {% endif %}
                                 {% if p.porcentaje_avance >= 100 %}
                                 <a href="#" 
                                    class="btn btn-action-reporte"
@@ -325,7 +319,6 @@
             {% for p in proyectos %}
             <div class="col-12 proyecto-row" data-search="{{ p.titulo|lower }} {{ p.carrera.nombre|lower }} {% for e in p.estudiantes.all %}{{ e.get_full_name|lower }} {% endfor %} {% for t in p.profesores.all %}{{ t.last_name|lower }} {% endfor %}">
                 <div class="card-proyecto-movil">
-                    <!-- Título y tipo -->
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="flex-grow-1 min-w-0">
                             <h6 class="fw-bold mb-1 text-truncate" style="color: var(--text-main);">{{ p.titulo }}</h6>
@@ -340,7 +333,6 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Progreso -->
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <small class="fw-bold" style="color: var(--text-muted);">Progreso</small>
@@ -357,7 +349,6 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Equipo -->
                     <div class="row g-2 mb-3">
                         {% if p.estudiantes.all %}
                         <div class="col-6">
@@ -377,12 +368,13 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Acciones -->
                     <div class="d-flex gap-2 pt-3 border-top" style="border-color: var(--border) !important;">
+                        {% if user.rol == 'coordinador' %}
                         <a href="{% url 'proyecto_editar' p.id %}" 
                            class="btn btn-movil-editar flex-grow-1 d-flex align-items-center justify-content-center gap-1">
                             <i class="fas fa-edit me-1"></i> Editar
                         </a>
+                        {% endif %}
                         {% if p.porcentaje_avance >= 100 %}
                         <a href="#" 
                            class="btn btn-movil-reporte flex-grow-1 d-flex align-items-center justify-content-center gap-1">
@@ -397,7 +389,6 @@
     </div>
 
     {% else %}
-    <!-- Estado vacío -->
     <div class="text-center py-5">
         <div class="mb-4">
             <div class="empty-state-icon">
@@ -417,7 +408,6 @@ function filtrarTabla() {
     const input = document.getElementById('buscarProyecto');
     const filter = input.value.toLowerCase().trim();
     
-    // Filtrar tabla desktop
     const tabla = document.getElementById('tablaProyectos');
     if (tabla) {
         const filas = tabla.getElementsByTagName('tr');
@@ -428,7 +418,6 @@ function filtrarTabla() {
         }
     }
     
-    // Filtrar cards móvil
     const cardsContainer = document.getElementById('cardsProyectos');
     if (cardsContainer) {
         const cards = cardsContainer.getElementsByClassName('col-12');

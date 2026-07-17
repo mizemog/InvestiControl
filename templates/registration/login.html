@@ -1,191 +1,68 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-    /* ===== FUERZA DE COLORES PARA TODO EL CONTENIDO ===== */
     .login-wrapper,
-    .login-wrapper * {
-        color: var(--text-main) !important;
-    }
+    .login-wrapper * { color: var(--text-main) !important; }
     .login-wrapper .text-muted,
-    .login-wrapper .text-muted * {
-        color: var(--text-muted) !important;
-    }
+    .login-wrapper .text-muted * { color: var(--text-muted) !important; }
     .login-wrapper .text-primary,
-    .login-wrapper .text-primary * {
-        color: var(--primary) !important;
-    }
-    /* Excepciones para colores semánticos fijos */
-    .login-wrapper .text-danger {
-        color: #ef4444 !important;
-    }
-
-    /* ===== BOTONES ===== */
-    .btn-primary-custom {
-        background: var(--primary) !important;
-        color: #fff !important;
-        border: none !important;
-        transition: all 0.3s ease !important;
-        border-radius: 16px !important;
-        padding: 0.75rem 1rem !important;
-        font-weight: 700 !important;
-        width: 100% !important;
-    }
-    .btn-primary-custom:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
-        color: #fff !important;
-    }
-    .btn-primary-custom:disabled {
-        opacity: 0.7 !important;
-        transform: none !important;
-    }
-
-    /* ===== FORMULARIO ===== */
-    .form-control-custom {
-        background-color: var(--nav-active-bg) !important;
-        color: var(--text-main) !important;
-        border: none !important;
-        border-radius: 12px !important;
-        padding: 0.75rem 1rem !important;
-    }
-    .form-control-custom:focus {
-        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
-        background-color: var(--nav-active-bg) !important;
-        color: var(--text-main) !important;
-    }
-    .form-control-custom::placeholder {
-        color: var(--text-muted) !important;
-        opacity: 0.7 !important;
-    }
-
-    .input-group-text-custom {
-        background-color: var(--nav-active-bg) !important;
-        color: var(--text-muted) !important;
-        border: none !important;
-    }
-
-    /* ===== ALERTAS ===== */
-    .alert-danger-custom {
-        background: rgba(239, 68, 68, 0.1) !important;
-        color: #ef4444 !important;
-        border: none !important;
-        border-radius: 16px !important;
-        padding: 0.75rem 1rem !important;
-        font-size: 0.85rem !important;
-    }
-    .alert-success-custom {
-        background: rgba(16, 185, 129, 0.1) !important;
-        color: #10b981 !important;
-        border: none !important;
-        border-radius: 16px !important;
-        padding: 0.75rem 1rem !important;
-        font-size: 0.85rem !important;
-    }
-
-    /* ===== ENLACE ===== */
-    .link-custom {
-        color: var(--primary) !important;
-        transition: color 0.2s ease !important;
-        text-decoration: none !important;
-        font-weight: 700 !important;
-        font-size: 0.85rem !important;
-    }
-    .link-custom:hover {
-        color: #818cf8 !important;
-        text-decoration: underline !important;
-    }
-
-    /* ===== ANIMACIONES ===== */
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .card-animated {
-        animation: slideUp 0.5s ease;
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 575px) {
-        .card { border-radius: 16px !important; }
-        .p-3.p-md-5 { padding: 1.5rem !important; }
-    }
+    .login-wrapper .text-primary * { color: var(--primary) !important; }
+    .login-wrapper .text-danger { color: #ef4444 !important; }
+    .btn-primary-custom { background: var(--primary) !important; color: #fff !important; border: none !important; transition: all 0.3s ease !important; border-radius: 16px !important; padding: 0.75rem 1rem !important; font-weight: 700 !important; width: 100% !important; }
+    .btn-primary-custom:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important; color: #fff !important; }
+    .btn-primary-custom:disabled { opacity: 0.7 !important; transform: none !important; }
+    .form-control-custom { background-color: var(--nav-active-bg) !important; color: var(--text-main) !important; border: none !important; border-radius: 12px !important; padding: 0.75rem 1rem !important; }
+    .form-control-custom:focus { box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important; background-color: var(--nav-active-bg) !important; color: var(--text-main) !important; }
+    .form-control-custom::placeholder { color: var(--text-muted) !important; opacity: 0.7 !important; }
+    .input-group-text-custom { background-color: var(--nav-active-bg) !important; color: var(--text-muted) !important; border: none !important; }
+    .alert-danger-custom { background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; border: none !important; border-radius: 16px !important; padding: 0.75rem 1rem !important; font-size: 0.85rem !important; }
+    .link-custom { color: var(--primary) !important; transition: color 0.2s ease !important; text-decoration: none !important; font-weight: 700 !important; font-size: 0.85rem !important; }
+    .link-custom:hover { color: #818cf8 !important; text-decoration: underline !important; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .card-animated { animation: slideUp 0.5s ease; }
+    @media (max-width: 575px) { .card { border-radius: 16px !important; } .p-3.p-md-5 { padding: 1.5rem !important; } }
 </style>
 
 <div class="login-wrapper">
     <div class="row justify-content-center align-items-center" style="min-height: 85vh;">
         <div class="col-11 col-sm-8 col-md-5 col-lg-4">
-
             <div class="text-center mb-4 mb-md-5">
-                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg mb-4"
-                     style="background: var(--primary);">
+                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-4 shadow-lg mb-4" style="background: var(--primary);">
                     <i class="fas fa-right-to-bracket fa-2x text-white"></i>
                 </div>
                 <h2 class="fw-bold h3 h2-md mb-1" style="color: var(--text-main);">Iniciar Sesión</h2>
                 <p class="mb-0" style="color: var(--text-muted);">Accede al Portal Académico</p>
             </div>
-
-            <div class="card border-0 shadow-lg p-3 p-md-5 card-animated"
-                 style="background-color: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
-
+            <div class="card border-0 shadow-lg p-3 p-md-5 card-animated" style="background-color: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 24px;">
                 {% if form.errors %}
                     <div class="alert alert-danger-custom mb-4 d-flex align-items-center gap-2">
                         <i class="fas fa-exclamation-triangle flex-shrink-0"></i>
                         <span>Credenciales inválidas. Intenta nuevamente.</span>
                     </div>
                 {% endif %}
-
-                {% if messages %}
-                    {% for message in messages %}
-                        {% if 'no_login' not in message.tags %}
-                            <div class="alert 
-                                {% if message.tags == 'success' %}alert-success-custom
-                                {% elif message.tags == 'error' %}alert-danger-custom
-                                {% else %}alert-danger-custom{% endif %} 
-                                mb-4 d-flex align-items-center gap-2">
-                                <i class="fas fa-info-circle flex-shrink-0"></i>
-                                <span>{{ message }}</span>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-
                 <form method="post" action="{% url 'login' %}" id="loginForm" autocomplete="off">
                     {% csrf_token %}
-
                     <div class="mb-4">
-                        <label for="id_username" class="form-label small fw-bold text-uppercase mb-2"
-                               style="color: var(--text-muted); letter-spacing: 0.5px;">
+                        <label for="id_username" class="form-label small fw-bold text-uppercase mb-2" style="color: var(--text-muted); letter-spacing: 0.5px;">
                             <i class="fas fa-user me-1"></i> Usuario
                         </label>
                         <div class="input-group" style="border-radius: 12px; overflow: hidden;">
-                            <span class="input-group-text input-group-text-custom">
-                                <i class="fas fa-at"></i>
-                            </span>
-                            <input type="text" name="username" id="id_username"
-                                   class="form-control form-control-custom"
-                                   placeholder="estudiante_123" required autofocus>
+                            <span class="input-group-text input-group-text-custom"><i class="fas fa-at"></i></span>
+                            <input type="text" name="username" id="id_username" class="form-control form-control-custom" placeholder="estudiante_123" required autofocus>
                         </div>
                     </div>
-
                     <div class="mb-4">
-                        <label for="id_password" class="form-label small fw-bold text-uppercase mb-2"
-                               style="color: var(--text-muted); letter-spacing: 0.5px;">
+                        <label for="id_password" class="form-label small fw-bold text-uppercase mb-2" style="color: var(--text-muted); letter-spacing: 0.5px;">
                             <i class="fas fa-lock me-1"></i> Contraseña
                         </label>
                         <div class="input-group" style="border-radius: 12px; overflow: hidden;">
-                            <span class="input-group-text input-group-text-custom">
-                                <i class="fas fa-key"></i>
-                            </span>
-                            <input type="password" name="password" id="id_password"
-                                   class="form-control form-control-custom"
-                                   placeholder="••••••••" required>
+                            <span class="input-group-text input-group-text-custom"><i class="fas fa-key"></i></span>
+                            <input type="password" name="password" id="id_password" class="form-control form-control-custom" placeholder="••••••••" required>
                         </div>
                     </div>
-
                     <button type="submit" class="btn btn-primary-custom shadow-sm">
                         <i class="fas fa-right-to-bracket me-2"></i> ENTRAR
                     </button>
-
                     <div class="d-flex justify-content-between align-items-center mt-4">
                         <a href="{% url 'enviar_otp' %}" class="link-custom">
                             <i class="fas fa-shield-alt me-1"></i> ¿Olvidaste tu contraseña?
@@ -193,22 +70,16 @@
                     </div>
                 </form>
             </div>
-
             <p class="mt-4 text-center" style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.5;">
                 <i class="fas fa-lock me-1"></i> Sistema seguro. Acceso restringido.
             </p>
-
         </div>
     </div>
 </div>
-
 <script>
-    // Cargar tema guardado (si existe) para mantener consistencia
     document.addEventListener('DOMContentLoaded', function() {
         const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        }
+        if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
     });
 </script>
 {% endblock %}

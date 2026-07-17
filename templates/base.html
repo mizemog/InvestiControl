@@ -433,8 +433,8 @@
                 <i class="fas fa-home"></i> <span class="nav-text">Inicio</span>
             </a>
 
-            <!-- Gestión Maestra: SOLO para Coordinador -->
-            {% if user.rol == 'coordinador' %}
+            <!-- Gestión Maestra: Profesor y Coordinador -->
+            {% if user.rol == 'profesor' or user.rol == 'coordinador' %}
             <a href="{% url 'dashboard_coordinador' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard_coordinador' %}active{% endif %}" title="Estadísticas">
                 <i class="fas fa-chart-pie"></i> <span class="nav-text">Estadísticas</span>
             </a>

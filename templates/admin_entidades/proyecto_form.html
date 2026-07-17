@@ -247,12 +247,17 @@
                             <label class="form-label small fw-bold text-muted text-uppercase" style="color: var(--text-muted);">
                                 <i class="fas fa-flag me-1"></i> Estatus Académico
                             </label>
-                            <select name="estado" class="form-select form-select-custom">
+                            <select name="estado" id="id_estado" class="form-select form-select-custom">
                                 <option value="En Progreso" {% if p.estado == 'En Progreso' %}selected{% endif %}>🟡 En Progreso</option>
                                 <option value="Observado" {% if p.estado == 'Observado' %}selected{% endif %}>🟠 Observado</option>
                                 <option value="Aprobado" {% if p.estado == 'Aprobado' %}selected{% endif %}>🟢 Aprobado</option>
-                                <option value="Cancelado" {% if p.estado == 'Cancelado' %}selected{% endif %}>🔴 Cancelado</option>
+                                {% if p.estado == 'Cancelado' %}
+                                <option value="Cancelado" selected disabled>🔴 Cancelado (no modificable)</option>
+                                {% endif %}
                             </select>
+                            <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">
+                                <i class="fas fa-info-circle me-1"></i> Para cancelar formalmente y registrar el motivo, use el botón de cancelación en el Dashboard.
+                            </small>
                         </div>
                     </div>
 

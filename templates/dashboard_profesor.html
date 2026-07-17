@@ -271,7 +271,7 @@
                                           {% else %}
                                               background: rgba(99,102,241,0.15); color: var(--primary);
                                           {% endif %}">
-                                        {{ p.estado|upper }}
+                                        {% if p.estado == 'PROYECTO_APROBADO' %}APROBADO{% else %}{{ p.estado|upper }}{% endif %}
                                     </span>
                                 </div>
                                 
@@ -390,6 +390,9 @@
                             <a href="{% url 'ver_historial' p.id %}" class="btn btn-outline-custom px-3 py-2">
                                 <i class="fas fa-history"></i> Historial
                             </a>
+                            <a href="{% url 'reporte_avance' p.id %}" class="btn btn-outline-custom px-3 py-2">
+                                <i class="fas fa-file-pdf"></i> Reporte
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -416,7 +419,7 @@
                               {% else %}
                                   background: rgba(99,102,241,0.15); color: var(--primary);
                               {% endif %}">
-                            {{ p.estado|upper }}
+                            {% if p.estado == 'PROYECTO_APROBADO' %}APROBADO{% else %}{{ p.estado|upper }}{% endif %}
                         </span>
                         
                             {% with ultima_v=p.versiones.last %}
@@ -497,18 +500,16 @@
                         {% endif %}
                     {% endwith %}
 
-                    <!-- Acciones -->
+                    <!-- Acciones: Historial y Reporte (siempre visibles) -->
                     <div class="d-flex gap-1">
                         <a href="{% url 'ver_historial' p.id %}" 
                            class="btn btn-outline-custom btn-sm flex-grow-1" style="font-size: 0.7rem;">
                             <i class="fas fa-history me-1"></i> Historial
                         </a>
-                        {% if not p.versiones.last %}
-                            <button class="btn btn-sm rounded-3 px-3" disabled
-                                    style="background: var(--bg-card); color: var(--text-muted); font-size: 0.7rem; border: 1px solid var(--border);">
-                                <i class="fas fa-clock"></i>
-                            </button>
-                        {% endif %}
+                        <a href="{% url 'reporte_avance' p.id %}" 
+                           class="btn btn-outline-custom btn-sm flex-grow-1" style="font-size: 0.7rem;">
+                            <i class="fas fa-file-pdf me-1"></i> Reporte
+                        </a>
                     </div>
                 </div>
             </div>
@@ -558,22 +559,27 @@
         proyectos.forEach(proyecto => {
             const titulo = proyecto.getAttribute('data-titulo') || '';
             const estudiante = proyecto.getAttribute('data-estudiante') || '';
-            const estado = proyecto.getAttribute('data-estado') || '';
+            const estadoRaw = proyecto.getAttribute('data-estado') || '';
+            // Normalizar: quitar guiones bajos, espacios múltiples -> uno solo
+            const estado = estadoRaw.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
             
             const coincideBusqueda = busqueda === '' || 
                                     titulo.includes(busqueda) || 
                                     estudiante.includes(busqueda);
                                     
-            const coincideEstado = filtroEstado === 'todos' || estado === filtroEstado;
+            let coincideEstado = filtroEstado === 'todos' || estado === filtroEstado;
+            // Flexibilidad: si el filtro es "aprobado", aceptar también "proyecto aprobado"
+            if (!coincideEstado && filtroEstado === 'aprobado' && estado === 'proyecto aprobado') {
+                coincideEstado = true;
+            }
             
             if (coincideBusqueda && coincideEstado) {
                 proyecto.style.display = '';
                 contadorVisibles++;
                 
-                // Lógica de conteo
                 if (estado === 'en progreso' || estado === 'observado') {
                     pendientes++;
-                } else if (estado === 'aprobado' || estado === 'proyecto_aprobado' || estado === 'cancelado') {
+                } else if (estado === 'aprobado' || estado === 'proyecto aprobado' || estado === 'cancelado') {
                     revisados++;
                 }
             } else {
@@ -586,8 +592,8 @@
         const proyectosVisibles = Array.from(proyectos).filter(p => p.style.display !== 'none');
         
         proyectosVisibles.sort((a, b) => {
-            const estadoA = a.getAttribute('data-estado');
-            const estadoB = b.getAttribute('data-estado');
+            const estadoA = a.getAttribute('data-estado').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+            const estadoB = b.getAttribute('data-estado').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
 
             switch(ordenarPor) {
                 case 'recientes':
@@ -599,7 +605,7 @@
                         'observado': 0, 
                         'en progreso': 1, 
                         'aprobado': 2, 
-                        'proyecto_aprobado': 2, 
+                        'proyecto aprobado': 2, 
                         'cancelado': 3 
                     };
                     return (prioridad[estadoA] ?? 99) - (prioridad[estadoB] ?? 99);
