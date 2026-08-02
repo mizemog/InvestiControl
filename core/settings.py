@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     # App local
     'gestion',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
