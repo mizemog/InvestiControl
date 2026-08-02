@@ -2,6 +2,7 @@ import random
 import re
 import pypdf
 import secrets
+import string
 
 from .models import PlantillaReporte, Proyecto, ReporteProgreso, Usuario, VersionDocumento, AnalisisIA, Revision, Notificacion,Comentario, Correccion,Carrera
 
@@ -877,7 +878,7 @@ def solicitar_otp(req):
         user = Usuario.objects.filter(email=email).first()
         if user:
             # CORRECCIÓN DE SEGURIDAD
-            otp = str(secrets.SystemRandom().randint(100000, 999999))
+            otp = ''.join(secrets.choice(string.digits) for _ in range(6))
             cache.set(f"otp_reset_{email}", otp, timeout=600)
             
             asunto = '🔑 Código de Seguridad - InvestiControl'
