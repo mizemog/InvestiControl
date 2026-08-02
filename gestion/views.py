@@ -1,6 +1,7 @@
 import random
 import re
 import pypdf
+import secrets
 
 from .models import PlantillaReporte, Proyecto, ReporteProgreso, Usuario, VersionDocumento, AnalisisIA, Revision, Notificacion,Comentario, Correccion,Carrera
 
@@ -868,7 +869,6 @@ def generar_reporte_avance(req, proyecto_id):
         'fecha': timezone.now()
     })
 
-
 def solicitar_otp(req):
     email_inicial = req.user.email if req.user.is_authenticated else ""
 
@@ -876,7 +876,8 @@ def solicitar_otp(req):
         email = req.POST.get('email').strip().lower()
         user = Usuario.objects.filter(email=email).first()
         if user:
-            otp = str(random.randint(100000, 999999))
+            # CORRECCIÓN DE SEGURIDAD
+            otp = str(secrets.SystemRandom().randint(100000, 999999))
             cache.set(f"otp_reset_{email}", otp, timeout=600)
             
             asunto = '🔑 Código de Seguridad - InvestiControl'
@@ -897,7 +898,6 @@ def solicitar_otp(req):
         else:
             return render(req, 'registration/password_reset.html', {'error': 'Correo no registrado.'})
     return render(req, 'registration/password_reset.html', {'email_inicial': email_inicial})
-
 
 def verificar_otp(req, email):
     if req.method == 'POST':
