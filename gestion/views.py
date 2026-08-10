@@ -894,8 +894,9 @@ def solicitar_otp(req):
             try:
                 send_mail(asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [email])
                 return render(req, 'registration/password_reset.html', {'email_enviado': email})
-            except Exception:
-                return render(req, 'registration/password_reset.html', {'error': 'Error de envío.'})
+            except Exception as e:
+                print("ERROR CRÍTICO AL ENVIAR CORREO:", e)  # <--- Esto lo mostrará en los logs
+                return render(req, 'registration/password_reset.html', {'error': f'Error de envío: {e}'})
         else:
             return render(req, 'registration/password_reset.html', {'error': 'Correo no registrado.'})
     return render(req, 'registration/password_reset.html', {'email_inicial': email_inicial})
